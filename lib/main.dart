@@ -1,7 +1,7 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 import 'game/lexaway_game.dart';
 
 void main() {
@@ -19,6 +19,9 @@ class LexawayApp extends StatelessWidget {
     final game = LexawayGame();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        textTheme: GoogleFonts.pixelifySansTextTheme(),
+      ),
       home: Scaffold(
         body: Stack(
           children: [
@@ -68,7 +71,7 @@ class _QuestionPlaceholder extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -94,7 +97,7 @@ class _QuestionPlaceholder extends StatelessWidget {
                 ),
                 child: Text(
                   answer,
-                  style: const TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 18),
                 ),
               );
             }).toList(),
