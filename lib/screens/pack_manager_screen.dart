@@ -14,13 +14,25 @@ class PackManagerScreen extends ConsumerStatefulWidget {
 }
 
 class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
-  String? _error;
+  void _showError(String message, {VoidCallback? onRetry}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 10),
+        action: onRetry != null
+            ? SnackBarAction(label: 'Retry', onPressed: onRetry)
+            : null,
+      ),
+    );
+  }
 
   Future<void> _download(String lang) async {
     try {
       await ref.read(localPacksProvider.notifier).download(lang);
     } catch (e) {
-      if (mounted) setState(() => _error = 'Download failed: $e');
+      if (mounted) {
+        _showError('Download failed: $e', onRetry: () => _download(lang));
+      }
     }
   }
 
@@ -34,131 +46,69 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    ref.listenManual(manifestProvider, (_, next) {
+      if (next.hasError && mounted) {
+        _showError(
+          '${next.error}',
+          onRetry: () => ref.invalidate(manifestProvider),
+        );
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
     final manifest = ref.watch(manifestProvider);
     final localPacks = ref.watch(localPacksProvider);
     final local = localPacks.valueOrNull ?? {};
 
     return Scaffold(
       backgroundColor: Colors.brown.shade900,
-      body: Padding(
-        padding: EdgeInsets.only(top: topPadding + 16, bottom: bottomPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  if (context.canPop())
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white70),
-                      onPressed: () => context.pop(),
-                    ),
-                  Text(
-                    'Language Packs',
-                    style: GoogleFonts.pixelifySans(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+      appBar: AppBar(
+        backgroundColor: Colors.brown.shade900,
+        foregroundColor: Colors.white70,
+        title: const Text('Language Packs'),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'Download a pack to start learning',
+              style: TextStyle(color: Colors.white54, fontSize: 14),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Pack list
+          Expanded(
+            child: manifest.when(
+              loading: () => const Center(
+                  child: CircularProgressIndicator(color: Colors.white54)),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (m) => ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: m.packs.length,
+                itemBuilder: (context, i) {
+                  final pack = m.packs[i];
+                  final progress =
+                      ref.watch(downloadProgressProvider(pack.lang));
+                  return _PackTile(
+                    pack: pack,
+                    local: local[pack.lang],
+                    progress: progress,
+                    onDownload: () => _download(pack.lang),
+                    onDelete: () => _delete(pack.lang),
+                    onSelect: () => _select(pack.lang),
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                'Download a pack to start learning',
-                style: TextStyle(color: Colors.white54, fontSize: 14),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Error banner
-            if (_error != null)
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade900.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.warning_amber, color: Colors.orangeAccent),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(_error!,
-                          style: const TextStyle(color: Colors.white70)),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.refresh, color: Colors.white70),
-                      onPressed: () {
-                        setState(() => _error = null);
-                        ref.invalidate(manifestProvider);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-            // Manifest error
-            if (manifest.hasError && _error == null)
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade900.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.warning_amber, color: Colors.orangeAccent),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text('${manifest.error}',
-                          style: const TextStyle(color: Colors.white70)),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.refresh, color: Colors.white70),
-                      onPressed: () => ref.invalidate(manifestProvider),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Pack list
-            Expanded(
-              child: manifest.when(
-                loading: () => const Center(
-                    child: CircularProgressIndicator(color: Colors.white54)),
-                error: (_, __) => const SizedBox.shrink(),
-                data: (m) => ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: m.packs.length,
-                  itemBuilder: (context, i) {
-                    final pack = m.packs[i];
-                    final progress =
-                        ref.watch(downloadProgressProvider(pack.lang));
-                    return _PackTile(
-                      pack: pack,
-                      local: local[pack.lang],
-                      progress: progress,
-                      onDownload: () => _download(pack.lang),
-                      onDelete: () => _delete(pack.lang),
-                      onSelect: () => _select(pack.lang),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
