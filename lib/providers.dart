@@ -66,19 +66,29 @@ final downloadProgressProvider =
 
 // App KV state (Hive-backed)
 
-final streakProvider =
-    NotifierProvider<StreakNotifier, int>(StreakNotifier.new);
+/// Base class for simple Hive-backed int notifiers.
+abstract class HiveIntNotifier extends Notifier<int> {
+  String get key;
+  int get defaultValue => 0;
 
-class StreakNotifier extends Notifier<int> {
   Box get _box => ref.read(hiveBoxProvider);
 
   @override
-  int build() => _box.get('streak', defaultValue: 0) as int;
+  int build() => _box.get(key, defaultValue: defaultValue) as int;
+
+  void _save() => _box.put(key, state);
+}
+
+final streakProvider =
+    NotifierProvider<StreakNotifier, int>(StreakNotifier.new);
+
+class StreakNotifier extends HiveIntNotifier {
+  @override
+  String get key => 'streak';
 
   void increment() {
     state++;
-    _box.put('streak', state);
-    // Update best streak if needed
+    _save();
     final best = _box.get('best_streak', defaultValue: 0) as int;
     if (state > best) {
       _box.put('best_streak', state);
@@ -88,35 +98,29 @@ class StreakNotifier extends Notifier<int> {
 
   void reset() {
     state = 0;
-    _box.put('streak', 0);
+    _save();
   }
 }
 
 final bestStreakProvider =
     NotifierProvider<BestStreakNotifier, int>(BestStreakNotifier.new);
 
-class BestStreakNotifier extends Notifier<int> {
-  Box get _box => ref.read(hiveBoxProvider);
-
+class BestStreakNotifier extends HiveIntNotifier {
   @override
-  int build() => _box.get('best_streak', defaultValue: 0) as int;
+  String get key => 'best_streak';
 
-  void _sync() => state = _box.get('best_streak', defaultValue: 0) as int;
+  void _sync() => state = _box.get(key, defaultValue: defaultValue) as int;
 }
-
-// Coins (Hive-backed)
 
 final coinProvider = NotifierProvider<CoinNotifier, int>(CoinNotifier.new);
 
-class CoinNotifier extends Notifier<int> {
-  Box get _box => ref.read(hiveBoxProvider);
-
+class CoinNotifier extends HiveIntNotifier {
   @override
-  int build() => _box.get('coins', defaultValue: 0) as int;
+  String get key => 'coins';
 
   void add(int amount) {
     state += amount;
-    _box.put('coins', state);
+    _save();
   }
 }
 

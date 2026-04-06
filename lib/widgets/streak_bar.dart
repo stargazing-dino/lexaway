@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers.dart';
+import 'hud_pill.dart';
 
 class StreakBar extends ConsumerWidget {
   const StreakBar({super.key});
@@ -17,25 +18,12 @@ class StreakBar extends ConsumerWidget {
       padding: EdgeInsets.only(top: topPadding + 8, left: 12, right: 16),
       child: Row(
         children: [
-          GestureDetector(
+          HudPill(
             onTap: () => context.push('/packs'),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child:
-                  const Icon(Icons.language, color: Colors.white70, size: 20),
-            ),
+            child: const Icon(Icons.language, color: Colors.white70, size: 20),
           ),
           const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.black54,
-              borderRadius: BorderRadius.circular(20),
-            ),
+          HudPill(
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -59,12 +47,8 @@ class StreakBar extends ConsumerWidget {
           ),
           const SizedBox(width: 8),
           if (streak > 0)
-            Container(
+            HudPill(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(20),
-              ),
               child: Text(
                 '\u{1F525} $streak',
                 style: const TextStyle(

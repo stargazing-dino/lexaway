@@ -6,6 +6,15 @@ import '../lexaway_game.dart';
 import 'coin.dart';
 
 class CoinManager extends Component with HasGameReference<LexawayGame> {
+  // Spawn roll thresholds (0..1)
+  static const double diamondChance = 0.15;
+  static const double clusterChance = 0.40; // cumulative: 15% diamond, 25% cluster, 60% single
+  // Gap between spawn points: random 2–5 tiles
+  static const int minGapTiles = 2;
+  static const int maxGapTiles = 5; // inclusive upper bound
+  // Max coins spawned per frame to prevent bursts after backgrounding
+  static const int maxSpawnsPerFrame = 5;
+
   final _rng = Random();
 
   double _nextSpawnAt = 0;
@@ -31,7 +40,7 @@ class CoinManager extends Component with HasGameReference<LexawayGame> {
       // Spawn coins ahead (max 5 per frame to prevent bursts)
       final spawnHorizon = offset + game.size.x + 64;
       var spawned = 0;
-      while (_nextSpawnAt < spawnHorizon && spawned < 5) {
+      while (_nextSpawnAt < spawnHorizon && spawned < maxSpawnsPerFrame) {
         _spawnAt(_nextSpawnAt);
         _nextSpawnAt += _randomGap();
         spawned++;
@@ -68,10 +77,10 @@ class CoinManager extends Component with HasGameReference<LexawayGame> {
 
   void _spawnAt(double worldX) {
     final roll = _rng.nextDouble();
-    if (roll < 0.15) {
+    if (roll < diamondChance) {
       // Diamond
       add(Coin(type: CoinType.diamond, worldX: worldX));
-    } else if (roll < 0.40) {
+    } else if (roll < clusterChance) {
       // 2-coin cluster
       add(Coin(type: CoinType.coin, worldX: worldX));
       add(Coin(type: CoinType.coin, worldX: worldX + 16 * LexawayGame.pixelScale));
@@ -82,5 +91,8 @@ class CoinManager extends Component with HasGameReference<LexawayGame> {
   }
 
   /// Random gap of 2–5 tiles (128–320px) between spawn points.
-  double _randomGap() => (2 + _rng.nextInt(4)) * 16 * LexawayGame.pixelScale;
+  double _randomGap() =>
+      (minGapTiles + _rng.nextInt(maxGapTiles - minGapTiles + 1)) *
+      16 *
+      LexawayGame.pixelScale;
 }
