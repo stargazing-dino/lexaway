@@ -35,33 +35,35 @@ class _PackManagerScreenState extends State<PackManagerScreen> {
     } catch (e) {
       _error = e.toString();
     }
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _download(String lang) async {
+    if (_downloading.containsKey(lang)) return;
     setState(() => _downloading[lang] = 0);
     try {
       await _pm.downloadPack(lang, onProgress: (p) {
-        setState(() => _downloading[lang] = p);
+        if (mounted) setState(() => _downloading[lang] = p);
       });
       _local = await _pm.getLocalPacks();
-      setState(() => _downloading.remove(lang));
+      if (mounted) setState(() => _downloading.remove(lang));
     } catch (e) {
-      setState(() {
-        _downloading.remove(lang);
-        _error = 'Download failed: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _downloading.remove(lang);
+          _error = 'Download failed: $e';
+        });
+      }
     }
   }
 
   Future<void> _delete(String lang) async {
     await _pm.deletePack(lang);
     _local = await _pm.getLocalPacks();
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   void _select(String lang) {
-    _pm.setLastUsed(lang);
     if (widget.onPackSelected != null) {
       widget.onPackSelected!(lang);
     } else {
@@ -216,7 +218,23 @@ class _PackTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(pack.flag, style: const TextStyle(fontSize: 32)),
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.brown.shade700,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        pack.lang.toUpperCase(),
+                        style: GoogleFonts.pixelifySans(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(

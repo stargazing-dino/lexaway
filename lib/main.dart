@@ -40,6 +40,7 @@ class _LexawayAppState extends State<LexawayApp> {
 
   Future<void> _init() async {
     final local = await _pm.getLocalPacks();
+    if (!mounted) return;
     if (local.isEmpty) {
       setState(() => _needsPack = true);
       return;
@@ -49,14 +50,23 @@ class _LexawayAppState extends State<LexawayApp> {
   }
 
   Future<void> _loadPack(String lang) async {
-    setState(() => _questions = null);
-    await _db.open(lang);
-    final qs = await _db.loadQuestions(limit: 200);
-    await _pm.setLastUsed(lang);
     setState(() {
-      _questions = qs;
+      _questions = null;
       _needsPack = false;
     });
+    try {
+      await _db.open(lang);
+      final qs = await _db.loadQuestions(limit: 200);
+      if (qs.isEmpty) throw StateError('Pack "$lang" has no questions');
+      await _pm.setLastUsed(lang);
+      setState(() => _questions = qs);
+    } catch (_) {
+      // Pack is corrupt or empty — close DB, delete it, go back to pack manager
+      await _db.close();
+      await _pm.deletePack(lang);
+      if (!mounted) return;
+      setState(() => _needsPack = true);
+    }
   }
 
   Future<void> _openPackManager() async {
@@ -64,7 +74,15 @@ class _LexawayAppState extends State<LexawayApp> {
       _navKey.currentContext!,
       MaterialPageRoute(builder: (_) => const PackManagerScreen()),
     );
-    if (lang != null) await _loadPack(lang);
+    if (lang != null) {
+      await _loadPack(lang);
+    } else {
+      // User popped back without selecting — check if packs still exist
+      final local = await _pm.getLocalPacks();
+      if (local.isEmpty) {
+        setState(() => _needsPack = true);
+      }
+    }
   }
 
   final _navKey = GlobalKey<NavigatorState>();
@@ -102,6 +120,7 @@ class _LexawayAppState extends State<LexawayApp> {
                           right: 0,
                           bottom: 0,
                           child: QuestionPanel(
+                            key: ValueKey(_questions),
                             game: _game,
                             questions: _questions!,
                           ),
