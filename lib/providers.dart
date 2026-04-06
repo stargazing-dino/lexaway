@@ -32,10 +32,13 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
 
   Future<void> download(String lang) async {
     final pm = ref.read(packManagerProvider);
-    await pm.downloadPack(lang, onProgress: (p) {
-      ref.read(downloadProgressProvider(lang).notifier).state = p;
-    });
-    ref.read(downloadProgressProvider(lang).notifier).state = null;
+    try {
+      await pm.downloadPack(lang, onProgress: (p) {
+        ref.read(downloadProgressProvider(lang).notifier).state = p;
+      });
+    } finally {
+      ref.read(downloadProgressProvider(lang).notifier).state = null;
+    }
     state = AsyncData(pm.getLocalPacks());
   }
 
@@ -134,7 +137,8 @@ class ActivePackNotifier extends AsyncNotifier<List<Question>> {
     try {
       await _db.open(lang);
     } catch (_) {
-      // .db file missing or corrupt — scrub the stale metadata
+      // .db file missing or corrupt — close leaked handle, scrub stale metadata
+      await _db.close();
       final pm = ref.read(packManagerProvider);
       await pm.deletePack(lang);
       ref.invalidate(localPacksProvider);

@@ -90,7 +90,11 @@ class PackManager {
 
     final cached = _box.get('manifest_cache') as String?;
     if (cached != null) {
-      return Manifest.fromJson(jsonDecode(cached) as Map<String, dynamic>);
+      try {
+        return Manifest.fromJson(jsonDecode(cached) as Map<String, dynamic>);
+      } catch (_) {
+        _box.delete('manifest_cache');
+      }
     }
 
     throw Exception('No manifest available (network failed, no cache)');
