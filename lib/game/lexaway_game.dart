@@ -14,7 +14,7 @@ import 'components/speech_messages.dart';
 import 'persistable.dart';
 import 'walk_controller.dart';
 
-class LexawayGame extends FlameGame {
+class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double pixelScale = 4.0;
   static const double groundLevel = 0.45;
 

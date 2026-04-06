@@ -1,13 +1,16 @@
 import 'dart:ui';
 
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
+import '../audio_manager.dart';
 import '../lexaway_game.dart';
+import 'player.dart';
 
 enum CoinType { coin, diamond }
 
 class Coin extends SpriteAnimationComponent
-    with HasGameReference<LexawayGame> {
+    with HasGameReference<LexawayGame>, CollisionCallbacks {
   final CoinType type;
   double worldX;
   bool collected = false;
@@ -50,5 +53,29 @@ class Coin extends SpriteAnimationComponent
     // Sit on the ground surface (no padding offset — coins fill their frame)
     final groundTop = game.size.y * LexawayGame.groundLevel;
     position.y = groundTop - size.y;
+
+    add(RectangleHitbox());
+  }
+
+  Function(int value)? onCollected;
+
+  @override
+  void onCollisionStart(
+      Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+    if (collected || other is! Player) return;
+    collected = true;
+
+    final value = type == CoinType.diamond ? 3 : 1;
+    onCollected?.call(value);
+
+    if (type == CoinType.diamond) {
+      AudioManager.instance.playGem();
+    } else {
+      AudioManager.instance.playCoin();
+    }
+
+    removeFromParent();
+    game.saveWorldState();
   }
 }

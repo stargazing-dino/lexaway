@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flame/components.dart';
-import '../audio_manager.dart';
 import '../lexaway_game.dart';
 import '../persistable.dart';
 import 'coin.dart';
@@ -45,7 +44,9 @@ class CoinManager extends Component
     final coins = state['coins'] as List?;
     if (coins != null) {
       for (final e in coins) {
-        add(Coin.fromJson(Map<String, dynamic>.from(e as Map)));
+        final coin = Coin.fromJson(Map<String, dynamic>.from(e as Map))
+          ..onCollected = (value) => onCoinCollected?.call(value);
+        add(coin);
       }
     }
   }
@@ -76,47 +77,30 @@ class CoinManager extends Component
       }
     }
 
-    // Position coins & check collection (always runs, even when idle)
-    final playerCenterX = game.size.x * 0.25 + game.player.size.x * 0.5;
-
+    // Position coins & clean up off-screen ones
     for (final coin in children.query<Coin>()) {
       coin.position.x = coin.worldX - offset;
 
-      // Collected when coin center reaches player center
-      if (!coin.collected &&
-          coin.position.x + coin.size.x * 0.5 <= playerCenterX) {
-        coin.collected = true;
-        final value = coin.type == CoinType.diamond ? 3 : 1;
-        onCoinCollected?.call(value);
-        if (coin.type == CoinType.diamond) {
-          AudioManager.instance.playGem();
-        } else {
-          AudioManager.instance.playCoin();
-        }
-        coin.removeFromParent();
-        game.saveWorldState();
-        continue;
-      }
-
-      // Clean up coins that scrolled off-screen left
       if (coin.position.x + coin.size.x < -64) {
         coin.removeFromParent();
       }
     }
   }
 
+  Coin _makeCoin(CoinType type, double worldX) {
+    return Coin(type: type, worldX: worldX)
+      ..onCollected = (value) => onCoinCollected?.call(value);
+  }
+
   void _spawnAt(double worldX) {
     final roll = _rng.nextDouble();
     if (roll < diamondChance) {
-      // Diamond
-      add(Coin(type: CoinType.diamond, worldX: worldX));
+      add(_makeCoin(CoinType.diamond, worldX));
     } else if (roll < clusterChance) {
-      // 2-coin cluster
-      add(Coin(type: CoinType.coin, worldX: worldX));
-      add(Coin(type: CoinType.coin, worldX: worldX + 16 * LexawayGame.pixelScale));
+      add(_makeCoin(CoinType.coin, worldX));
+      add(_makeCoin(CoinType.coin, worldX + 16 * LexawayGame.pixelScale));
     } else {
-      // Single coin
-      add(Coin(type: CoinType.coin, worldX: worldX));
+      add(_makeCoin(CoinType.coin, worldX));
     }
   }
 
