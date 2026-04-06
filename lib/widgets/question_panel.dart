@@ -73,11 +73,13 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
       if (option == _current.answer) {
         _answerState = _AnswerState.correct;
         ref.read(streakProvider.notifier).increment();
-        widget.game.correctAnswer();
+        final streak = ref.read(streakProvider);
+        widget.game.correctAnswer(streak: streak, answer: _current.answer);
         Future.delayed(const Duration(milliseconds: 900), _advance);
       } else {
         _answerState = _AnswerState.wrong;
         ref.read(streakProvider.notifier).reset();
+        widget.game.wrongAnswer();
         _shakeController.forward(from: 0);
         HapticFeedback.mediumImpact();
       }
