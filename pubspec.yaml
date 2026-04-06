@@ -33,4 +33,5 @@ flutter:
     - assets/images/parallax/
     - assets/images/terrain/
     - assets/images/dino/
+    - assets/images/coins/
     - assets/audio/

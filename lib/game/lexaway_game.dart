@@ -5,6 +5,7 @@ import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
 
 import 'audio_manager.dart';
+import 'components/coin_manager.dart';
 import 'components/ground.dart';
 import 'components/player.dart';
 import 'components/speech_bubble.dart';
@@ -18,6 +19,9 @@ class LexawayGame extends FlameGame {
   late Ground ground;
   late ParallaxComponent parallaxComponent;
   late SpeechBubble speechBubble;
+  late CoinManager coinManager;
+
+  Function(int value)? onCoinCollected;
 
   bool _isWalking = false;
   double _walkProgress = 0;
@@ -54,6 +58,11 @@ class LexawayGame extends FlameGame {
 
     ground = Ground()..priority = 1;
     add(ground);
+
+    coinManager = CoinManager()
+      ..priority = 1
+      ..onCoinCollected = (value) => onCoinCollected?.call(value);
+    add(coinManager);
 
     player = Player()..priority = 2;
     add(player);

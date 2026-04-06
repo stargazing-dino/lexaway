@@ -5,6 +5,7 @@ import '../lexaway_game.dart';
 
 class Ground extends Component with HasGameReference<LexawayGame> {
   double _scrollOffset = 0;
+  double get scrollOffset => _scrollOffset;
   double _scrollSpeed = 0;
 
   late Sprite _grassSprite;

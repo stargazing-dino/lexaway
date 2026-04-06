@@ -104,6 +104,22 @@ class BestStreakNotifier extends Notifier<int> {
   void _sync() => state = _box.get('best_streak', defaultValue: 0) as int;
 }
 
+// Coins (Hive-backed)
+
+final coinProvider = NotifierProvider<CoinNotifier, int>(CoinNotifier.new);
+
+class CoinNotifier extends Notifier<int> {
+  Box get _box => ref.read(hiveBoxProvider);
+
+  @override
+  int build() => _box.get('coins', defaultValue: 0) as int;
+
+  void add(int amount) {
+    state += amount;
+    _box.put('coins', state);
+  }
+}
+
 // Active pack
 
 final activePackProvider =

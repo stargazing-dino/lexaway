@@ -19,6 +19,8 @@ class AudioManager {
       for (final t in Terrain.values)
         for (var i = 1; i <= 3; i++) 'step_${t.name}_$i.wav',
       'streak.wav',
+      'coin.wav',
+      'gem.wav',
     ]);
   }
 
@@ -32,4 +34,8 @@ class AudioManager {
   }
 
   void playStreak() => FlameAudio.play('streak.wav');
+
+  void playCoin() => FlameAudio.play('coin.wav');
+
+  void playGem() => FlameAudio.play('gem.wav');
 }

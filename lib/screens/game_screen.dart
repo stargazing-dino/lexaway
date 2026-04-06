@@ -18,6 +18,14 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   final _game = LexawayGame();
 
   @override
+  void initState() {
+    super.initState();
+    _game.onCoinCollected = (value) {
+      ref.read(coinProvider.notifier).add(value);
+    };
+  }
+
+  @override
   Widget build(BuildContext context) {
     final questions = ref.watch(activePackProvider).valueOrNull ?? [];
 
