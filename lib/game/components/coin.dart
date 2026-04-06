@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
 import '../audio_manager.dart';
 import '../lexaway_game.dart';
+import 'coin_fly_effect.dart';
 import 'player.dart';
 
 enum CoinType { coin, diamond }
@@ -74,6 +75,15 @@ class Coin extends SpriteAnimationComponent
     } else {
       AudioManager.instance.playCoin();
     }
+
+    // Spawn fly-to-counter effect
+    final target = Vector2(game.size.x - 60, 50);
+    game.add(CoinFlyEffect(
+      start: position.clone(),
+      target: target,
+      animation: animation!.clone(),
+      spriteSize: size.clone(),
+    ));
 
     removeFromParent();
     game.saveWorldState();
