@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
 
+import 'audio_manager.dart';
 import 'components/ground.dart';
 import 'components/player.dart';
 import 'components/speech_bubble.dart';
@@ -22,6 +23,8 @@ class LexawayGame extends FlameGame {
   double _walkProgress = 0;
   double _idleTimer = 0;
   static const double _idleTimeout = 60.0;
+  double _stepTimer = 0;
+  static const double _stepInterval = 0.3;
 
   // One tile at 4x scale = 64px. Walk it in ~0.8s.
   static const double walkSpeed = 80;
@@ -57,6 +60,8 @@ class LexawayGame extends FlameGame {
 
     speechBubble = SpeechBubble()..priority = 3;
     add(speechBubble);
+
+    await AudioManager.instance.preload();
   }
 
   void correctAnswer({required int streak, required String answer}) {
@@ -67,18 +72,28 @@ class LexawayGame extends FlameGame {
     player.walk();
     parallaxComponent.parallax!.baseVelocity = Vector2(walkSpeed * 0.1, 0);
     ground.startScrolling(walkSpeed);
+
+    if (streak == 5 || streak == 10 || streak == 25) {
+      AudioManager.instance.playStreak();
+    } else {
+      AudioManager.instance.playCorrect();
+    }
+    _stepTimer = _stepInterval; // triggers first step immediately in update
+
     final msg = pickCorrectMessage(streak, answer);
     if (msg != null) speechBubble.show(msg);
   }
 
   void wrongAnswer() {
     _idleTimer = 0;
+    AudioManager.instance.playWrong();
     final msg = pickWrongMessage();
     if (msg != null) speechBubble.show(msg);
   }
 
   void _stopWalking() {
     _isWalking = false;
+    _stepTimer = 0;
     player.idle();
     parallaxComponent.parallax!.baseVelocity = Vector2.zero();
     ground.stopScrolling();
@@ -89,6 +104,11 @@ class LexawayGame extends FlameGame {
     super.update(dt);
     if (_isWalking) {
       _walkProgress += walkSpeed * dt;
+      _stepTimer += dt;
+      if (_stepTimer >= _stepInterval) {
+        _stepTimer -= _stepInterval;
+        AudioManager.instance.playFootstep();
+      }
       if (_walkProgress >= walkTarget) {
         _stopWalking();
       }
