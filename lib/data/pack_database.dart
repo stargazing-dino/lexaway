@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -10,18 +9,12 @@ class PackDatabase {
   Database? _db;
 
   Future<void> open(String lang) async {
+    await _db?.close();
     final dir = await getApplicationDocumentsDirectory();
-    final packsDir = '${dir.path}/packs';
-    final dbPath = '$packsDir/$lang.db';
+    final dbPath = '${dir.path}/packs/$lang.db';
 
-    // Copy from assets on first launch (or if missing)
     if (!File(dbPath).existsSync()) {
-      await Directory(packsDir).create(recursive: true);
-      final ByteData data = await rootBundle.load('assets/packs/$lang.db');
-      await File(dbPath).writeAsBytes(
-        data.buffer.asUint8List(),
-        flush: true,
-      );
+      throw StateError('Pack "$lang" not downloaded — use PackManager first');
     }
 
     _db = await openDatabase(dbPath, readOnly: true);

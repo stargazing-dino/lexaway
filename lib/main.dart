@@ -6,8 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'data/pack_database.dart';
+import 'data/pack_manager.dart';
 import 'game/lexaway_game.dart';
 import 'models/question.dart';
+import 'screens/pack_manager_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,19 +28,46 @@ class LexawayApp extends StatefulWidget {
 class _LexawayAppState extends State<LexawayApp> {
   final _game = LexawayGame();
   final _db = PackDatabase();
+  final _pm = PackManager();
   List<Question>? _questions;
+  bool _needsPack = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPack();
+    _init();
   }
 
-  Future<void> _loadPack() async {
-    await _db.open('fra');
-    final qs = await _db.loadQuestions(limit: 200);
-    setState(() => _questions = qs);
+  Future<void> _init() async {
+    final local = await _pm.getLocalPacks();
+    if (local.isEmpty) {
+      setState(() => _needsPack = true);
+      return;
+    }
+    final lang = await _pm.lastUsed ?? local.keys.first;
+    await _loadPack(lang);
   }
+
+  Future<void> _loadPack(String lang) async {
+    setState(() => _questions = null);
+    await _db.open(lang);
+    final qs = await _db.loadQuestions(limit: 200);
+    await _pm.setLastUsed(lang);
+    setState(() {
+      _questions = qs;
+      _needsPack = false;
+    });
+  }
+
+  Future<void> _openPackManager() async {
+    final lang = await Navigator.push<String>(
+      _navKey.currentContext!,
+      MaterialPageRoute(builder: (_) => const PackManagerScreen()),
+    );
+    if (lang != null) await _loadPack(lang);
+  }
+
+  final _navKey = GlobalKey<NavigatorState>();
 
   @override
   void dispose() {
@@ -49,47 +78,65 @@ class _LexawayAppState extends State<LexawayApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         textTheme: GoogleFonts.pixelifySansTextTheme(),
       ),
-      home: Scaffold(
-        body: _questions == null
-            ? const Center(child: CircularProgressIndicator())
-            : Stack(
-                children: [
-                  GameWidget(game: _game),
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    child: _StreakBar(),
-                  ),
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: QuestionPanel(
-                      game: _game,
-                      questions: _questions!,
+      home: _needsPack
+          ? PackManagerScreen(onPackSelected: _loadPack)
+          : Scaffold(
+              body: _questions == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : Stack(
+                      children: [
+                        GameWidget(game: _game),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                          child: _StreakBar(onLanguageTap: _openPackManager),
+                        ),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: QuestionPanel(
+                            game: _game,
+                            questions: _questions!,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-      ),
+            ),
     );
   }
 }
 
 class _StreakBar extends StatelessWidget {
+  final VoidCallback onLanguageTap;
+  const _StreakBar({required this.onLanguageTap});
+
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
     return Padding(
-      padding: EdgeInsets.only(top: topPadding + 8, right: 16),
+      padding: EdgeInsets.only(top: topPadding + 8, left: 12, right: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          // Language switch button
+          GestureDetector(
+            onTap: onLanguageTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.language, color: Colors.white70, size: 20),
+            ),
+          ),
+          const Spacer(),
           ValueListenableBuilder<int>(
             valueListenable: _streakNotifier,
             builder: (_, streak, __) {
