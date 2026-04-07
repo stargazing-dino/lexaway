@@ -5,6 +5,8 @@ import 'package:hive_ce/hive_ce.dart';
 
 import 'data/pack_database.dart';
 import 'data/pack_manager.dart';
+import 'data/tts_manager.dart';
+import 'data/tts_service.dart';
 import 'models/question.dart';
 
 // Bootstrap
@@ -86,24 +88,71 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
     return ref.read(packManagerProvider).getLocalPacks();
   }
 
-  Future<void> download(String lang) async {
+  Future<void> download(String lang, {required bool includeVoice}) async {
     final pm = ref.read(packManagerProvider);
-    try {
-      await pm.downloadPack(
-        lang,
-        onProgress: (p) {
-          ref.read(downloadProgressProvider(lang).notifier).state = p;
-        },
-      );
-    } finally {
-      ref.read(downloadProgressProvider(lang).notifier).state = null;
-    }
+    final tm = ref.read(ttsManagerProvider);
+
+    final packFuture = () async {
+      try {
+        await pm.downloadPack(
+          lang,
+          onProgress: (p) {
+            ref.read(downloadProgressProvider(lang).notifier).state = p;
+          },
+        );
+      } finally {
+        ref.read(downloadProgressProvider(lang).notifier).state = null;
+      }
+    }();
+
+    final voiceFuture = (includeVoice && TtsManager.isSupported(lang))
+        ? () async {
+            try {
+              await tm.downloadModel(
+                lang,
+                onProgress: (p) {
+                  ref.read(voiceDownloadProgressProvider(lang).notifier).state =
+                      p;
+                },
+              );
+            } finally {
+              ref.read(voiceDownloadProgressProvider(lang).notifier).state =
+                  null;
+            }
+          }()
+        : Future<void>.value();
+
+    await Future.wait([packFuture, voiceFuture]);
     state = AsyncData(pm.getLocalPacks());
   }
 
+  /// Download just the voice model for an already-installed pack.
+  Future<void> downloadVoice(String lang) async {
+    final tm = ref.read(ttsManagerProvider);
+    if (!TtsManager.isSupported(lang) || tm.isModelDownloaded(lang)) return;
+
+    try {
+      await tm.downloadModel(
+        lang,
+        onProgress: (p) {
+          ref.read(voiceDownloadProgressProvider(lang).notifier).state = p;
+        },
+      );
+    } finally {
+      ref.read(voiceDownloadProgressProvider(lang).notifier).state = null;
+    }
+    // Trigger rebuild so the UI picks up the new voice state
+    ref.invalidateSelf();
+  }
+
   Future<void> delete(String lang) async {
+    // Release TTS engine before deleting files to avoid native crash
+    ref.read(ttsServiceProvider).releaseEngine();
+
     final pm = ref.read(packManagerProvider);
+    final tm = ref.read(ttsManagerProvider);
     await pm.deletePack(lang);
+    await tm.deleteModel(lang);
     state = AsyncData(pm.getLocalPacks());
 
     // If we just deleted the active pack, kick back to pack selection
@@ -119,10 +168,35 @@ final manifestProvider = FutureProvider<Manifest>((ref) {
   return ref.read(packManagerProvider).fetchManifest();
 });
 
-/// Ephemeral download progress, keyed by lang code.
+/// Ephemeral download progress for sentence packs, keyed by lang code.
 final downloadProgressProvider = StateProvider.family<double?, String>(
   (ref, lang) => null,
 );
+
+/// Ephemeral download progress for voice models, keyed by lang code.
+final voiceDownloadProgressProvider = StateProvider.family<double?, String>(
+  (ref, lang) => null,
+);
+
+/// Whether to include voice in the next download, keyed by lang code.
+/// Defaults to true.
+final includeVoiceProvider = StateProvider.family<bool, String>(
+  (ref, lang) => true,
+);
+
+// TTS
+
+/// Singleton TtsManager backed by the Hive box.
+final ttsManagerProvider = Provider<TtsManager>((ref) {
+  return TtsManager(ref.watch(hiveBoxProvider));
+});
+
+/// Singleton TtsService — lazily initialises per language.
+final ttsServiceProvider = Provider<TtsService>((ref) {
+  final service = TtsService();
+  ref.onDispose(() => service.dispose());
+  return service;
+});
 
 // App KV state (Hive-backed)
 

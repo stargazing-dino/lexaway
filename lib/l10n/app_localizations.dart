@@ -157,6 +157,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Who will hatch from it?'**
   String get whoWillHatch;
+
+  /// No description provided for @sentences.
+  ///
+  /// In en, this message translates to:
+  /// **'Sentences'**
+  String get sentences;
+
+  /// No description provided for @voice.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice'**
+  String get voice;
 }
 
 class _AppLocalizationsDelegate

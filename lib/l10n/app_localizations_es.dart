@@ -42,4 +42,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get whoWillHatch => '¿Quién saldrá de él?';
+
+  @override
+  String get sentences => 'Oraciones';
+
+  @override
+  String get voice => 'Voz';
 }

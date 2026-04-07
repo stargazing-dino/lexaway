@@ -19,5 +19,7 @@
   "appLanguage": "App Language",
   "systemDefault": "System default",
   "chooseYourEgg": "Choose your egg!",
-  "whoWillHatch": "Who will hatch from it?"
+  "whoWillHatch": "Who will hatch from it?",
+  "sentences": "Sentences",
+  "voice": "Voice"
 }

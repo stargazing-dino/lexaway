@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/tts_manager.dart';
 import '../game/lexaway_game.dart';
 import '../models/question.dart';
 import '../providers.dart';
@@ -147,19 +148,28 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                         filterQuality: FilterQuality.none,
                       ),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                    child: Stack(
                       children: [
-                        Text(
-                          _current.translation,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6),
-                            fontSize: 14,
-                          ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _current.translation,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildPhrase(),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        _buildPhrase(),
+                        Positioned(
+                          top: -4,
+                          right: -4,
+                          child: _buildSpeakerButton(),
+                        ),
                       ],
                     ),
                   ),
@@ -243,6 +253,40 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _speak() {
+    final ttsService = ref.read(ttsServiceProvider);
+    final ttsManager = ref.read(ttsManagerProvider);
+    final lang = ref.read(activePackProvider.notifier).activeLang;
+    if (lang != null && ttsManager.isModelDownloaded(lang)) {
+      ttsService.speak(_current.phrase, lang: lang, ttsManager: ttsManager);
+    }
+  }
+
+  Widget _buildSpeakerButton() {
+    // Watch the provider state (not .notifier) so we rebuild when pack changes
+    ref.watch(activePackProvider);
+    final lang = ref.read(activePackProvider.notifier).activeLang;
+    if (lang == null || !TtsManager.isSupported(lang)) {
+      return const SizedBox.shrink();
+    }
+    final ttsManager = ref.watch(ttsManagerProvider);
+    if (!ttsManager.isModelDownloaded(lang)) {
+      return const SizedBox.shrink();
+    }
+
+    return GestureDetector(
+      onTap: _speak,
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Icon(
+          Icons.volume_up_rounded,
+          color: Colors.white.withValues(alpha: 0.5),
+          size: 22,
         ),
       ),
     );

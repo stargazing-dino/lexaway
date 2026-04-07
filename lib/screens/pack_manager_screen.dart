@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../data/pack_manager.dart';
+import '../data/tts_manager.dart';
 import '../providers.dart';
 
 class PackManagerScreen extends ConsumerStatefulWidget {
@@ -100,13 +101,29 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
   }
 
   Future<void> _download(String lang) async {
+    final includeVoice = ref.read(includeVoiceProvider(lang));
     try {
-      await ref.read(localPacksProvider.notifier).download(lang);
+      await ref
+          .read(localPacksProvider.notifier)
+          .download(lang, includeVoice: includeVoice);
     } catch (e) {
       if (mounted) {
         _showError(
           AppLocalizations.of(context)!.downloadFailed(e.toString()),
           onRetry: () => _download(lang),
+        );
+      }
+    }
+  }
+
+  Future<void> _downloadVoice(String lang) async {
+    try {
+      await ref.read(localPacksProvider.notifier).downloadVoice(lang);
+    } catch (e) {
+      if (mounted) {
+        _showError(
+          AppLocalizations.of(context)!.downloadFailed(e.toString()),
+          onRetry: () => _downloadVoice(lang),
         );
       }
     }
@@ -178,14 +195,24 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                 itemCount: m.packs.length,
                 itemBuilder: (context, i) {
                   final pack = m.packs[i];
-                  final progress = ref.watch(
-                    downloadProgressProvider(pack.lang),
-                  );
                   return _PackTile(
                     pack: pack,
                     local: local[pack.lang],
-                    progress: progress,
+                    packProgress: ref.watch(
+                      downloadProgressProvider(pack.lang),
+                    ),
+                    voiceProgress: ref.watch(
+                      voiceDownloadProgressProvider(pack.lang),
+                    ),
+                    voiceDownloaded: ref.watch(ttsManagerProvider)
+                        .isModelDownloaded(pack.lang),
+                    includeVoice: ref.watch(includeVoiceProvider(pack.lang)),
+                    onToggleVoice: (value) {
+                      ref.read(includeVoiceProvider(pack.lang).notifier).state =
+                          value;
+                    },
                     onDownload: () => _download(pack.lang),
+                    onDownloadVoice: () => _downloadVoice(pack.lang),
                     onDelete: () => _delete(pack.lang),
                     onSelect: () => _select(pack.lang),
                   );
@@ -202,27 +229,38 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
 class _PackTile extends StatelessWidget {
   final PackInfo pack;
   final LocalPack? local;
-  final double? progress;
+  final double? packProgress;
+  final double? voiceProgress;
+  final bool voiceDownloaded;
+  final bool includeVoice;
+  final ValueChanged<bool> onToggleVoice;
   final VoidCallback onDownload;
+  final VoidCallback onDownloadVoice;
   final VoidCallback onDelete;
   final VoidCallback onSelect;
 
   const _PackTile({
     required this.pack,
     required this.local,
-    required this.progress,
+    required this.packProgress,
+    required this.voiceProgress,
+    required this.voiceDownloaded,
+    required this.includeVoice,
+    required this.onToggleVoice,
     required this.onDownload,
+    required this.onDownloadVoice,
     required this.onDelete,
     required this.onSelect,
   });
 
   bool get _isDownloaded => local != null;
-  bool get _isDownloading => progress != null;
+  bool get _hasVoiceSupport => TtsManager.isSupported(pack.lang);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Colors.brown.shade800.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(14),
@@ -233,89 +271,67 @@ class _PackTile extends StatelessWidget {
           width: 2,
         ),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: _isDownloaded ? onSelect : null,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.brown.shade700,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        pack.lang.toUpperCase(),
-                        style: GoogleFonts.pixelifySans(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            pack.name,
-                            style: GoogleFonts.pixelifySans(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (_isDownloaded)
-                            Text(
-                              AppLocalizations.of(context)!.sizeMB(
-                                (local!.sizeBytes / 1024 / 1024)
-                                    .toStringAsFixed(1),
-                              ),
-                              style: const TextStyle(
-                                color: Colors.white38,
-                                fontSize: 12,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    _buildAction(),
-                  ],
+      child: Column(
+        children: [
+          // -- Sentences row (primary, always present) --
+          _ContentRow(
+            icon: Icons.text_snippet_outlined,
+            label: AppLocalizations.of(context)!.sentences,
+            sizeText: _isDownloaded ? _formatMB(local!.sizeBytes) : null,
+            downloaded: _isDownloaded,
+            progress: packProgress,
+            onTap: _isDownloaded ? onSelect : onDownload,
+            trailing: _buildSentencesTrailing(),
+            // Top row gets the language badge
+            leading: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.brown.shade700,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                pack.lang.toUpperCase(),
+                style: GoogleFonts.pixelifySans(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
-                if (_isDownloading) ...[
-                  const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: Colors.brown.shade700,
-                      valueColor: AlwaysStoppedAnimation(Colors.green.shade400),
-                      minHeight: 6,
-                    ),
-                  ),
-                ],
-              ],
+              ),
             ),
+            title: pack.name,
           ),
-        ),
+          // -- Voice row (optional, only if TTS is supported) --
+          if (_hasVoiceSupport) ...[
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: Colors.brown.shade700.withValues(alpha: 0.6),
+            ),
+            _ContentRow(
+              icon: Icons.volume_up_rounded,
+              label: AppLocalizations.of(context)!.voice,
+              sizeText:
+                  '~${ttsModelRegistry[pack.lang]!.approximateSizeMB} MB',
+              downloaded: voiceDownloaded,
+              progress: voiceProgress,
+              onTap: !_isDownloaded && !voiceDownloaded
+                  ? () => onToggleVoice(!includeVoice)
+                  : null,
+              trailing: _buildVoiceTrailing(),
+            ),
+          ],
+        ],
       ),
     );
   }
 
-  Widget _buildAction() {
-    if (_isDownloading) {
+  Widget _buildSentencesTrailing() {
+    if (packProgress != null) {
       return const SizedBox(
-        width: 24,
-        height: 24,
+        width: 22,
+        height: 22,
         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
       );
     }
@@ -323,22 +339,195 @@ class _PackTile extends StatelessWidget {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_circle, color: Colors.green, size: 22),
-          const SizedBox(width: 8),
+          const Icon(Icons.check_circle, color: Colors.green, size: 20),
+          const SizedBox(width: 4),
           IconButton(
             icon: Icon(
               Icons.delete_outline,
               color: Colors.white.withValues(alpha: 0.4),
-              size: 20,
+              size: 18,
             ),
+            visualDensity: VisualDensity.compact,
             onPressed: onDelete,
           ),
         ],
       );
     }
     return IconButton(
-      icon: const Icon(Icons.download_rounded, color: Colors.white70, size: 28),
+      icon: const Icon(Icons.download_rounded, color: Colors.white70, size: 24),
+      visualDensity: VisualDensity.compact,
       onPressed: onDownload,
+    );
+  }
+
+  Widget _buildVoiceTrailing() {
+    if (voiceProgress != null) {
+      return Padding(
+        padding: const EdgeInsets.all(8),
+        child: SizedBox(
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            value: voiceProgress,
+            color: Colors.white54,
+            backgroundColor: Colors.brown.shade700,
+          ),
+        ),
+      );
+    }
+    if (voiceDownloaded) {
+      return const Padding(
+        padding: EdgeInsets.all(8),
+        child: Icon(Icons.check_circle, color: Colors.green, size: 20),
+      );
+    }
+    // Sentences installed but voice isn't — show download button
+    if (_isDownloaded) {
+      return IconButton(
+        icon: Icon(
+          Icons.download_rounded,
+          color: Colors.white.withValues(alpha: 0.5),
+          size: 22,
+        ),
+        visualDensity: VisualDensity.compact,
+        onPressed: onDownloadVoice,
+      );
+    }
+    // Nothing installed yet — toggle inclusion for bundled download
+    return GestureDetector(
+      onTap: () => onToggleVoice(!includeVoice),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: includeVoice
+                  ? Colors.amber.shade600
+                  : Colors.white.withValues(alpha: 0.25),
+              width: 2,
+            ),
+            color: includeVoice ? Colors.amber.shade600 : Colors.transparent,
+          ),
+          child: includeVoice
+              ? const Icon(Icons.check, size: 14, color: Colors.white)
+              : null,
+        ),
+      ),
+    );
+  }
+
+  String _formatMB(int bytes) =>
+      '${(bytes / 1024 / 1024).toStringAsFixed(1)} MB';
+}
+
+/// A single content-type row within a pack card.
+class _ContentRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String? sizeText;
+  final bool downloaded;
+  final double? progress;
+  final VoidCallback? onTap;
+  final Widget trailing;
+  final Widget? leading;
+  final String? title;
+
+  const _ContentRow({
+    required this.icon,
+    required this.label,
+    required this.sizeText,
+    required this.downloaded,
+    required this.progress,
+    required this.onTap,
+    required this.trailing,
+    this.leading,
+    this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  if (leading != null) ...[
+                    leading!,
+                    const SizedBox(width: 14),
+                  ] else
+                    // Indent to align with rows that have a leading badge
+                    const SizedBox(width: 58),
+                  Icon(icon, color: Colors.white38, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (title != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 2),
+                            child: Text(
+                              title!,
+                              style: GoogleFonts.pixelifySans(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        Row(
+                          children: [
+                            Text(
+                              label,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.5),
+                                fontSize: 13,
+                              ),
+                            ),
+                            if (sizeText != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                sizeText!,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.25),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  trailing,
+                ],
+              ),
+              // Progress bar
+              if (progress != null) ...[
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(3),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.brown.shade700,
+                    valueColor: AlwaysStoppedAnimation(Colors.amber.shade600),
+                    minHeight: 4,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

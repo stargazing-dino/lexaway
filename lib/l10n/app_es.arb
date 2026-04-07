@@ -9,5 +9,7 @@
   "appLanguage": "Idioma de la app",
   "systemDefault": "Predeterminado del sistema",
   "chooseYourEgg": "\u00a1Elige tu huevo!",
-  "whoWillHatch": "\u00bfQui\u00e9n saldr\u00e1 de \u00e9l?"
+  "whoWillHatch": "\u00bfQui\u00e9n saldr\u00e1 de \u00e9l?",
+  "sentences": "Oraciones",
+  "voice": "Voz"
 }
