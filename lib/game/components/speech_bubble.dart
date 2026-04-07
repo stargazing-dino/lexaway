@@ -98,7 +98,7 @@ class SpeechBubble extends PositionComponent
     final player = game.player;
     position = Vector2(
       player.position.x + player.size.x * 0.3,
-      player.position.y - size.y - 4,
+      player.position.y - size.y + player.size.y * 0.1,
     );
 
     if (!_visible) return;

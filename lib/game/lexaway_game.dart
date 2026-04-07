@@ -60,7 +60,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
   @override
   Future<void> onLoad() async {
-    final parallaxHeight = size.y * groundLevel + 16 * pixelScale;
+    final parallaxHeight = size.y * groundLevel + 16 * pixelScale - 40;
     parallaxComponent = await loadParallaxComponent(
       [
         ParallaxImageData('parallax/sky.png'),

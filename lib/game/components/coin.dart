@@ -47,7 +47,7 @@ class Coin extends SpriteAnimationComponent
 
     animation = sheet.createAnimation(row: 0, to: frames, stepTime: stepTime);
 
-    final scale = LexawayGame.pixelScale;
+    final scale = LexawayGame.pixelScale * 0.5;
     size = Vector2.all(16 * scale);
     paint = Paint()..filterQuality = FilterQuality.none;
 

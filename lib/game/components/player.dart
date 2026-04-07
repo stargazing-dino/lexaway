@@ -31,7 +31,7 @@ enum DinoAnim {
 class Player extends SpriteAnimationGroupComponent<DinoAnim>
     with HasGameReference<LexawayGame>, CollisionCallbacks {
   static const double _spriteSize = 24;
-  static const double _scale = LexawayGame.pixelScale;
+  static const double _scale = LexawayGame.pixelScale * 1.1;
 
   final String spritePath;
 
