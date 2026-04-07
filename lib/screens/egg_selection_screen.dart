@@ -143,36 +143,40 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                 onChanged: _onGenderChanged,
               ),
 
-            const Spacer(),
-
-            // Egg row
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            // Egg area – eggs drift to centre when one is selected
+            Expanded(
+              child: Stack(
                 children: List.generate(_eggs.length, (i) {
                   final isSelected = _selected == i;
                   final shouldFade = _selected != null && !isSelected;
 
-                  return AnimatedBuilder(
-                    animation: _fadeAnimation,
-                    builder: (context, child) {
-                      final opacity = shouldFade
-                          ? 1.0 - _fadeAnimation.value
-                          : 1.0;
-                      return Opacity(
-                        opacity: opacity,
-                        child: child,
-                      );
-                    },
-                    child: GestureDetector(
-                      onTap: _hatching ? null : () => _onEggTapped(i),
-                      child: SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: GameWidget(
-                          game: _games[i]!,
-                          backgroundBuilder: (_) => const SizedBox.shrink(),
+                  // Spread eggs horizontally; selected one slides to centre
+                  final dx = (i - (_eggs.length - 1) / 2) * 0.6;
+                  final alignment = _hatching && isSelected
+                      ? Alignment.center
+                      : Alignment(dx, 0);
+
+                  return AnimatedAlign(
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeInOut,
+                    alignment: alignment,
+                    child: AnimatedBuilder(
+                      animation: _fadeAnimation,
+                      builder: (context, child) {
+                        final opacity =
+                            shouldFade ? 1.0 - _fadeAnimation.value : 1.0;
+                        return Opacity(opacity: opacity, child: child);
+                      },
+                      child: GestureDetector(
+                        onTap: _hatching ? null : () => _onEggTapped(i),
+                        child: SizedBox(
+                          width: 96,
+                          height: 96,
+                          child: GameWidget(
+                            game: _games[i]!,
+                            backgroundBuilder: (_) =>
+                                const SizedBox.shrink(),
+                          ),
                         ),
                       ),
                     ),
@@ -180,8 +184,6 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                 }),
               ),
             ),
-
-            const Spacer(flex: 2),
           ],
         ),
       ),
