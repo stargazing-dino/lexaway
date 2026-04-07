@@ -1,0 +1,43 @@
+{
+  "hive_schema_version": 1,
+  "ui_locale": "es",
+  "vol_master": 0.8,
+  "vol_sfx": 0.5,
+  "vol_tts": 1.0,
+  "haptics": true,
+  "gender": "female",
+  "streak": 7,
+  "best_streak": 12,
+  "coins": 340,
+  "steps": 1500,
+  "character_fra": "female/doux",
+  "last_used": "fra",
+  "packs": {
+    "fra": {
+      "schema_version": 1,
+      "built_at": "2025-01-15T00:00:00Z",
+      "size_bytes": 204800
+    }
+  },
+  "tts_espeak_ng_data": true,
+  "tts_models": {
+    "fra": {
+      "archive_name": "vits-piper-fr_FR-siwis-medium.tar.bz2",
+      "downloaded_at": "2025-01-15T12:00:00Z"
+    }
+  },
+  "manifest_cache": "{\"schema_version\":1,\"packs\":{\"fra\":{\"size_bytes\":204800}}}",
+  "world": {
+    "_version": 1,
+    "ground": {
+      "offset": 1234.5
+    },
+    "coin_manager": {
+      "next_spawn_at": 2000.0,
+      "coins": [
+        { "t": 0, "x": 1500.0 },
+        { "t": 1, "x": 1800.0 }
+      ]
+    }
+  }
+}

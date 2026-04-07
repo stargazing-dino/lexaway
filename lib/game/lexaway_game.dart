@@ -17,6 +17,7 @@ import 'persistable.dart';
 import 'movement_controller.dart';
 
 class LexawayGame extends FlameGame with HasCollisionDetection {
+  static const int worldStateVersion = 1;
   static const double pixelScale = 4.0;
   static const double groundLevel = 0.35;
 
@@ -133,22 +134,40 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     movementController.wrongAnswer();
   }
 
+  /// True when saved world data is from a newer app version we can't read.
+  /// Prevents [saveWorldState] from overwriting it with stale v1 data.
+  bool _worldReadOnly = false;
+
   void _restoreWorldState() {
-    final saved = hiveBox?.get('world') as Map?;
-    if (saved == null) return;
-    for (final p in _persistables) {
-      final data = saved[p.saveKey];
-      if (data != null) {
-        p.restoreState(Map<String, dynamic>.from(data as Map));
+    try {
+      final saved = hiveBox?.get('world') as Map?;
+      if (saved == null) return;
+
+      final version = saved['_version'] as int? ?? 1;
+      if (version > worldStateVersion) {
+        _worldReadOnly = true;
+        return;
       }
+
+      // --- future migrations go here ---
+      // if (version < 2) { ... }
+
+      for (final p in _persistables) {
+        final data = saved[p.saveKey];
+        if (data != null) {
+          p.restoreState(Map<String, dynamic>.from(data as Map));
+        }
+      }
+    } catch (_) {
+      // Corrupt data — start fresh rather than crash.
     }
   }
 
   /// Save current world state to Hive. Called after walk completion,
   /// coin collection, and on app lifecycle events.
   void saveWorldState() {
-    if (hiveBox == null) return;
-    final state = <String, dynamic>{};
+    if (hiveBox == null || _worldReadOnly) return;
+    final state = <String, dynamic>{'_version': worldStateVersion};
     for (final p in _persistables) {
       state[p.saveKey] = p.saveState();
     }

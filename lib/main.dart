@@ -9,6 +9,20 @@ import 'package:path_provider/path_provider.dart';
 import 'providers.dart';
 import 'router.dart';
 
+/// Current Hive box schema version. Bump when the shape of stored data changes
+/// and add a migration case in _migrateHive.
+const hiveSchemaVersion = 1;
+
+void _migrateHive(Box box) {
+  final old = box.get('hive_schema_version', defaultValue: 0) as int;
+  if (old >= hiveSchemaVersion) return;
+
+  // --- future migrations go here ---
+  // if (old < 2) { ... }
+
+  box.put('hive_schema_version', hiveSchemaVersion);
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -17,6 +31,7 @@ void main() async {
   final dir = await getApplicationDocumentsDirectory();
   Hive.init(dir.path);
   final box = await Hive.openBox('app');
+  _migrateHive(box);
 
   runApp(
     ProviderScope(
