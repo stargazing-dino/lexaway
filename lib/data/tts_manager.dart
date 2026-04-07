@@ -4,7 +4,6 @@ import 'dart:isolate';
 
 import 'package:archive/archive.dart';
 import 'package:hive_ce/hive_ce.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'download_helper.dart';
 import 'hive_keys.dart';
@@ -63,7 +62,7 @@ const ttsModelRegistry = <String, TtsModelInfo>{
 
 class TtsManager {
   final Box _box;
-  String? _cachedModelsDir;
+  final String modelsDir;
 
   /// Guards against concurrent downloads of the same resource.
   final _activeDownloads = <String, Future<void>>{};
@@ -71,21 +70,11 @@ class TtsManager {
   /// Guards the single shared espeak-ng-data download.
   Completer<void>? _espeakDownload;
 
-  TtsManager(this._box);
-
-  Future<String> get _modelsDir async {
-    if (_cachedModelsDir != null) return _cachedModelsDir!;
-    final dir = await getApplicationSupportDirectory();
-    _cachedModelsDir = '${dir.path}/tts_models';
-    return _cachedModelsDir!;
-  }
+  TtsManager(this._box, {required this.modelsDir});
 
   // -- espeak-ng-data (shared by all Piper models) --
 
-  Future<String> get espeakDataPath async {
-    final dir = await _modelsDir;
-    return '$dir/espeak-ng-data';
-  }
+  String get espeakDataPath => '$modelsDir/espeak-ng-data';
 
   bool get isEspeakDataDownloaded {
     return _box.get(HiveKeys.ttsEspeakNgData, defaultValue: false) as bool;
@@ -101,7 +90,7 @@ class TtsManager {
     _espeakDownload = Completer<void>();
 
     try {
-      final dir = await _modelsDir;
+      final dir = modelsDir;
       await Directory(dir).create(recursive: true);
 
       final tmpPath = '$dir/espeak-ng-data.tar.bz2.tmp';
@@ -128,12 +117,11 @@ class TtsManager {
 
   /// Returns the directory containing the model files for [lang],
   /// or null if not downloaded.
-  Future<String?> modelDir(String lang) async {
+  String? modelDir(String lang) {
     if (!isModelDownloaded(lang)) return null;
     final info = ttsModelRegistry[lang];
     if (info == null) return null;
-    final dir = await _modelsDir;
-    return '$dir/${info.archiveName}';
+    return '$modelsDir/${info.archiveName}';
   }
 
   Future<void> downloadModel(
@@ -166,7 +154,7 @@ class TtsManager {
     // Ensure espeak-ng-data is present first
     await downloadEspeakData();
 
-    final dir = await _modelsDir;
+    final dir = modelsDir;
     await Directory(dir).create(recursive: true);
 
     final tmpPath = '$dir/${info.archiveName}.tar.bz2.tmp';
@@ -195,7 +183,7 @@ class TtsManager {
     final info = ttsModelRegistry[lang];
     if (info == null) return;
 
-    final dir = await _modelsDir;
+    final dir = modelsDir;
     final modelDirectory = Directory('$dir/${info.archiveName}');
     if (await modelDirectory.exists()) {
       await modelDirectory.delete(recursive: true);

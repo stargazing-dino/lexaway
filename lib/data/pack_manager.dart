@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:hive_ce/hive_ce.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 
 import 'download_helper.dart';
 import 'hive_keys.dart';
@@ -69,13 +68,9 @@ class Manifest {
 
 class PackManager {
   final Box _box;
+  final String packsDir;
 
-  PackManager(this._box);
-
-  Future<String> get _packsDir async {
-    final dir = await getApplicationDocumentsDirectory();
-    return '${dir.path}/packs';
-  }
+  PackManager(this._box, {required this.packsDir});
 
   // -- Manifest --
 
@@ -110,7 +105,7 @@ class PackManager {
     String lang, {
     void Function(double)? onProgress,
   }) async {
-    final dir = await _packsDir;
+    final dir = packsDir;
     await Directory(dir).create(recursive: true);
 
     final tmpPath = '$dir/$lang.db.tmp';
@@ -128,7 +123,7 @@ class PackManager {
   // -- Delete --
 
   Future<void> deletePack(String lang) async {
-    final dir = await _packsDir;
+    final dir = packsDir;
     final file = File('$dir/$lang.db');
     if (await file.exists()) await file.delete();
 

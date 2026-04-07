@@ -29,14 +29,22 @@ void main() async {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  final dir = await getApplicationDocumentsDirectory();
-  Hive.init(dir.path);
+  final docsDir = await getApplicationDocumentsDirectory();
+  final supportDir = await getApplicationSupportDirectory();
+  final tmpDir = await getTemporaryDirectory();
+
+  Hive.init(docsDir.path);
   final box = await Hive.openBox('app');
   _migrateHive(box);
 
   runApp(
     ProviderScope(
-      overrides: [hiveBoxProvider.overrideWithValue(box)],
+      overrides: [
+        hiveBoxProvider.overrideWithValue(box),
+        packsDirProvider.overrideWithValue('${docsDir.path}/packs'),
+        modelsDirProvider.overrideWithValue('${supportDir.path}/tts_models'),
+        tmpDirProvider.overrideWithValue(tmpDir.path),
+      ],
       child: const LexawayApp(),
     ),
   );

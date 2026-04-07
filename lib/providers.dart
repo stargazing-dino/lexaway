@@ -17,6 +17,17 @@ final hiveBoxProvider = Provider<Box>((ref) {
   throw UnimplementedError('hiveBoxProvider must be overridden');
 });
 
+/// Pre-resolved directory paths, overridden in ProviderScope.
+final packsDirProvider = Provider<String>((ref) {
+  throw UnimplementedError('packsDirProvider must be overridden');
+});
+final modelsDirProvider = Provider<String>((ref) {
+  throw UnimplementedError('modelsDirProvider must be overridden');
+});
+final tmpDirProvider = Provider<String>((ref) {
+  throw UnimplementedError('tmpDirProvider must be overridden');
+});
+
 // Locale
 
 final localeProvider = NotifierProvider<LocaleNotifier, Locale?>(
@@ -144,7 +155,7 @@ class GenderNotifier extends Notifier<String> {
 
 /// Singleton PackManager backed by the Hive box.
 final packManagerProvider = Provider<PackManager>((ref) {
-  return PackManager(ref.watch(hiveBoxProvider));
+  return PackManager(ref.watch(hiveBoxProvider), packsDir: ref.watch(packsDirProvider));
 });
 
 /// Local packs on disk. Invalidate after download/delete.
@@ -259,12 +270,12 @@ final includeVoiceProvider = StateProvider.family<bool, String>(
 
 /// Singleton TtsManager backed by the Hive box.
 final ttsManagerProvider = Provider<TtsManager>((ref) {
-  return TtsManager(ref.watch(hiveBoxProvider));
+  return TtsManager(ref.watch(hiveBoxProvider), modelsDir: ref.watch(modelsDirProvider));
 });
 
 /// Singleton TtsService — lazily initialises per language.
 final ttsServiceProvider = Provider<TtsService>((ref) {
-  final service = TtsService();
+  final service = TtsService(tmpDir: ref.watch(tmpDirProvider));
   ref.onDispose(() => service.dispose());
   return service;
 });
@@ -351,12 +362,14 @@ final activePackProvider =
     );
 
 class ActivePackNotifier extends AsyncNotifier<List<Question>> {
-  final _db = PackDatabase();
+  late final PackDatabase _db;
   String? _activeLang;
 
   @override
   Future<List<Question>> build() async {
-    ref.onDispose(() => _db.close());
+    final db = PackDatabase(packsDir: ref.read(packsDirProvider));
+    _db = db;
+    ref.onDispose(() => db.close());
 
     final pm = ref.read(packManagerProvider);
     final local = pm.getLocalPacks();

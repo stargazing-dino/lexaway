@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa;
 
 import 'tts_manager.dart';
@@ -11,9 +10,12 @@ import 'tts_manager.dart';
 class TtsService {
   static bool _bindingsInitialized = false;
 
+  final String tmpDir;
   sherpa.OfflineTts? _tts;
   String? _currentLang;
   final _player = AudioPlayer();
+
+  TtsService({required this.tmpDir});
 
   /// Monotonically increasing ID — each speak() call gets a unique one.
   /// If a newer call arrives, older ones are discarded.
@@ -56,9 +58,8 @@ class TtsService {
       if (audio.samples.isEmpty) return;
       if (myId != _generationId) return; // superseded during generation
 
-      final tmpDir = await getTemporaryDirectory();
       // Unique filename per generation to avoid WAV file races
-      final wavPath = '${tmpDir.path}/tts_${myId % 2}.wav';
+      final wavPath = '$tmpDir/tts_${myId % 2}.wav';
       _writeWav(wavPath, audio.samples, audio.sampleRate);
 
       if (myId != _generationId) return; // superseded during file write
@@ -107,10 +108,10 @@ class TtsService {
     final info = ttsModelRegistry[lang];
     if (info == null) return;
 
-    final dir = await ttsManager.modelDir(lang);
+    final dir = ttsManager.modelDir(lang);
     if (dir == null) return;
 
-    final espeakDir = await ttsManager.espeakDataPath;
+    final espeakDir = ttsManager.espeakDataPath;
     final modelPath = '$dir/${info.onnxFile}';
     final tokensPath = '$dir/tokens.txt';
 

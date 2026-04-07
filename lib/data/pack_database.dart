@@ -1,17 +1,18 @@
 import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
 import 'package:sqlite_async/sqlite_async.dart';
 
 import '../models/question.dart';
 
 class PackDatabase {
+  final String packsDir;
   SqliteDatabase? _db;
+
+  PackDatabase({required this.packsDir});
 
   Future<void> open(String lang) async {
     await close();
-    final dir = await getApplicationDocumentsDirectory();
-    final dbPath = '${dir.path}/packs/$lang.db';
+    final dbPath = '$packsDir/$lang.db';
 
     if (!File(dbPath).existsSync()) {
       throw StateError('Pack "$lang" not downloaded — use PackManager first');
