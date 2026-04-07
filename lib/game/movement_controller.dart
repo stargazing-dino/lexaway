@@ -51,6 +51,7 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     if (shouldRun && !_isRunning) {
       _isRunning = true;
       game.player.run();
+      game.windLines.start();
       final speed = LexawayGame.walkSpeed * _runSpeedMultiplier;
       game.parallaxComponent.parallax!.baseVelocity =
           Vector2(speed * 0.1, 0);
@@ -90,6 +91,7 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     if (_isRunning && _isWalking) {
       _isRunning = false;
       game.player.walk();
+      game.windLines.stop();
       game.parallaxComponent.parallax!.baseVelocity =
           Vector2(LexawayGame.walkSpeed * 0.1, 0);
       game.ground.startScrolling(LexawayGame.walkSpeed);
@@ -164,6 +166,7 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     _fidgetTimer = 0;
     _nextFidgetAt = _rollFidgetDelay();
     game.player.idle();
+    game.windLines.stop();
     game.parallaxComponent.parallax!.baseVelocity = Vector2.zero();
     game.ground.stopScrolling();
     game.saveWorldState();

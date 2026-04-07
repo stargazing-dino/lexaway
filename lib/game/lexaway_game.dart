@@ -11,6 +11,7 @@ import 'components/ground.dart';
 import 'components/player.dart';
 import 'components/speech_bubble.dart';
 import 'components/speech_messages.dart';
+import 'components/wind_lines.dart';
 import 'persistable.dart';
 import 'movement_controller.dart';
 
@@ -45,6 +46,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   late ParallaxComponent parallaxComponent;
   late SpeechBubble speechBubble;
   late CoinManager coinManager;
+  late WindLines windLines;
   late MovementController movementController;
 
   /// Components with persistent state, restored/saved in order.
@@ -93,6 +95,9 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
     // Little dino scans the horizon when first dropped into the world
     player.play(DinoAnim.scan);
+
+    windLines = WindLines()..priority = 2;
+    add(windLines);
 
     speechBubble = SpeechBubble()..priority = 3;
     add(speechBubble);
