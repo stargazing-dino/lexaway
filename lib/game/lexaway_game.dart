@@ -12,7 +12,7 @@ import 'components/player.dart';
 import 'components/speech_bubble.dart';
 import 'components/speech_messages.dart';
 import 'persistable.dart';
-import 'walk_controller.dart';
+import 'movement_controller.dart';
 
 class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double pixelScale = 4.0;
@@ -45,7 +45,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   late ParallaxComponent parallaxComponent;
   late SpeechBubble speechBubble;
   late CoinManager coinManager;
-  late WalkController walkController;
+  late MovementController movementController;
 
   /// Components with persistent state, restored/saved in order.
   final List<Persistable> _persistables = [];
@@ -97,9 +97,9 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     speechBubble = SpeechBubble()..priority = 3;
     add(speechBubble);
 
-    walkController = WalkController()
+    movementController = MovementController()
       ..onStepTaken = (steps) => onStepTaken?.call(steps);
-    add(walkController);
+    add(movementController);
 
     await AudioManager.instance.preload();
     await SpeechMessages.load('en');
@@ -116,11 +116,11 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   }
 
   void correctAnswer({required int streak, required String answer}) {
-    walkController.correctAnswer(streak: streak, answer: answer);
+    movementController.correctAnswer(streak: streak, answer: answer);
   }
 
   void wrongAnswer() {
-    walkController.wrongAnswer();
+    movementController.wrongAnswer();
   }
 
   void _restoreWorldState() {

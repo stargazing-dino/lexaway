@@ -12,9 +12,10 @@ import 'lexaway_game.dart';
 ///
 /// Walks now stack — answering while already walking extends the
 /// journey instead of being ignored.
-class WalkController extends Component with HasGameReference<LexawayGame> {
+class MovementController extends Component with HasGameReference<LexawayGame> {
   double _walkRemaining = 0;
   bool _isWalking = false;
+  bool _isRunning = false;
   double _stepTimer = 0;
   double _idleTimer = 0;
   double _fidgetTimer = 0;
@@ -22,6 +23,9 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
 
   static const double _stepInterval = 0.3;
   static const double _idleTimeout = 60.0;
+  static const int _runStreakThreshold = 3;
+  static const double _runSpeedMultiplier = 1.8;
+  static const double _runDistanceMultiplier = 1.5;
   // Random fidget every 8–20 seconds while idle
   static const double _fidgetMin = 8.0;
   static const double _fidgetMax = 20.0;
@@ -35,17 +39,33 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
   Function(int steps)? onStepTaken;
 
   void correctAnswer({required int streak, required String answer}) {
-    _walkRemaining += LexawayGame.walkTarget;
+    final shouldRun = streak >= _runStreakThreshold;
+    final distance = shouldRun
+        ? LexawayGame.walkTarget * _runDistanceMultiplier
+        : LexawayGame.walkTarget;
+    _walkRemaining += distance;
     _idleTimer = 0;
     _fidgetTimer = 0;
+
+    // Upgrade to run mid-walk if streak crosses the threshold
+    if (shouldRun && !_isRunning) {
+      _isRunning = true;
+      game.player.run();
+      final speed = LexawayGame.walkSpeed * _runSpeedMultiplier;
+      game.parallaxComponent.parallax!.baseVelocity =
+          Vector2(speed * 0.1, 0);
+      game.ground.startScrolling(speed);
+    }
 
     if (!_isWalking) {
       _isWalking = true;
       _stepTimer = _stepInterval; // first step fires immediately
-      game.player.walk();
-      game.parallaxComponent.parallax!.baseVelocity =
-          Vector2(LexawayGame.walkSpeed * 0.1, 0);
-      game.ground.startScrolling(LexawayGame.walkSpeed);
+      if (!_isRunning) {
+        game.player.walk();
+        game.parallaxComponent.parallax!.baseVelocity =
+            Vector2(LexawayGame.walkSpeed * 0.1, 0);
+        game.ground.startScrolling(LexawayGame.walkSpeed);
+      }
     }
 
     if (streak == 5 || streak == 10 || streak == 25) {
@@ -65,6 +85,16 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
   void wrongAnswer() {
     _idleTimer = 0;
     _fidgetTimer = 0;
+
+    // Downgrade from run to walk if currently dashing
+    if (_isRunning && _isWalking) {
+      _isRunning = false;
+      game.player.walk();
+      game.parallaxComponent.parallax!.baseVelocity =
+          Vector2(LexawayGame.walkSpeed * 0.1, 0);
+      game.ground.startScrolling(LexawayGame.walkSpeed);
+    }
+
     AudioManager.instance.playWrong();
     final msg = SpeechMessages.pickWrongMessage(locale: game.locale);
     if (msg != null) game.speechBubble.show(msg);
@@ -73,10 +103,16 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
   @override
   void update(double dt) {
     if (_isWalking) {
-      _walkRemaining -= LexawayGame.walkSpeed * dt;
+      final speed = _isRunning
+          ? LexawayGame.walkSpeed * _runSpeedMultiplier
+          : LexawayGame.walkSpeed;
+      _walkRemaining -= speed * dt;
+      final stepCadence = _isRunning
+          ? _stepInterval / _runSpeedMultiplier
+          : _stepInterval;
       _stepTimer += dt;
-      if (_stepTimer >= _stepInterval) {
-        _stepTimer -= _stepInterval;
+      if (_stepTimer >= stepCadence) {
+        _stepTimer -= stepCadence;
         AudioManager.instance.playFootstep();
         onStepTaken?.call(1);
       }
@@ -107,12 +143,15 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
   }
 
   /// Finish any in-progress walk immediately (no animation).
-  void finishWalk() {
+  void finishMovement() {
     if (!_isWalking) return;
     game.ground.scrollOffset += _walkRemaining;
+    final speed = _isRunning
+        ? LexawayGame.walkSpeed * _runSpeedMultiplier
+        : LexawayGame.walkSpeed;
     // Count the steps we're skipping
     final skippedSteps =
-        (_walkRemaining / (LexawayGame.walkSpeed * _stepInterval)).ceil();
+        (_walkRemaining / (speed * _stepInterval)).ceil();
     if (skippedSteps > 0) onStepTaken?.call(skippedSteps);
     _walkRemaining = 0;
     _stop();
@@ -120,6 +159,7 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
 
   void _stop() {
     _isWalking = false;
+    _isRunning = false;
     _stepTimer = 0;
     _fidgetTimer = 0;
     _nextFidgetAt = _rollFidgetDelay();

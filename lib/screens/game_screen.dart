@@ -56,7 +56,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
     // Lifecycle observer already saves on pause/inactive before dispose,
     // but save again in case of direct navigation without backgrounding.
     try {
-      _game?.walkController.finishWalk();
+      _game?.movementController.finishMovement();
       _game?.saveWorldState();
     } catch (_) {
       // Game components may already be detached during teardown.
@@ -69,7 +69,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      _game?.walkController.finishWalk();
+      _game?.movementController.finishMovement();
       _game?.saveWorldState();
     }
   }

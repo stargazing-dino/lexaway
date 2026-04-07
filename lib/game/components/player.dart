@@ -10,7 +10,7 @@ enum DinoAnim {
   walk(file: 'move.png', stepTime: 0.1, loop: true),
   scan(file: 'scan.png', stepTime: 0.18),
   jump(file: 'jump.png', stepTime: 0.14),
-  dash(file: 'dash.png', stepTime: 0.1),
+  dash(file: 'dash.png', stepTime: 0.1, loop: true),
   kick(file: 'kick.png', stepTime: 0.14),
   bite(file: 'bite.png', stepTime: 0.14),
   hurt(file: 'hurt.png', stepTime: 0.16),
@@ -105,6 +105,11 @@ class Player extends SpriteAnimationGroupComponent<DinoAnim>
   void walk() {
     _restingAnim = DinoAnim.walk;
     if (!_playingOneShot) current = DinoAnim.walk;
+  }
+
+  void run() {
+    _restingAnim = DinoAnim.dash;
+    if (!_playingOneShot) current = DinoAnim.dash;
   }
 
   void idle() {
