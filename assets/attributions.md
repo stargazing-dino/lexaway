@@ -20,6 +20,8 @@ License Permissions:
 - Credit is not required but would be appreciated. 
 - Modify as you will.
 
+background textures: https://morain.itch.io/backgrounds-and-textures
+
 unused
 
 frog: https://eduardscarpato.itch.io/toxic-frog-animations-pixel-art-2d-free

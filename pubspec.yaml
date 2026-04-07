@@ -37,6 +37,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/images/textures/
     - assets/images/parallax/
     - assets/images/terrain/
     - assets/images/entities/

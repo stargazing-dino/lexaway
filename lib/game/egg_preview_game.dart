@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flame/components.dart';
@@ -14,6 +15,7 @@ class EggPreviewGame extends FlameGame {
 
   EggPhase _phase = EggPhase.wobble;
   bool _disposed = false;
+  final Completer<void> _loaded = Completer<void>();
 
   static const double _frameSize = 24;
   static const double _scale = 4.0;
@@ -28,6 +30,7 @@ class EggPreviewGame extends FlameGame {
   @override
   Future<void> onLoad() async {
     await _showPhase(EggPhase.wobble);
+    _loaded.complete();
   }
 
   @override
@@ -37,7 +40,10 @@ class EggPreviewGame extends FlameGame {
   }
 
   /// Start the crack → hatch → reveal sequence.
-  void startHatchSequence() {
+  /// Waits for [onLoad] to finish so we never race with the wobble phase.
+  Future<void> startHatchSequence() async {
+    await _loaded.future;
+    if (_disposed) return;
     _showPhase(EggPhase.crack);
   }
 
@@ -54,14 +60,37 @@ class EggPreviewGame extends FlameGame {
     final image = await images.load(assetPath);
     if (_disposed) return;
 
+    if (children.isNotEmpty) {
+      removeAll(children);
+    }
+
+    final spriteSize = Vector2.all(_frameSize * _scale);
+    final pos = Vector2(
+      (size.x - _frameSize * _scale) / 2,
+      (size.y - _frameSize * _scale) / 2,
+    );
+    final noPaint = Paint()..filterQuality = FilterQuality.none;
+
+    // Wobble shows a static frame; Flutter handles the shake animation.
+    if (phase == EggPhase.wobble) {
+      final sheet = SpriteSheet(image: image, srcSize: Vector2.all(_frameSize));
+      add(SpriteComponent(
+        sprite: sheet.getSprite(0, 0),
+        size: spriteSize,
+        position: pos,
+        paint: noPaint,
+      ));
+      return;
+    }
+
     final frameCount = image.width ~/ _frameSize.toInt();
     final sheet = SpriteSheet(
       image: image,
       srcSize: Vector2.all(_frameSize),
     );
 
-    final loop = phase == EggPhase.wobble || phase == EggPhase.reveal;
-    final stepTime = phase == EggPhase.wobble ? 0.18 : 0.25;
+    final loop = phase == EggPhase.reveal;
+    final stepTime = 0.25;
     final animation = sheet.createAnimation(
       row: 0,
       from: 0,
@@ -70,20 +99,12 @@ class EggPreviewGame extends FlameGame {
       loop: loop,
     );
 
-    if (children.isNotEmpty) {
-      removeAll(children);
-    }
-
-    final sprite = SpriteAnimationComponent(
+    add(SpriteAnimationComponent(
       animation: animation,
-      size: Vector2.all(_frameSize * _scale),
-      position: Vector2(
-        (size.x - _frameSize * _scale) / 2,
-        (size.y - _frameSize * _scale) / 2,
-      ),
-      paint: Paint()..filterQuality = FilterQuality.none,
-    );
-    add(sprite);
+      size: spriteSize,
+      position: pos,
+      paint: noPaint,
+    ));
 
     if (!loop) {
       final durationMs = (frameCount * stepTime * 1000).toInt();

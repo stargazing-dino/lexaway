@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import '../game/egg_preview_game.dart';
 import '../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../providers.dart';
+import '../widgets/tiled_background.dart';
 
 class EggSelectionScreen extends ConsumerStatefulWidget {
   const EggSelectionScreen({super.key});
@@ -17,7 +20,7 @@ class EggSelectionScreen extends ConsumerStatefulWidget {
 }
 
 class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   /// The character names are chosen once; switching gender keeps the same names
   /// but swaps the sprite set.
   late List<String> _eggNames;
@@ -25,9 +28,13 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
   final Map<int, EggPreviewGame> _games = {};
   int? _selected;
   bool _hatching = false;
+  final _rng = Random();
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
+
+  late List<AnimationController> _shakeControllers;
+  late List<Animation<double>> _shakeAnimations;
 
   @override
   void initState() {
@@ -40,11 +47,38 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
       parent: _fadeController,
       curve: Curves.easeOut,
     );
+
+    // Per-egg shake: each has a different cycle length so they desync
+    _shakeControllers = List.generate(3, (i) {
+      final duration = 2000 + _rng.nextInt(1500); // 2–3.5s per cycle
+      return AnimationController(
+        duration: Duration(milliseconds: duration),
+        vsync: this,
+      );
+    });
+    _shakeAnimations = _shakeControllers.map((c) {
+      return TweenSequence<double>([
+        TweenSequenceItem(tween: ConstantTween(0), weight: 55),
+        TweenSequenceItem(tween: Tween(begin: 0, end: -0.06), weight: 5),
+        TweenSequenceItem(tween: Tween(begin: -0.06, end: 0.07), weight: 8),
+        TweenSequenceItem(tween: Tween(begin: 0.07, end: -0.05), weight: 7),
+        TweenSequenceItem(tween: Tween(begin: -0.05, end: 0.03), weight: 6),
+        TweenSequenceItem(tween: Tween(begin: 0.03, end: 0), weight: 4),
+        TweenSequenceItem(tween: ConstantTween(0), weight: 15),
+      ]).animate(c);
+    }).toList();
+    // Start each at a random point in its cycle
+    for (final c in _shakeControllers) {
+      c.value = _rng.nextDouble();
+      c.repeat();
+    }
+
     // Pick 3 names that are valid for both genders so toggling works.
-    final pool = CharacterRegistry.allNames
-        .where((n) => !CharacterRegistry.incompleteMale.contains(n))
-        .toList()
-      ..shuffle();
+    final pool =
+        CharacterRegistry.allNames
+            .where((n) => !CharacterRegistry.incompleteMale.contains(n))
+            .toList()
+          ..shuffle();
     _eggNames = pool.take(3).toList();
     _rebuildGames();
   }
@@ -52,6 +86,9 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
   @override
   void dispose() {
     _fadeController.dispose();
+    for (final c in _shakeControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -76,7 +113,12 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
       _hatching = true;
     });
 
-    // Fade out the others
+    // Stop all egg shakes (reset to 0 so eggs aren't stuck mid-tilt)
+    for (final c in _shakeControllers) {
+      c
+        ..stop()
+        ..value = 0;
+    }
     _fadeController.forward();
 
     // Start the hatch sequence on the selected egg
@@ -111,81 +153,111 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
 
     return Scaffold(
       backgroundColor: Colors.brown.shade900,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 32),
-
-            // Title
-            Text(
-              l10n.chooseYourEgg,
-              style: GoogleFonts.pixelifySans(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+      body: Stack(
+        children: [
+          Opacity(
+            opacity: 0.15,
+            child: TiledBackground(
+              texture: BackgroundTexture.chevron,
+              color: Colors.brown.shade700,
+              scale: 8,
+              scrollDirection: const Offset(-1, 1),
+              scrollSpeed: 12,
             ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.whoWillHatch,
-              style: GoogleFonts.pixelifySans(
-                color: Colors.white54,
-                fontSize: 16,
-              ),
-            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 32),
 
-            const SizedBox(height: 24),
+                // Title
+                Text(
+                  l10n.chooseYourEgg,
+                  style: GoogleFonts.pixelifySans(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.whoWillHatch,
+                  style: GoogleFonts.pixelifySans(
+                    color: Colors.white54,
+                    fontSize: 20,
+                  ),
+                ),
 
-            // Gender toggle
-            if (!_hatching)
-              _GenderToggle(
-                selected: gender,
-                onChanged: _onGenderChanged,
-              ),
+                // Eggs in a triad: one top-centre, two bottom
+                Expanded(
+                  child: Stack(
+                    children: List.generate(_eggs.length, (i) {
+                      final isSelected = _selected == i;
+                      final shouldFade = _selected != null && !isSelected;
 
-            // Egg area – eggs drift to centre when one is selected
-            Expanded(
-              child: Stack(
-                children: List.generate(_eggs.length, (i) {
-                  final isSelected = _selected == i;
-                  final shouldFade = _selected != null && !isSelected;
+                      // Triad positions
+                      const triad = [
+                        Alignment(0, -0.35),        // top centre
+                        Alignment(-0.45, 0.3),       // bottom left
+                        Alignment(0.45, 0.3),        // bottom right
+                      ];
+                      final alignment = _hatching && isSelected
+                          ? Alignment.center
+                          : triad[i % triad.length];
 
-                  // Spread eggs horizontally; selected one slides to centre
-                  final dx = (i - (_eggs.length - 1) / 2) * 0.6;
-                  final alignment = _hatching && isSelected
-                      ? Alignment.center
-                      : Alignment(dx, 0);
-
-                  return AnimatedAlign(
-                    duration: const Duration(milliseconds: 400),
-                    curve: Curves.easeInOut,
-                    alignment: alignment,
-                    child: AnimatedBuilder(
-                      animation: _fadeAnimation,
-                      builder: (context, child) {
-                        final opacity =
-                            shouldFade ? 1.0 - _fadeAnimation.value : 1.0;
-                        return Opacity(opacity: opacity, child: child);
-                      },
-                      child: GestureDetector(
-                        onTap: _hatching ? null : () => _onEggTapped(i),
-                        child: SizedBox(
-                          width: 96,
-                          height: 96,
-                          child: GameWidget(
-                            game: _games[i]!,
-                            backgroundBuilder: (_) =>
-                                const SizedBox.shrink(),
+                      return AnimatedAlign(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                        alignment: alignment,
+                        child: AnimatedBuilder(
+                          animation: _fadeAnimation,
+                          builder: (context, child) {
+                            final opacity = shouldFade
+                                ? 1.0 - _fadeAnimation.value
+                                : 1.0;
+                            return Opacity(opacity: opacity, child: child);
+                          },
+                          child: AnimatedBuilder(
+                            animation: _shakeAnimations[i],
+                            builder: (context, child) {
+                              return Transform.rotate(
+                                angle: _shakeAnimations[i].value,
+                                child: child,
+                              );
+                            },
+                            child: GestureDetector(
+                              onTap:
+                                  _hatching ? null : () => _onEggTapped(i),
+                              child: SizedBox(
+                                width: 120,
+                                height: 120,
+                                child: GameWidget(
+                                  game: _games[i]!,
+                                  backgroundBuilder: (_) =>
+                                      const SizedBox.shrink(),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      );
+                    }),
+                  ),
+                ),
+
+                // Gender toggle at the bottom
+                if (!_hatching)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: _GenderToggle(
+                      selected: gender,
+                      onChanged: _onGenderChanged,
                     ),
-                  );
-                }),
-              ),
+                  ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -237,27 +309,24 @@ class _GenderButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: selected
-              ? Colors.brown.shade600
-              : Colors.brown.shade800.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected
-                ? Colors.amber.shade300.withValues(alpha: 0.6)
-                : Colors.brown.shade600.withValues(alpha: 0.3),
-            width: 2,
+      child: Opacity(
+        opacity: selected ? 1.0 : 0.5,
+        child: Container(
+          width: 52,
+          height: 52,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/ui/fab_circle_bg.png'),
+              filterQuality: FilterQuality.none,
+            ),
           ),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 24,
-            color: selected ? Colors.white : Colors.white54,
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 24,
+              color: selected ? Colors.white : Colors.white70,
+            ),
           ),
         ),
       ),
