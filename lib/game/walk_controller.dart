@@ -4,11 +4,14 @@ import 'audio_manager.dart';
 import 'components/speech_messages.dart' show SpeechMessages;
 import 'lexaway_game.dart';
 
-/// Manages the walk-one-tile state machine: animation, scrolling,
-/// parallax, footstep audio, and idle chatter timeout.
+/// Manages the walk state machine: animation, scrolling,
+/// parallax, footstep audio, step counting, and idle chatter.
+///
+/// Walks now stack — answering while already walking extends the
+/// journey instead of being ignored.
 class WalkController extends Component with HasGameReference<LexawayGame> {
+  double _walkRemaining = 0;
   bool _isWalking = false;
-  double _walkProgress = 0;
   double _stepTimer = 0;
   double _idleTimer = 0;
 
@@ -17,19 +20,20 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
 
   bool get isWalking => _isWalking;
 
-  void correctAnswer({required int streak, required String answer}) {
-    if (_isWalking) return;
-    _isWalking = true;
-    _walkProgress = 0;
-    _idleTimer = 0;
-    _stepTimer = _stepInterval; // first step fires immediately
+  Function(int steps)? onStepTaken;
 
-    game.player.walk();
-    game.parallaxComponent.parallax!.baseVelocity = Vector2(
-      LexawayGame.walkSpeed * 0.1,
-      0,
-    );
-    game.ground.startScrolling(LexawayGame.walkSpeed);
+  void correctAnswer({required int streak, required String answer}) {
+    _walkRemaining += LexawayGame.walkTarget;
+    _idleTimer = 0;
+
+    if (!_isWalking) {
+      _isWalking = true;
+      _stepTimer = _stepInterval; // first step fires immediately
+      game.player.walk();
+      game.parallaxComponent.parallax!.baseVelocity =
+          Vector2(LexawayGame.walkSpeed * 0.1, 0);
+      game.ground.startScrolling(LexawayGame.walkSpeed);
+    }
 
     if (streak == 5 || streak == 10 || streak == 25) {
       AudioManager.instance.playStreak();
@@ -55,13 +59,15 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
   @override
   void update(double dt) {
     if (_isWalking) {
-      _walkProgress += LexawayGame.walkSpeed * dt;
+      _walkRemaining -= LexawayGame.walkSpeed * dt;
       _stepTimer += dt;
       if (_stepTimer >= _stepInterval) {
         _stepTimer -= _stepInterval;
         AudioManager.instance.playFootstep();
+        onStepTaken?.call(1);
       }
-      if (_walkProgress >= LexawayGame.walkTarget) {
+      if (_walkRemaining <= 0) {
+        _walkRemaining = 0;
         _stop();
       }
     }
@@ -79,11 +85,12 @@ class WalkController extends Component with HasGameReference<LexawayGame> {
   /// Finish any in-progress walk immediately (no animation).
   void finishWalk() {
     if (!_isWalking) return;
-    // Advance ground to where the walk would have ended
-    final remaining = LexawayGame.walkTarget - _walkProgress;
-    if (remaining > 0) {
-      game.ground.scrollOffset += remaining;
-    }
+    game.ground.scrollOffset += _walkRemaining;
+    // Count the steps we're skipping
+    final skippedSteps =
+        (_walkRemaining / (LexawayGame.walkSpeed * _stepInterval)).ceil();
+    if (skippedSteps > 0) onStepTaken?.call(skippedSteps);
+    _walkRemaining = 0;
     _stop();
   }
 

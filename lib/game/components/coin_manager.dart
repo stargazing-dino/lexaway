@@ -12,8 +12,8 @@ class CoinManager extends Component
   static const double clusterChance =
       0.40; // cumulative: 15% diamond, 25% cluster, 60% single
   // Gap between spawn points: random 2–5 tiles
-  static const int minGapTiles = 2;
-  static const int maxGapTiles = 5; // inclusive upper bound
+  static const int minGapTiles = 5;
+  static const int maxGapTiles = 10; // inclusive upper bound
   // Max coins spawned per frame to prevent bursts after backgrounding
   static const int maxSpawnsPerFrame = 5;
 

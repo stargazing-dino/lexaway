@@ -33,6 +33,9 @@ class _GameScreenState extends ConsumerState<GameScreen>
       _game!.onCoinCollected = (value) {
         ref.read(coinProvider.notifier).add(value);
       };
+      _game!.onStepTaken = (steps) {
+        ref.read(stepsProvider.notifier).add(steps);
+      };
     } else {
       _game!.locale = locale;
     }

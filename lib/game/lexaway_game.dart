@@ -18,9 +18,9 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double pixelScale = 4.0;
   static const double groundLevel = 0.35;
 
-  // One tile at 4x scale = 64px. Walk it in ~0.8s.
+  // Three tiles at 4x scale = 192px. Walk them in ~2.4s.
   static const double walkSpeed = 80;
-  static const double walkTarget = 16 * pixelScale;
+  static const double walkTarget = 3 * 16 * pixelScale;
   static const double cloudDrift = 1.5;
 
   final Box? hiveBox;
@@ -46,6 +46,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   final List<Persistable> _persistables = [];
 
   Function(int value)? onCoinCollected;
+  Function(int steps)? onStepTaken;
 
   @override
   Color backgroundColor() => const Color(0xFF50BBFF);
@@ -88,7 +89,8 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     speechBubble = SpeechBubble()..priority = 3;
     add(speechBubble);
 
-    walkController = WalkController();
+    walkController = WalkController()
+      ..onStepTaken = (steps) => onStepTaken?.call(steps);
     add(walkController);
 
     await AudioManager.instance.preload();

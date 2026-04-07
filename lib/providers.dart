@@ -167,6 +167,18 @@ class CoinNotifier extends HiveIntNotifier {
   }
 }
 
+final stepsProvider = NotifierProvider<StepsNotifier, int>(StepsNotifier.new);
+
+class StepsNotifier extends HiveIntNotifier {
+  @override
+  String get key => 'steps';
+
+  void add(int count) {
+    state += count;
+    _save();
+  }
+}
+
 // Active pack
 
 final activePackProvider =
