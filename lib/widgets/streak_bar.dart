@@ -11,7 +11,6 @@ class StreakBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final topPadding = MediaQuery.of(context).padding.top;
-    final streak = ref.watch(streakProvider);
     final coins = ref.watch(coinProvider);
 
     return Padding(
@@ -45,19 +44,6 @@ class StreakBar extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          if (streak > 0)
-            HudPill(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Text(
-                '\u{1F525} $streak',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
         ],
       ),
     );
