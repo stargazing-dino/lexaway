@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../game/lexaway_game.dart';
+import '../models/character.dart';
 import '../providers.dart';
 import '../widgets/question_panel.dart';
 import '../widgets/streak_bar.dart';
@@ -29,7 +30,16 @@ class _GameScreenState extends ConsumerState<GameScreen>
     super.didChangeDependencies();
     final locale = Localizations.localeOf(context).languageCode;
     if (_game == null) {
-      _game = LexawayGame(hiveBox: ref.read(hiveBoxProvider), locale: locale);
+      final box = ref.read(hiveBoxProvider);
+      final lang = ref.read(activePackProvider.notifier).activeLang!;
+      final charKey = box.get('character_$lang') as String? ?? 'female/doux';
+      final character = CharacterInfo.fromKey(charKey);
+
+      _game = LexawayGame(
+        hiveBox: box,
+        locale: locale,
+        characterPath: character.basePath,
+      );
       _game!.onCoinCollected = (value) {
         ref.read(coinProvider.notifier).add(value);
       };

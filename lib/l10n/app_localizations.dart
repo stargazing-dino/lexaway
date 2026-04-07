@@ -145,6 +145,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'System default'**
   String get systemDefault;
+
+  /// No description provided for @chooseYourEgg.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your egg!'**
+  String get chooseYourEgg;
+
+  /// No description provided for @whoWillHatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Who will hatch from it?'**
+  String get whoWillHatch;
 }
 
 class _AppLocalizationsDelegate

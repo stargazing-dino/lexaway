@@ -36,4 +36,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get systemDefault => 'Predeterminado del sistema';
+
+  @override
+  String get chooseYourEgg => '¡Elige tu huevo!';
+
+  @override
+  String get whoWillHatch => '¿Quién saldrá de él?';
 }

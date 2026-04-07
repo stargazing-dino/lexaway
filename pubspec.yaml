@@ -36,8 +36,49 @@ flutter:
   assets:
     - assets/images/parallax/
     - assets/images/terrain/
-    - assets/images/dino/
     - assets/images/coins/
     - assets/images/ui/
     - assets/audio/
     - assets/dino/
+    # Female characters (all 12 complete)
+    - assets/images/download/female/cole/base/
+    - assets/images/download/female/cole/egg/
+    - assets/images/download/female/doux/base/
+    - assets/images/download/female/doux/egg/
+    - assets/images/download/female/kira/base/
+    - assets/images/download/female/kira/egg/
+    - assets/images/download/female/kuro/base/
+    - assets/images/download/female/kuro/egg/
+    - assets/images/download/female/loki/base/
+    - assets/images/download/female/loki/egg/
+    - assets/images/download/female/mono/base/
+    - assets/images/download/female/mono/egg/
+    - assets/images/download/female/mort/base/
+    - assets/images/download/female/mort/egg/
+    - assets/images/download/female/nico/base/
+    - assets/images/download/female/nico/egg/
+    - assets/images/download/female/olaf/base/
+    - assets/images/download/female/olaf/egg/
+    - assets/images/download/female/sena/base/
+    - assets/images/download/female/sena/egg/
+    - assets/images/download/female/tard/base/
+    - assets/images/download/female/tard/egg/
+    - assets/images/download/female/vita/base/
+    - assets/images/download/female/vita/egg/
+    # Male characters (8 complete — doux, mort, tard, vita missing base sprites)
+    - assets/images/download/male/cole/base/
+    - assets/images/download/male/cole/egg/
+    - assets/images/download/male/kira/base/
+    - assets/images/download/male/kira/egg/
+    - assets/images/download/male/kuro/base/
+    - assets/images/download/male/kuro/egg/
+    - assets/images/download/male/loki/base/
+    - assets/images/download/male/loki/egg/
+    - assets/images/download/male/mono/base/
+    - assets/images/download/male/mono/egg/
+    - assets/images/download/male/nico/base/
+    - assets/images/download/male/nico/egg/
+    - assets/images/download/male/olaf/base/
+    - assets/images/download/male/olaf/egg/
+    - assets/images/download/male/sena/base/
+    - assets/images/download/male/sena/egg/

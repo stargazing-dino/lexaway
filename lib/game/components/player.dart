@@ -12,22 +12,31 @@ class Player extends SpriteAnimationGroupComponent<PlayerState>
   static const double _spriteSize = 24;
   static const double _scale = LexawayGame.pixelScale;
 
+  final String spritePath;
+
+  Player({required this.spritePath});
+
   @override
   Future<void> onLoad() async {
-    final image = await game.images.load('dino/doux.png');
-    final sheet = SpriteSheet(image: image, srcSize: Vector2.all(_spriteSize));
+    final idleImage = await game.images.load('$spritePath/idle.png');
+    final moveImage = await game.images.load('$spritePath/move.png');
+
+    final idleSheet =
+        SpriteSheet(image: idleImage, srcSize: Vector2.all(_spriteSize));
+    final moveSheet =
+        SpriteSheet(image: moveImage, srcSize: Vector2.all(_spriteSize));
 
     animations = {
-      PlayerState.idle: sheet.createAnimation(
+      PlayerState.idle: idleSheet.createAnimation(
         row: 0,
         from: 0,
-        to: 4,
+        to: 3,
         stepTime: 0.2,
       ),
-      PlayerState.walking: sheet.createAnimation(
+      PlayerState.walking: moveSheet.createAnimation(
         row: 0,
-        from: 4,
-        to: 10,
+        from: 0,
+        to: 6,
         stepTime: 0.1,
       ),
     };

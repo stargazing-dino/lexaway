@@ -17,5 +17,7 @@
   },
   "next": "next \u2192",
   "appLanguage": "App Language",
-  "systemDefault": "System default"
+  "systemDefault": "System default",
+  "chooseYourEgg": "Choose your egg!",
+  "whoWillHatch": "Who will hatch from it?"
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'providers.dart';
+import 'screens/egg_selection_screen.dart';
 import 'screens/game_screen.dart';
 import 'screens/pack_manager_screen.dart';
 
@@ -19,10 +20,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoading = activePack.isLoading;
       final hasQuestions = activePack.valueOrNull?.isNotEmpty ?? false;
       final loc = state.matchedLocation;
+      final box = ref.read(hiveBoxProvider);
 
       if (isLoading) return loc == '/loading' ? null : '/loading';
-      if (loc == '/loading') return hasQuestions ? '/game' : '/packs';
-      if (!hasQuestions && loc == '/game') return '/packs';
+
+      if (loc == '/loading') {
+        if (!hasQuestions) return '/packs';
+        final lang = ref.read(activePackProvider.notifier).activeLang;
+        final hasChar = lang != null && box.get('character_$lang') != null;
+        return hasChar ? '/game' : '/hatch';
+      }
+
+      if (!hasQuestions && (loc == '/game' || loc == '/hatch')) return '/packs';
+
+      if (loc == '/game') {
+        final lang = ref.read(activePackProvider.notifier).activeLang;
+        final hasChar = lang != null && box.get('character_$lang') != null;
+        if (!hasChar) return '/hatch';
+      }
 
       return null;
     },
@@ -31,6 +46,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/loading',
         builder: (context, state) =>
             const Scaffold(body: Center(child: CircularProgressIndicator())),
+      ),
+      GoRoute(
+        path: '/hatch',
+        builder: (context, state) => const EggSelectionScreen(),
       ),
       GoRoute(path: '/game', builder: (context, state) => const GameScreen()),
       GoRoute(

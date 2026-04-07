@@ -3,6 +3,9 @@ import 'package:lexaway/game/lexaway_game.dart';
 
 void main() {
   test('game can be instantiated', () {
-    expect(LexawayGame(), isA<LexawayGame>());
+    expect(
+      LexawayGame(characterPath: 'download/female/doux/base'),
+      isA<LexawayGame>(),
+    );
   });
 }

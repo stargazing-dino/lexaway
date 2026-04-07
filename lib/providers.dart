@@ -48,6 +48,25 @@ class LocaleNotifier extends Notifier<Locale?> {
   }
 }
 
+// Gender preference
+
+final genderProvider = NotifierProvider<GenderNotifier, String>(
+  GenderNotifier.new,
+);
+
+class GenderNotifier extends Notifier<String> {
+  @override
+  String build() {
+    return ref.read(hiveBoxProvider).get('gender', defaultValue: 'female')
+        as String;
+  }
+
+  void set(String gender) {
+    state = gender;
+    ref.read(hiveBoxProvider).put('gender', gender);
+  }
+}
+
 // Pack management
 
 /// Singleton PackManager backed by the Hive box.

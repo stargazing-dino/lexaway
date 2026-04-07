@@ -7,5 +7,7 @@
   "sizeMB": "{size} MB",
   "next": "siguiente \u2192",
   "appLanguage": "Idioma de la app",
-  "systemDefault": "Predeterminado del sistema"
+  "systemDefault": "Predeterminado del sistema",
+  "chooseYourEgg": "\u00a1Elige tu huevo!",
+  "whoWillHatch": "\u00bfQui\u00e9n saldr\u00e1 de \u00e9l?"
 }

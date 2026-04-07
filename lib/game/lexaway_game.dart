@@ -24,9 +24,14 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double cloudDrift = 1.5;
 
   final Box? hiveBox;
+  final String characterPath;
   String _locale;
 
-  LexawayGame({this.hiveBox, String locale = 'en'}) : _locale = locale;
+  LexawayGame({
+    this.hiveBox,
+    String locale = 'en',
+    required this.characterPath,
+  }) : _locale = locale;
 
   String get locale => _locale;
   set locale(String value) {
@@ -83,7 +88,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     add(ground);
     add(coinManager);
 
-    player = Player()..priority = 2;
+    player = Player(spritePath: characterPath)..priority = 2;
     add(player);
 
     speechBubble = SpeechBubble()..priority = 3;
