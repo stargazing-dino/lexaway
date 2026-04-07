@@ -15,8 +15,8 @@ class EggPreviewGame extends FlameGame {
   EggPhase _phase = EggPhase.wobble;
   bool _disposed = false;
 
-  static const double _frameSize = 24;
-  static const double _scale = 4.0;
+  static const double _frameSize = 48;
+  static const double _scale = 2.0;
 
   EggPreviewGame({required this.character});
 
