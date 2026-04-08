@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive_ce.dart';
 
@@ -61,6 +62,15 @@ class LocaleNotifier extends Notifier<Locale?> {
     }
   }
 }
+
+// Native language (ISO 639-3, derived from locale)
+
+final nativeLangProvider = Provider<String>((ref) {
+  final locale = ref.watch(localeProvider);
+  final code = locale?.languageCode ??
+      WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+  return iso2to3[code] ?? 'eng';
+});
 
 // Settings
 
@@ -177,6 +187,7 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
   }) async {
     final pm = ref.read(packManagerProvider);
     final tm = ref.read(ttsManagerProvider);
+    final packId = '$fromLang-$lang';
 
     final packFuture = () async {
       try {
@@ -184,11 +195,11 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
           lang,
           fromLang: fromLang,
           onProgress: (p) {
-            ref.read(downloadProgressProvider(lang).notifier).state = p;
+            ref.read(downloadProgressProvider(packId).notifier).state = p;
           },
         );
       } finally {
-        ref.read(downloadProgressProvider(lang).notifier).state = null;
+        ref.read(downloadProgressProvider(packId).notifier).state = null;
       }
     }();
 
@@ -232,20 +243,29 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
     ref.invalidateSelf();
   }
 
-  Future<void> delete(String lang) async {
+  Future<void> delete(String packId) async {
     // Release TTS engine before deleting files to avoid native crash
     ref.read(ttsServiceProvider).releaseEngine();
 
     final pm = ref.read(packManagerProvider);
     final tm = ref.read(ttsManagerProvider);
-    await pm.deletePack(lang);
-    await tm.deleteModel(lang);
-    state = AsyncData(pm.getLocalPacks());
+    final targetLang = packId.split('-')[1];
+
+    await pm.deletePack(packId);
+
+    // Only delete voice model if no other installed pack shares the target language.
+    final remaining = pm.getLocalPacks();
+    final sharedVoice = remaining.values.any((p) => p.lang == targetLang);
+    if (!sharedVoice) {
+      await tm.deleteModel(targetLang);
+    }
+
+    state = AsyncData(remaining);
 
     // If we just deleted the active pack, clear it.
     // Skip if a switchPack is already in flight (state would be loading).
     final activeNotifier = ref.read(activePackProvider.notifier);
-    if (activeNotifier.activeLang == lang && !ref.read(activePackProvider).isLoading) {
+    if (activeNotifier.activePackId == packId && !ref.read(activePackProvider).isLoading) {
       await activeNotifier.clear();
     }
   }
@@ -369,7 +389,7 @@ final activePackProvider =
 
 class ActivePackNotifier extends AsyncNotifier<List<Question>> {
   late final PackDatabase _db;
-  String? _activeLang;
+  String? _activePackId;
 
   @override
   Future<List<Question>> build() async {
@@ -381,11 +401,15 @@ class ActivePackNotifier extends AsyncNotifier<List<Question>> {
     final local = pm.getLocalPacks();
     if (local.isEmpty) return [];
 
-    final lang = pm.lastUsed ?? local.keys.first;
-    return _openAndLoad(lang);
+    final packId = pm.lastUsed ?? local.keys.first;
+    return _openAndLoad(packId);
   }
 
-  String? get activeLang => _activeLang;
+  /// The composite pack ID (e.g. "eng-fra").
+  String? get activePackId => _activePackId;
+
+  /// The target language code (e.g. "fra"), derived from the active pack ID.
+  String? get activeLang => _activePackId?.split('-')[1];
 
   /// Clear without rebuilding — avoids the router redirect dance.
   Future<void> clear() async {
@@ -394,38 +418,38 @@ class ActivePackNotifier extends AsyncNotifier<List<Question>> {
     } catch (_) {
       // DB may never have been opened (e.g. no packs installed).
     }
-    _activeLang = null;
+    _activePackId = null;
     state = const AsyncData([]);
   }
 
-  Future<void> switchPack(String lang) async {
+  Future<void> switchPack(String packId) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _openAndLoad(lang));
+    state = await AsyncValue.guard(() => _openAndLoad(packId));
   }
 
-  Future<List<Question>> _openAndLoad(String lang) async {
+  Future<List<Question>> _openAndLoad(String packId) async {
     try {
-      await _db.open(lang);
+      await _db.open(packId);
     } catch (_) {
       // .db file missing or corrupt — close leaked handle, scrub stale metadata
       await _db.close();
       final pm = ref.read(packManagerProvider);
-      await pm.deletePack(lang);
+      await pm.deletePack(packId);
       ref.invalidate(localPacksProvider);
-      _activeLang = null;
+      _activePackId = null;
       return [];
     }
     final qs = await _db.loadQuestions(limit: 200);
     if (qs.isEmpty) {
       await _db.close();
       final pm = ref.read(packManagerProvider);
-      await pm.deletePack(lang);
+      await pm.deletePack(packId);
       ref.invalidate(localPacksProvider);
-      _activeLang = null;
+      _activePackId = null;
       return [];
     }
-    ref.read(packManagerProvider).setLastUsed(lang);
-    _activeLang = lang;
+    ref.read(packManagerProvider).setLastUsed(packId);
+    _activePackId = packId;
     return qs;
   }
 }

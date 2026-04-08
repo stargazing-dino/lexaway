@@ -13,6 +13,9 @@ const _baseUrl =
 
 const maxSupportedPackSchema = 1;
 
+const iso2to3 = {'en': 'eng', 'fr': 'fra', 'es': 'spa', 'de': 'deu', 'it': 'ita', 'pt': 'por'};
+const iso3to2 = {'eng': 'en', 'fra': 'fr', 'spa': 'es', 'deu': 'de', 'ita': 'it', 'por': 'pt'};
+
 enum PackUpdateStatus { notDownloaded, upToDate, updateAvailable, appUpdateRequired }
 
 PackUpdateStatus packUpdateStatus(PackInfo remote, LocalPack? local) {
@@ -41,6 +44,8 @@ class PackInfo {
     required this.schemaVersion,
   });
 
+  String get packId => '$fromLang-$lang';
+
   factory PackInfo.fromJson(Map<String, dynamic> json) => PackInfo(
     lang: json['lang'] as String,
     fromLang: json['from_lang'] as String,
@@ -66,17 +71,20 @@ class LocalPack {
     required this.sizeBytes,
   });
 
-  factory LocalPack.fromJson(String lang, Map<String, dynamic> json) =>
-      LocalPack(
-        lang: lang,
-        fromLang: json['from_lang'] as String,
-        schemaVersion: json['schema_version'] as int,
-        builtAt: json['built_at'] as String,
-        sizeBytes: json['size_bytes'] as int,
-      );
+  String get packId => '$fromLang-$lang';
+
+  factory LocalPack.fromJson(String packId, Map<String, dynamic> json) {
+    final parts = packId.split('-');
+    return LocalPack(
+      lang: parts[1],
+      fromLang: parts[0],
+      schemaVersion: json['schema_version'] as int,
+      builtAt: json['built_at'] as String,
+      sizeBytes: json['size_bytes'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-    'from_lang': fromLang,
     'schema_version': schemaVersion,
     'built_at': builtAt,
     'size_bytes': sizeBytes,
@@ -88,6 +96,9 @@ class Manifest {
   final List<PackInfo> packs;
 
   const Manifest({required this.schemaVersion, required this.packs});
+
+  List<PackInfo> packsFor(String fromLang) =>
+      packs.where((p) => p.fromLang == fromLang).toList();
 
   factory Manifest.fromJson(Map<String, dynamic> json) => Manifest(
     schemaVersion: json['schema_version'] as int,
@@ -137,32 +148,33 @@ class PackManager {
     required String fromLang,
     void Function(double)? onProgress,
   }) async {
+    final packId = '$fromLang-$lang';
     final dir = packsDir;
     await Directory(dir).create(recursive: true);
 
-    final tmpPath = '$dir/$lang.db.tmp';
+    final tmpPath = '$dir/$packId.db.tmp';
     await downloadToFile(
-      '$_baseUrl/$lang.db',
+      '$_baseUrl/$packId.db',
       tmpPath,
       onProgress: onProgress,
     );
 
     final sizeBytes = await File(tmpPath).length();
-    await File(tmpPath).rename('$dir/$lang.db');
-    await _updateMeta(lang, fromLang, sizeBytes);
+    await File(tmpPath).rename('$dir/$packId.db');
+    await _updateMeta(packId, sizeBytes);
   }
 
   // -- Delete --
 
-  Future<void> deletePack(String lang) async {
+  Future<void> deletePack(String packId) async {
     final dir = packsDir;
-    final file = File('$dir/$lang.db');
+    final file = File('$dir/$packId.db');
     if (await file.exists()) await file.delete();
 
     final packs = _getPacks();
-    packs.remove(lang);
+    packs.remove(packId);
     _box.put(HiveKeys.packs, packs);
-    if (_box.get(HiveKeys.lastUsed) == lang) _box.delete(HiveKeys.lastUsed);
+    if (_box.get(HiveKeys.lastUsed) == packId) _box.delete(HiveKeys.lastUsed);
   }
 
   // -- Local state --
@@ -170,16 +182,17 @@ class PackManager {
   Map<String, LocalPack> getLocalPacks() {
     final packs = _getPacks();
     return packs.map(
-      (lang, data) => MapEntry(
-        lang,
-        LocalPack.fromJson(lang, Map<String, dynamic>.from(data as Map)),
+      (packId, data) => MapEntry(
+        packId,
+        LocalPack.fromJson(packId, Map<String, dynamic>.from(data as Map)),
       ),
     );
   }
 
+  /// Returns the packId of the last-used pack (e.g. "eng-fra").
   String? get lastUsed => _box.get(HiveKeys.lastUsed) as String?;
 
-  void setLastUsed(String lang) => _box.put(HiveKeys.lastUsed, lang);
+  void setLastUsed(String packId) => _box.put(HiveKeys.lastUsed, packId);
 
   // -- Internals --
 
@@ -189,8 +202,8 @@ class PackManager {
     return Map<String, dynamic>.from(raw as Map);
   }
 
-  Future<void> _updateMeta(String lang, String fromLang, int sizeBytes) async {
-    final dbPath = '$packsDir/$lang.db';
+  Future<void> _updateMeta(String packId, int sizeBytes) async {
+    final dbPath = '$packsDir/$packId.db';
     final db = SqliteDatabase(path: dbPath);
     try {
       final rows = await db.getAll(
@@ -199,14 +212,13 @@ class PackManager {
       final meta = {for (final r in rows) r['key'] as String: r['value'] as String};
 
       final packs = _getPacks();
-      packs[lang] = {
-        'from_lang': fromLang,
+      packs[packId] = {
         'schema_version': int.parse(meta['schema_version'] ?? '1'),
         'built_at': meta['built_at'] ?? '',
         'size_bytes': sizeBytes,
       };
       _box.put(HiveKeys.packs, packs);
-      _box.put(HiveKeys.lastUsed, lang);
+      _box.put(HiveKeys.lastUsed, packId);
     } finally {
       await db.close();
     }

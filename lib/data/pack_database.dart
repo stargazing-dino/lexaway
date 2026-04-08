@@ -10,12 +10,12 @@ class PackDatabase {
 
   PackDatabase({required this.packsDir});
 
-  Future<void> open(String lang) async {
+  Future<void> open(String packId) async {
     await close();
-    final dbPath = '$packsDir/$lang.db';
+    final dbPath = '$packsDir/$packId.db';
 
     if (!File(dbPath).existsSync()) {
-      throw StateError('Pack "$lang" not downloaded — use PackManager first');
+      throw StateError('Pack "$packId" not downloaded — use PackManager first');
     }
 
     _db = SqliteDatabase(path: dbPath);

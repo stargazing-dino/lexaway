@@ -11,10 +11,9 @@
   "coins": 340,
   "steps": 1500,
   "character_fra": "female/doux",
-  "last_used": "fra",
+  "last_used": "eng-fra",
   "packs": {
-    "fra": {
-      "from_lang": "eng",
+    "eng-fra": {
       "schema_version": 1,
       "built_at": "2025-01-15T00:00:00Z",
       "size_bytes": 204800
@@ -27,7 +26,7 @@
       "downloaded_at": "2025-01-15T12:00:00Z"
     }
   },
-  "manifest_cache": "{\"schema_version\":1,\"packs\":{\"fra\":{\"size_bytes\":204800}}}",
+  "manifest_cache": "{\"schema_version\":1,\"packs\":[{\"lang\":\"fra\",\"from_lang\":\"eng\",\"name\":\"French\",\"flag\":\"F\",\"built_at\":\"2025-01-15T00:00:00Z\",\"schema_version\":1}]}",
   "world": {
     "_version": 1,
     "ground": {

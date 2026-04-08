@@ -110,16 +110,16 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     );
   }
 
-  Future<void> _download(String lang, {required String fromLang}) async {
+  Future<void> _download(PackInfo pack) async {
     try {
       await ref
           .read(localPacksProvider.notifier)
-          .download(lang, fromLang: fromLang, includeVoice: false);
+          .download(pack.lang, fromLang: pack.fromLang, includeVoice: false);
     } catch (e) {
       if (mounted) {
         _showError(
           AppLocalizations.of(context)!.downloadFailed(e.toString()),
-          onRetry: () => _download(lang, fromLang: fromLang),
+          onRetry: () => _download(pack),
         );
       }
     }
@@ -138,8 +138,8 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     }
   }
 
-  Future<void> _delete(String lang) async {
-    await ref.read(localPacksProvider.notifier).delete(lang);
+  Future<void> _delete(String packId) async {
+    await ref.read(localPacksProvider.notifier).delete(packId);
   }
 
   Future<void> _deleteVoice(String lang) async {
@@ -149,8 +149,8 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     ref.invalidate(localPacksProvider);
   }
 
-  Future<void> _select(String lang) async {
-    await ref.read(activePackProvider.notifier).switchPack(lang);
+  Future<void> _select(String packId) async {
+    await ref.read(activePackProvider.notifier).switchPack(packId);
     if (mounted) context.go('/game');
   }
 
@@ -172,11 +172,12 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     final manifest = ref.watch(manifestProvider);
     final localPacks = ref.watch(localPacksProvider);
     final local = localPacks.valueOrNull ?? {};
+    final nativeLang = ref.watch(nativeLangProvider);
 
-    // Watch the state so we rebuild when it changes; read the notifier for the lang.
+    // Watch the state so we rebuild when it changes; read the notifier for the packId.
     final hasActiveQuestions = ref.watch(activePackProvider).valueOrNull?.isNotEmpty ?? false;
-    final activeLang = ref.read(activePackProvider.notifier).activeLang;
-    final canGoBack = hasActiveQuestions && activeLang != null && local.containsKey(activeLang);
+    final activePackId = ref.read(activePackProvider.notifier).activePackId;
+    final canGoBack = hasActiveQuestions && activePackId != null && local.containsKey(activePackId);
 
     return Scaffold(
       backgroundColor: AppColors.scaffold,
@@ -230,36 +231,39 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                         color: AppColors.textTertiary),
                   ),
                   error: (_, __) => const SizedBox.shrink(),
-                  data: (m) => ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: m.packs.length,
-                    itemBuilder: (context, i) {
-                      final pack = m.packs[i];
-                      final box = ref.read(hiveBoxProvider);
-                      final status = packUpdateStatus(pack, local[pack.lang]);
-                      return PackTile(
-                        pack: pack,
-                        local: local[pack.lang],
-                        packStatus: status,
-                        packProgress: ref.watch(
-                          downloadProgressProvider(pack.lang),
-                        ),
-                        voiceProgress: ref.watch(
-                          voiceDownloadProgressProvider(pack.lang),
-                        ),
-                        voiceDownloaded: ref.watch(ttsManagerProvider)
-                            .isModelDownloaded(pack.lang),
-                        hasCharacter:
-                            box.get(HiveKeys.character(pack.lang)) != null,
-                        onDownload: () => _download(pack.lang, fromLang: pack.fromLang),
-                        onUpdate: () => _download(pack.lang, fromLang: pack.fromLang),
-                        onDownloadVoice: () => _downloadVoice(pack.lang),
-                        onDelete: () => _delete(pack.lang),
-                        onDeleteVoice: () => _deleteVoice(pack.lang),
-                        onSelect: () => _select(pack.lang),
-                      );
-                    },
-                  ),
+                  data: (m) {
+                    final packs = m.packsFor(nativeLang);
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: packs.length,
+                      itemBuilder: (context, i) {
+                        final pack = packs[i];
+                        final box = ref.read(hiveBoxProvider);
+                        final status = packUpdateStatus(pack, local[pack.packId]);
+                        return PackTile(
+                          pack: pack,
+                          local: local[pack.packId],
+                          packStatus: status,
+                          packProgress: ref.watch(
+                            downloadProgressProvider(pack.packId),
+                          ),
+                          voiceProgress: ref.watch(
+                            voiceDownloadProgressProvider(pack.lang),
+                          ),
+                          voiceDownloaded: ref.watch(ttsManagerProvider)
+                              .isModelDownloaded(pack.lang),
+                          hasCharacter:
+                              box.get(HiveKeys.character(pack.lang)) != null,
+                          onDownload: () => _download(pack),
+                          onUpdate: () => _download(pack),
+                          onDownloadVoice: () => _downloadVoice(pack.lang),
+                          onDelete: () => _delete(pack.packId),
+                          onDeleteVoice: () => _deleteVoice(pack.lang),
+                          onSelect: () => _select(pack.packId),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ],

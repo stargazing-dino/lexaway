@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lexaway/data/pack_manager.dart';
 import 'package:lexaway/game/components/coin.dart';
 import 'package:lexaway/game/components/coin_manager.dart';
 import 'package:lexaway/game/components/ground.dart';
@@ -51,13 +52,24 @@ void main() {
 
     test('pack metadata matches PackManager expectations', () {
       final packs = fixture['packs'] as Map<String, dynamic>;
-      for (final entry in packs.values) {
-        final pack = Map<String, dynamic>.from(entry as Map);
-        expect(pack['from_lang'] as String, isA<String>());
+      for (final entry in packs.entries) {
+        // Keys are now composite packIds like "eng-fra"
+        expect(entry.key, contains('-'));
+        final pack = Map<String, dynamic>.from(entry.value as Map);
         expect(pack['schema_version'] as int, isA<int>());
         expect(pack['built_at'] as String, isA<String>());
         expect(pack['size_bytes'] as int, isA<int>());
       }
+    });
+
+    test('manifest_cache deserializes through Manifest.fromJson', () {
+      final raw = fixture['manifest_cache'] as String;
+      final json = jsonDecode(raw) as Map<String, dynamic>;
+      final manifest = Manifest.fromJson(json);
+      expect(manifest.schemaVersion, equals(1));
+      expect(manifest.packs, isNotEmpty);
+      expect(manifest.packs.first.lang, equals('fra'));
+      expect(manifest.packs.first.fromLang, equals('eng'));
     });
 
     test('tts model metadata matches TtsManager expectations', () {
