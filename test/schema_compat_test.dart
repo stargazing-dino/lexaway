@@ -53,6 +53,7 @@ void main() {
       final packs = fixture['packs'] as Map<String, dynamic>;
       for (final entry in packs.values) {
         final pack = Map<String, dynamic>.from(entry as Map);
+        expect(pack['from_lang'] as String, isA<String>());
         expect(pack['schema_version'] as int, isA<int>());
         expect(pack['built_at'] as String, isA<String>());
         expect(pack['size_bytes'] as int, isA<int>());

@@ -20,9 +20,17 @@ void main() {
       );
     }
 
-    const fraPack = PackInfo(lang: 'fra', name: 'French', flag: '🇫🇷');
+    const fraPack = PackInfo(
+      lang: 'fra',
+      fromLang: 'eng',
+      name: 'French',
+      flag: '🇫🇷',
+      builtAt: '2025-01-01T00:00:00Z',
+      schemaVersion: 1,
+    );
     const localPack = LocalPack(
       lang: 'fra',
+      fromLang: 'eng',
       schemaVersion: 1,
       builtAt: '2025-01-01T00:00:00Z',
       sizeBytes: 5 * 1024 * 1024, // 5 MB
@@ -31,11 +39,13 @@ void main() {
     PackTile buildTile({
       PackInfo pack = fraPack,
       LocalPack? local,
+      PackUpdateStatus? status,
       double? packProgress,
       double? voiceProgress,
       bool voiceDownloaded = false,
       bool hasCharacter = false,
       VoidCallback? onDownload,
+      VoidCallback? onUpdate,
       VoidCallback? onDownloadVoice,
       VoidCallback? onDelete,
       VoidCallback? onDeleteVoice,
@@ -44,11 +54,13 @@ void main() {
       return PackTile(
         pack: pack,
         local: local,
+        packStatus: status ?? packUpdateStatus(pack, local),
         packProgress: packProgress,
         voiceProgress: voiceProgress,
         voiceDownloaded: voiceDownloaded,
         hasCharacter: hasCharacter,
         onDownload: onDownload ?? () {},
+        onUpdate: onUpdate ?? () {},
         onDownloadVoice: onDownloadVoice ?? () {},
         onDelete: onDelete ?? () {},
         onDeleteVoice: onDeleteVoice ?? () {},
@@ -140,7 +152,7 @@ void main() {
     });
 
     testWidgets('hides voice row for unsupported languages', (tester) async {
-      const unsupported = PackInfo(lang: 'zzz', name: 'Unknown', flag: '?');
+      const unsupported = PackInfo(lang: 'zzz', fromLang: 'eng', name: 'Unknown', flag: '?', builtAt: '', schemaVersion: 1);
       await tester.pumpWidget(wrap(buildTile(pack: unsupported)));
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.volume_up_rounded), findsNothing);

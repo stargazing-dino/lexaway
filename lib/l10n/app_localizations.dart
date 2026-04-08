@@ -193,6 +193,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
+
+  /// No description provided for @updateApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Update App'**
+  String get updateApp;
 }
 
 class _AppLocalizationsDelegate

@@ -25,5 +25,6 @@
   "optional": "Optional",
   "continueLabel": "Continue",
   "start": "Start",
-  "settings": "Settings"
+  "settings": "Settings",
+  "updateApp": "Update App"
 }

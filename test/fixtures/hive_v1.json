@@ -14,6 +14,7 @@
   "last_used": "fra",
   "packs": {
     "fra": {
+      "from_lang": "eng",
       "schema_version": 1,
       "built_at": "2025-01-15T00:00:00Z",
       "size_bytes": 204800

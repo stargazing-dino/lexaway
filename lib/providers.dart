@@ -170,7 +170,11 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
     return ref.read(packManagerProvider).getLocalPacks();
   }
 
-  Future<void> download(String lang, {required bool includeVoice}) async {
+  Future<void> download(
+    String lang, {
+    required String fromLang,
+    required bool includeVoice,
+  }) async {
     final pm = ref.read(packManagerProvider);
     final tm = ref.read(ttsManagerProvider);
 
@@ -178,6 +182,7 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
       try {
         await pm.downloadPack(
           lang,
+          fromLang: fromLang,
           onProgress: (p) {
             ref.read(downloadProgressProvider(lang).notifier).state = p;
           },

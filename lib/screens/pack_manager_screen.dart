@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/hive_keys.dart';
+import '../data/pack_manager.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../widgets/locale_option.dart';
@@ -102,16 +103,16 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     );
   }
 
-  Future<void> _download(String lang) async {
+  Future<void> _download(String lang, {required String fromLang}) async {
     try {
       await ref
           .read(localPacksProvider.notifier)
-          .download(lang, includeVoice: false);
+          .download(lang, fromLang: fromLang, includeVoice: false);
     } catch (e) {
       if (mounted) {
         _showError(
           AppLocalizations.of(context)!.downloadFailed(e.toString()),
-          onRetry: () => _download(lang),
+          onRetry: () => _download(lang, fromLang: fromLang),
         );
       }
     }
@@ -228,9 +229,11 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                     itemBuilder: (context, i) {
                       final pack = m.packs[i];
                       final box = ref.read(hiveBoxProvider);
+                      final status = packUpdateStatus(pack, local[pack.lang]);
                       return PackTile(
                         pack: pack,
                         local: local[pack.lang],
+                        packStatus: status,
                         packProgress: ref.watch(
                           downloadProgressProvider(pack.lang),
                         ),
@@ -241,7 +244,8 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                             .isModelDownloaded(pack.lang),
                         hasCharacter:
                             box.get(HiveKeys.character(pack.lang)) != null,
-                        onDownload: () => _download(pack.lang),
+                        onDownload: () => _download(pack.lang, fromLang: pack.fromLang),
+                        onUpdate: () => _download(pack.lang, fromLang: pack.fromLang),
                         onDownloadVoice: () => _downloadVoice(pack.lang),
                         onDelete: () => _delete(pack.lang),
                         onDeleteVoice: () => _deleteVoice(pack.lang),

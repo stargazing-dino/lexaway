@@ -10,11 +10,13 @@ import 'content_row.dart';
 class PackTile extends StatelessWidget {
   final PackInfo pack;
   final LocalPack? local;
+  final PackUpdateStatus packStatus;
   final double? packProgress;
   final double? voiceProgress;
   final bool voiceDownloaded;
   final bool hasCharacter;
   final VoidCallback onDownload;
+  final VoidCallback onUpdate;
   final VoidCallback onDownloadVoice;
   final VoidCallback onDelete;
   final VoidCallback onDeleteVoice;
@@ -24,11 +26,13 @@ class PackTile extends StatelessWidget {
     super.key,
     required this.pack,
     required this.local,
+    required this.packStatus,
     required this.packProgress,
     required this.voiceProgress,
     required this.voiceDownloaded,
     required this.hasCharacter,
     required this.onDownload,
+    required this.onUpdate,
     required this.onDownloadVoice,
     required this.onDelete,
     required this.onDeleteVoice,
@@ -109,8 +113,10 @@ class PackTile extends StatelessWidget {
             label: l10n.sentences,
             sizeText: _isDownloaded ? _formatMB(local!.sizeBytes) : null,
             downloaded: _isDownloaded,
+            updateAvailable: packStatus == PackUpdateStatus.updateAvailable,
             progress: packProgress,
             onDownload: onDownload,
+            onUpdate: onUpdate,
             onDelete: onDelete,
           ),
           // -- Voice row (optional, only if TTS is supported) --
@@ -143,17 +149,25 @@ class PackTile extends StatelessWidget {
           Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: _isDownloaded ? onSelect : null,
+              onTap: _isDownloaded && packStatus != PackUpdateStatus.appUpdateRequired
+                  ? onSelect
+                  : null,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
-                  hasCharacter ? l10n.continueLabel : l10n.start,
+                  packStatus == PackUpdateStatus.appUpdateRequired
+                      ? l10n.updateApp
+                      : hasCharacter
+                          ? l10n.continueLabel
+                          : l10n.start,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.pixelifySans(
-                    color: _isDownloaded
-                        ? AppColors.success
-                        : AppColors.textFaint,
+                    color: packStatus == PackUpdateStatus.appUpdateRequired
+                        ? AppColors.accent
+                        : _isDownloaded
+                            ? AppColors.success
+                            : AppColors.textFaint,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),

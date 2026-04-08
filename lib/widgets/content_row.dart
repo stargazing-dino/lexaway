@@ -12,8 +12,10 @@ class ContentRow extends StatelessWidget {
   final String? subtitle;
   final String? sizeText;
   final bool downloaded;
+  final bool updateAvailable;
   final double? progress;
   final VoidCallback? onDownload;
+  final VoidCallback? onUpdate;
   final VoidCallback? onDelete;
 
   const ContentRow({
@@ -23,8 +25,10 @@ class ContentRow extends StatelessWidget {
     this.subtitle,
     required this.sizeText,
     required this.downloaded,
+    this.updateAvailable = false,
     required this.progress,
     this.onDownload,
+    this.onUpdate,
     this.onDelete,
   });
 
@@ -54,17 +58,23 @@ class ContentRow extends StatelessWidget {
                             backgroundColor: AppColors.surfaceBright,
                           ),
                         )
-                      : downloaded
-                          ? const Icon(
-                              Icons.check_circle,
-                              color: AppColors.success,
+                      : downloaded && updateAvailable
+                          ? Icon(
+                              Icons.arrow_upward,
+                              color: AppColors.accent,
                               size: 20,
                             )
-                          : Icon(
-                              icon,
-                              color: AppColors.textFaint,
-                              size: 20,
-                            ),
+                          : downloaded
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: AppColors.success,
+                                  size: 20,
+                                )
+                              : Icon(
+                                  icon,
+                                  color: AppColors.textFaint,
+                                  size: 20,
+                                ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -108,6 +118,16 @@ class ContentRow extends StatelessWidget {
               // -- Right: action button --
               if (_isDownloading)
                 const SizedBox(width: 28)
+              else if (downloaded && updateAvailable)
+                IconButton(
+                  icon: Icon(
+                    Icons.download_rounded,
+                    color: AppColors.accent,
+                    size: 22,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onUpdate,
+                )
               else if (downloaded)
                 IconButton(
                   icon: Icon(
