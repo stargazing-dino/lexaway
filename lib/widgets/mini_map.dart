@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -12,8 +13,12 @@ const _biomeColors = {
 };
 const _missingBiomeColor = Color(0xFFff00ff); // magenta = "you forgot one"
 
+/// How many tiles of world to show in the mini-map window.
+const _windowTiles = 100;
+const _windowPx = _windowTiles * 16.0 * LexawayGame.pixelScale;
+
 /// A pixel-art style mini-map painted inside the banner.
-/// Shows a track of biome segments with a dino marker for current position.
+/// Shows a windowed track around the player with biome coloring and a marker.
 class MiniMap extends StatelessWidget {
   final WorldMap worldMap;
   final double scrollOffset;
@@ -45,6 +50,12 @@ class _MiniMapPainter extends CustomPainter {
     final totalPx = worldMap.totalLengthPx;
     if (totalPx <= 0) return;
 
+    // Window: player at 1/3 from the left, showing _windowPx of world.
+    final windowStart = max(0.0, scrollOffset - _windowPx / 3);
+    final windowEnd = min(totalPx, windowStart + _windowPx);
+    final windowLen = windowEnd - windowStart;
+    if (windowLen <= 0) return;
+
     final trackHeight = 6.0;
     final trackY = (size.height - trackHeight) / 2;
     final trackRadius = Radius.circular(trackHeight / 2);
@@ -56,12 +67,13 @@ class _MiniMapPainter extends CustomPainter {
       bgPaint,
     );
 
-    // Biome-colored segments
+    // Biome-colored segments (only those overlapping the window)
     for (final seg in worldMap.segments) {
-      final startFrac = seg.startPx / totalPx;
-      final endFrac = seg.endPx / totalPx;
-      final x1 = startFrac * size.width;
-      final x2 = endFrac * size.width;
+      if (seg.endPx <= windowStart || seg.startPx >= windowEnd) continue;
+      final x1 = ((seg.startPx - windowStart) / windowLen * size.width)
+          .clamp(0.0, size.width);
+      final x2 = ((seg.endPx - windowStart) / windowLen * size.width)
+          .clamp(0.0, size.width);
 
       final color = _biomeColors[seg.biome] ?? _missingBiomeColor;
       final segPaint = Paint()..color = color;
@@ -74,12 +86,12 @@ class _MiniMapPainter extends CustomPainter {
       );
     }
 
-    // Player progress marker
-    final progress = (scrollOffset / totalPx).clamp(0.0, 1.0);
-    final markerX = progress * size.width;
+    // Player marker
+    final markerX = ((scrollOffset - windowStart) / windowLen * size.width)
+        .clamp(0.0, size.width);
     final markerSize = 8.0;
 
-    // Diamond shape for the marker
+    // Diamond shape
     final markerPath = Path()
       ..moveTo(markerX, trackY - 1)
       ..lineTo(markerX + markerSize / 2, trackY + trackHeight / 2)
@@ -87,11 +99,11 @@ class _MiniMapPainter extends CustomPainter {
       ..lineTo(markerX - markerSize / 2, trackY + trackHeight / 2)
       ..close();
 
-    // Marker shadow
+    // Shadow
     final shadowPaint = Paint()..color = const Color(0x40000000);
     canvas.drawPath(markerPath.shift(const Offset(0, 1)), shadowPaint);
 
-    // Marker fill
+    // Fill
     final markerPaint = Paint()
       ..shader = ui.Gradient.linear(
         Offset(markerX, trackY - 1),
@@ -100,29 +112,12 @@ class _MiniMapPainter extends CustomPainter {
       );
     canvas.drawPath(markerPath, markerPaint);
 
-    // Marker outline
+    // Outline
     final outlinePaint = Paint()
       ..color = const Color(0xFF8b6914)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
     canvas.drawPath(markerPath, outlinePaint);
-
-    // Subtle distance markers along the track (every 500 tiles)
-    final markerInterval = 500 * 16.0 * LexawayGame.pixelScale;
-    final tickPaint = Paint()
-      ..color = const Color(0x30ffffff)
-      ..strokeWidth = 1;
-    var tickX = markerInterval;
-    while (tickX < totalPx) {
-      final frac = tickX / totalPx;
-      final sx = frac * size.width;
-      canvas.drawLine(
-        Offset(sx, trackY + 1),
-        Offset(sx, trackY + trackHeight - 1),
-        tickPaint,
-      );
-      tickX += markerInterval;
-    }
   }
 
   @override

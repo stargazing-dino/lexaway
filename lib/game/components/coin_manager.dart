@@ -15,42 +15,30 @@ class CoinManager extends Component with HasGameReference<LexawayGame> {
   /// Track which item indices are currently on screen.
   final Set<int> _activeIndices = {};
 
-  double _lastOffset = 0;
-
   Function(int value)? onCoinCollected;
 
   CoinManager({required this.worldMap, required this.collectedCoins});
 
   @override
-  void onMount() {
-    super.onMount();
-    _lastOffset = game.ground.scrollOffset;
-  }
-
-  @override
   void update(double dt) {
     final offset = game.ground.scrollOffset;
-    final moved = offset != _lastOffset;
-    _lastOffset = offset;
 
-    if (moved) {
-      final startX = offset - 64;
-      final endX = offset + game.size.x + 64;
+    final startX = offset - 64;
+    final endX = offset + game.size.x + 64;
 
-      var spawned = 0;
-      for (final item in worldMap.itemsInRange(startX, endX)) {
-        if (item.category != ItemCategory.coin) continue;
-        if (_activeIndices.contains(item.index)) continue;
-        if (collectedCoins.contains(item.index)) continue;
-        if (spawned >= _maxSpawnsPerFrame) break;
+    var spawned = 0;
+    for (final item in worldMap.itemsInRange(startX, endX)) {
+      if (item.category != ItemCategory.coin) continue;
+      if (_activeIndices.contains(item.index)) continue;
+      if (collectedCoins.contains(item.index)) continue;
+      if (spawned >= _maxSpawnsPerFrame) break;
 
-        final type = item.name == 'diamond' ? CoinType.diamond : CoinType.coin;
-        final coin = Coin(type: type, worldX: item.worldX, itemIndex: item.index)
-          ..onCollected = _onCoinCollected;
-        _activeIndices.add(item.index);
-        add(coin);
-        spawned++;
-      }
+      final type = item.name == 'diamond' ? CoinType.diamond : CoinType.coin;
+      final coin = Coin(type: type, worldX: item.worldX, itemIndex: item.index)
+        ..onCollected = _onCoinCollected;
+      _activeIndices.add(item.index);
+      add(coin);
+      spawned++;
     }
 
     // Position & cull
