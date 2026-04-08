@@ -11,7 +11,13 @@ import 'screens/settings_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RefreshNotifier();
-  ref.listen(activePackProvider, (_, __) => refreshNotifier.notify());
+  ref.listen(activePackProvider, (prev, next) {
+    final wasLoading = prev?.isLoading ?? true;
+    final hasQuestions = next.valueOrNull?.isNotEmpty ?? false;
+    // Notify when loading completes (initial navigation) or a pack is loaded.
+    // Skip when an active pack is cleared (delete) — user is already on /packs.
+    if (wasLoading || hasQuestions) refreshNotifier.notify();
+  });
   ref.onDispose(refreshNotifier.dispose);
 
   return GoRouter(

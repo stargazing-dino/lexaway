@@ -3,6 +3,7 @@ import '../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../data/hive_keys.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
 import '../widgets/locale_option.dart';
@@ -101,11 +102,10 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
   }
 
   Future<void> _download(String lang) async {
-    final includeVoice = ref.read(includeVoiceProvider(lang));
     try {
       await ref
           .read(localPacksProvider.notifier)
-          .download(lang, includeVoice: includeVoice);
+          .download(lang, includeVoice: false);
     } catch (e) {
       if (mounted) {
         _showError(
@@ -133,6 +133,13 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     await ref.read(localPacksProvider.notifier).delete(lang);
   }
 
+  Future<void> _deleteVoice(String lang) async {
+    ref.read(ttsServiceProvider).releaseEngine();
+    await ref.read(ttsManagerProvider).deleteModel(lang);
+    // Invalidate so the UI picks up the removed voice state.
+    ref.invalidate(localPacksProvider);
+  }
+
   Future<void> _select(String lang) async {
     await ref.read(activePackProvider.notifier).switchPack(lang);
     if (mounted) context.go('/game');
@@ -157,11 +164,17 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
     final localPacks = ref.watch(localPacksProvider);
     final local = localPacks.valueOrNull ?? {};
 
+    // Watch the state so we rebuild when it changes; read the notifier for the lang.
+    final hasActiveQuestions = ref.watch(activePackProvider).valueOrNull?.isNotEmpty ?? false;
+    final activeLang = ref.read(activePackProvider.notifier).activeLang;
+    final canGoBack = hasActiveQuestions && activeLang != null && local.containsKey(activeLang);
+
     return Scaffold(
       backgroundColor: AppColors.scaffold,
       appBar: AppBar(
         backgroundColor: AppColors.scaffold,
         foregroundColor: AppColors.textSecondary,
+        automaticallyImplyLeading: canGoBack,
         title: Text(AppLocalizations.of(context)!.packManagerTitle),
         actions: [
           IconButton(
@@ -195,6 +208,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                 itemCount: m.packs.length,
                 itemBuilder: (context, i) {
                   final pack = m.packs[i];
+                  final box = ref.read(hiveBoxProvider);
                   return PackTile(
                     pack: pack,
                     local: local[pack.lang],
@@ -206,14 +220,11 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                     ),
                     voiceDownloaded: ref.watch(ttsManagerProvider)
                         .isModelDownloaded(pack.lang),
-                    includeVoice: ref.watch(includeVoiceProvider(pack.lang)),
-                    onToggleVoice: (value) {
-                      ref.read(includeVoiceProvider(pack.lang).notifier).state =
-                          value;
-                    },
+                    hasCharacter: box.get(HiveKeys.character(pack.lang)) != null,
                     onDownload: () => _download(pack.lang),
                     onDownloadVoice: () => _downloadVoice(pack.lang),
                     onDelete: () => _delete(pack.lang),
+                    onDeleteVoice: () => _deleteVoice(pack.lang),
                     onSelect: () => _select(pack.lang),
                   );
                 },

@@ -91,19 +91,20 @@ class _GameScreenState extends ConsumerState<GameScreen>
         children: [
           GameWidget(game: game),
           Positioned(left: 0, right: 0, top: 0, child: const StreakBar()),
-          Positioned(
-            left: 0,
-            right: 0,
-            top:
-                MediaQuery.of(context).size.height * LexawayGame.groundLevel +
-                64,
-            bottom: 0,
-            child: QuestionPanel(
-              key: ValueKey(questions),
-              game: game,
-              questions: questions,
+          if (questions.isNotEmpty)
+            Positioned(
+              left: 0,
+              right: 0,
+              top:
+                  MediaQuery.of(context).size.height * LexawayGame.groundLevel +
+                  64,
+              bottom: 0,
+              child: QuestionPanel(
+                key: ValueKey(questions),
+                game: game,
+                questions: questions,
+              ),
             ),
-          ),
         ],
       ),
     );

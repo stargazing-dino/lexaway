@@ -22,34 +22,10 @@ class PackDatabase {
     await _migrate();
   }
 
-  /// Idempotent migration: add SRS columns if they don't exist yet.
+  /// Idempotent migration for pack schema changes after launch.
+  /// Pre-launch, bake new columns directly into build.py instead.
   Future<void> _migrate() async {
-    final db = _db!;
-    await db.writeTransaction((tx) async {
-      final cols = await tx.getAll("PRAGMA table_info('phrases')");
-      final colNames = cols.map((r) => r['name'] as String).toSet();
-
-      if (!colNames.contains('easiness')) {
-        await tx.execute(
-          'ALTER TABLE phrases ADD COLUMN easiness REAL NOT NULL DEFAULT 2.5',
-        );
-      }
-      if (!colNames.contains('interval_days')) {
-        await tx.execute(
-          'ALTER TABLE phrases ADD COLUMN interval_days INTEGER NOT NULL DEFAULT 0',
-        );
-      }
-      if (!colNames.contains('repetitions')) {
-        await tx.execute(
-          'ALTER TABLE phrases ADD COLUMN repetitions INTEGER NOT NULL DEFAULT 0',
-        );
-      }
-      if (!colNames.contains('next_review')) {
-        await tx.execute(
-          "ALTER TABLE phrases ADD COLUMN next_review TEXT NOT NULL DEFAULT ''",
-        );
-      }
-    });
+    // Add migrations here when users have local packs that can't be rebuilt.
   }
 
   Future<List<Question>> loadQuestions({String? level, int limit = 200}) async {

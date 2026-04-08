@@ -237,10 +237,11 @@ class LocalPacksNotifier extends AsyncNotifier<Map<String, LocalPack>> {
     await tm.deleteModel(lang);
     state = AsyncData(pm.getLocalPacks());
 
-    // If we just deleted the active pack, kick back to pack selection
-    final activeLang = ref.read(activePackProvider.notifier).activeLang;
-    if (activeLang == lang) {
-      ref.invalidate(activePackProvider);
+    // If we just deleted the active pack, clear it.
+    // Skip if a switchPack is already in flight (state would be loading).
+    final activeNotifier = ref.read(activePackProvider.notifier);
+    if (activeNotifier.activeLang == lang && !ref.read(activePackProvider).isLoading) {
+      await activeNotifier.clear();
     }
   }
 }
@@ -380,6 +381,17 @@ class ActivePackNotifier extends AsyncNotifier<List<Question>> {
   }
 
   String? get activeLang => _activeLang;
+
+  /// Clear without rebuilding — avoids the router redirect dance.
+  Future<void> clear() async {
+    try {
+      await _db.close();
+    } catch (_) {
+      // DB may never have been opened (e.g. no packs installed).
+    }
+    _activeLang = null;
+    state = const AsyncData([]);
+  }
 
   Future<void> switchPack(String lang) async {
     state = const AsyncLoading();
