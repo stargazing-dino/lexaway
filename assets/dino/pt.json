@@ -1,0 +1,13 @@
+{
+  "correct": ["Boa!", "Sim!", "Isso!", "Vamos!", "Fácil!", "Bravo!", "Certinho!", "Mandou bem!", "Perfeito!", "Show!", "Arrasou!", "Demais!", "Uau!", "Top!", "Incrível!", "Na mosca!", "Acertou!", "Massa!", "Fenomenal!", "Que craque!"],
+  "streak": {
+    "5": "Pegando fogo!",
+    "10": "Imparável!",
+    "15": "Máquina!",
+    "20": "Gênio!",
+    "25": "LENDÁRIO",
+    "50": "VOCÊ É HUMANO?!"
+  },
+  "wrong": ["Ai", "Hmm...", "Não!", "Quase", "Opa", "Tão perto!", "Eita", "De novo!", "Errou", "Por pouco!", "Essa não...", "Falhou!", "Na próxima!", "Essa foi difícil"],
+  "idle": ["...oi?", "zzz", "...", "Tá aí?", "*bocejo*", "Toc toc?", "Oiii?", "*ronco*", "*se espreguiça*", "Que tédio", "Vamos jogar?", "Terra para humano!"]
+}

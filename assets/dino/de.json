@@ -1,0 +1,13 @@
+{
+  "correct": ["Gut!", "Ja!", "Genau!", "Super!", "Leicht!", "Bravo!", "Stimmt!", "Toll!", "Perfekt!", "Klasse!", "Hammer!", "Stark!", "Wow!", "Spitze!", "Sauber!", "Volltreffer!", "Richtig!", "Mega!", "Bombe!", "Erste Sahne!"],
+  "streak": {
+    "5": "Feuer!",
+    "10": "Unaufhaltbar!",
+    "15": "Maschine!",
+    "20": "Genie!",
+    "25": "LEGENDÄR",
+    "50": "BIST DU ECHT?!"
+  },
+  "wrong": ["Autsch", "Hmm...", "Nein!", "Knapp daneben", "Uff", "So nah!", "Huch", "Nochmal!", "Daneben", "Fast!", "Nicht ganz...", "Verfehlt!", "Nächstes Mal!", "Die war fies"],
+  "idle": ["...hallo?", "zzz", "...", "Noch da?", "*gähn*", "Klopf klopf?", "Hallooo?", "*schnarch*", "*streckt sich*", "Mir ist langweilig", "Spielen wir?", "Erde an Mensch!"]
+}

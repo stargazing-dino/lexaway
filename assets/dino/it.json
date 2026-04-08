@@ -1,0 +1,13 @@
+{
+  "correct": ["Bene!", "Sì!", "Esatto!", "Dai!", "Facile!", "Bravo!", "Perfetto!", "Giusto!", "Grande!", "Forte!", "Fantastico!", "Mitico!", "Bellissimo!", "Che classe!", "Fenomenale!", "Centro!", "Preciso!", "Wow!", "Pazzesco!", "Da applausi!"],
+  "streak": {
+    "5": "In fiamme!",
+    "10": "Inarrestabile!",
+    "15": "Macchina!",
+    "20": "Genio!",
+    "25": "LEGGENDARIO",
+    "50": "SEI UMANO?!"
+  },
+  "wrong": ["Ahi", "Hmm...", "No!", "Quasi", "Uffa", "Così vicino!", "Ops", "Riprova!", "Mancato", "Per poco!", "Non proprio...", "Sbagliato!", "La prossima!", "Tosta quella"],
+  "idle": ["...ciao?", "zzz", "...", "Ci sei?", "*sbadiglia*", "Toc toc?", "Ciaooo?", "*russa*", "*si stiracchia*", "Che noia", "Giochiamo?", "Terra chiama umano!"]
+}

@@ -1,10 +1,13 @@
 {
-  "correct": ["Nice!", "Yes!", "Nailed it!", "Yep!", "Easy!", "Bravo!", "Oui oui!", "Got it!", "Magnifique!", "Smooth!"],
+  "correct": ["Nice!", "Yes!", "Nailed it!", "Yep!", "Easy!", "Bravo!", "Got it!", "Smooth!", "Boom!", "Perfect!", "Bingo!", "Sharp!", "Wow!", "Sweet!", "Crushed it!", "Right on!", "Too easy!", "Brilliant!", "On point!", "Chef's kiss!"],
   "streak": {
     "5": "On fire!",
     "10": "Unstoppable!",
-    "25": "LEGENDARY"
+    "15": "Machine!",
+    "20": "Genius!",
+    "25": "LEGENDARY",
+    "50": "ARE YOU HUMAN?!"
   },
-  "wrong": ["Ouch", "Hmm...", "Nope!", "Not quite", "Oof", "So close!", "Yikes", "Try again!"],
-  "idle": ["...hello?", "zzz", "...", "Still there?", "*yawn*", "Tap tap?"]
+  "wrong": ["Ouch", "Hmm...", "Nope!", "Not quite", "Oof", "So close!", "Yikes", "Try again!", "Whoops", "Almost!", "Nah...", "Swing and a miss", "Next time!", "Tricky one"],
+  "idle": ["...hello?", "zzz", "...", "Still there?", "*yawn*", "Tap tap?", "Hellooo?", "*snore*", "*stretches*", "I'm bored", "Wanna play?", "Earth to human!"]
 }

@@ -1,0 +1,13 @@
+{
+  "correct": ["Bien!", "Oui!", "Bravo!", "Exact!", "Facile!", "Parfait!", "Génial!", "Nickel!", "Top!", "Joli!", "Magnifique!", "Superbe!", "Chapeau!", "Impec!", "Trop fort!", "En plein dans le mille!", "Voilà!", "Classe!", "Costaud!", "Splendide!"],
+  "streak": {
+    "5": "En feu!",
+    "10": "Inarrêtable!",
+    "15": "Machine!",
+    "20": "Génie!",
+    "25": "LÉGENDAIRE",
+    "50": "T'ES HUMAIN?!"
+  },
+  "wrong": ["Aïe", "Hmm...", "Non!", "Pas tout à fait", "Ouf", "Presque!", "Oups", "Encore!", "Raté", "Si proche!", "Pas ça...", "Loupé!", "La prochaine!", "Costaud celle-là"],
+  "idle": ["...coucou?", "zzz", "...", "T'es là?", "*bâille*", "Toc toc?", "Ouhooou?", "*ronfle*", "*s'étire*", "Je m'ennuie", "On joue?", "Allô la Terre!"]
+}

@@ -1,10 +1,13 @@
 {
-  "correct": ["Bien!", "Sí!", "Genial!", "Vamos!", "Fácil!", "Bravo!", "Olé!", "Eso es!", "Magnífico!", "Suave!"],
+  "correct": ["Bien!", "Sí!", "Genial!", "Vamos!", "Fácil!", "Bravo!", "Olé!", "Eso es!", "Magnífico!", "Perfecto!", "Buenísimo!", "Guau!", "Crack!", "Toma ya!", "Increíble!", "Fenomenal!", "A la primera!", "De lujo!", "Así se hace!", "Bestial!"],
   "streak": {
     "5": "En llamas!",
     "10": "Imparable!",
-    "25": "LEGENDARIO"
+    "15": "Máquina!",
+    "20": "Genio!",
+    "25": "LEGENDARIO",
+    "50": "ERES HUMANO?!"
   },
-  "wrong": ["Auch", "Hmm...", "No!", "Casi", "Uf", "Tan cerca!", "Ay", "Otra vez!"],
-  "idle": ["...hola?", "zzz", "...", "Sigues ahí?", "*bostezo*", "Toc toc?"]
+  "wrong": ["Auch", "Hmm...", "No!", "Casi", "Uf", "Tan cerca!", "Ay", "Otra vez!", "Ups", "Por poco!", "Qué va...", "Fallaste!", "La próxima!", "Esa era difícil"],
+  "idle": ["...hola?", "zzz", "...", "Sigues ahí?", "*bostezo*", "Toc toc?", "Holaaaa?", "*ronquido*", "*se estira*", "Qué aburrido", "Jugamos?", "Tierra a humano!"]
 }
