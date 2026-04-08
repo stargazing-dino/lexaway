@@ -162,12 +162,17 @@ class _VolumeSlider extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 72,
-            child: Text(
-              label,
-              style: GoogleFonts.pixelifySans(
-                color: AppColors.textPrimary,
-                fontSize: 16,
+            width: 88,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                label,
+                maxLines: 1,
+                style: GoogleFonts.pixelifySans(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
