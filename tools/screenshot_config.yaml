@@ -1,0 +1,33 @@
+devices:
+  - name: iPhone_16_Plus
+    simulator_type: com.apple.CoreSimulator.SimDeviceType.iPhone-16-Plus
+    runtime: com.apple.CoreSimulator.SimRuntime.iOS-18-2
+  - name: iPhone_11_Pro_Max
+    simulator_type: com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro-Max
+    runtime: com.apple.CoreSimulator.SimRuntime.iOS-18-2
+
+screens:
+  - filename: 01_packs
+    caption: "Choose your language"
+    style:
+      scrim_height: 0.18
+  - filename: 02_settings
+    caption: "Learn your way"
+  - filename: 03_egg_selection
+    caption: "Hatch your companion"
+  - filename: 04_game
+    caption: "Learn by playing"
+    style:
+      scrim_height: 0.15
+  - filename: 05_loading
+    caption: null
+
+style:
+  scrim_color: "#000000"
+  scrim_opacity: 0.85
+  scrim_height: 0.25
+  caption_color: "#ffffff"
+  caption_size: 56
+  font: PressStart2P-Regular.ttf
+  dither_pixel_size: 12
+  solid_ratio: 0.65
