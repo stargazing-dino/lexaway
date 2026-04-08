@@ -18,8 +18,7 @@ void _migrateHive(Box box) {
   final old = box.get(HiveKeys.hiveSchemaVersion, defaultValue: 0) as int;
   if (old >= hiveSchemaVersion) return;
 
-  // --- future migrations go here ---
-  // if (old < 2) { ... }
+  // Future migrations go here.
 
   box.put(HiveKeys.hiveSchemaVersion, hiveSchemaVersion);
 }

@@ -69,7 +69,6 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
   @override
   Future<void> onLoad() async {
-    // --- World generation / restoration ---
     final saved = _loadWorldState();
     final seed = saved?['seed'] as int? ?? Random().nextInt(1 << 32);
     _worldExtensions = saved?['extensions'] as int? ?? 0;
@@ -83,7 +82,6 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       _extendWorld();
     }
 
-    // --- Parallax ---
     final parallaxHeight = size.y * groundLevel + 16 * pixelScale - 40;
     parallaxComponent = await loadParallaxComponent(
       [
@@ -101,35 +99,29 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     );
     add(parallaxComponent);
 
-    // --- Ground ---
     ground = Ground(worldMap: worldMap)..priority = 1;
     if (saved != null) {
       ground.scrollOffset = (saved['scroll_offset'] as num?)?.toDouble() ?? 0;
     }
     add(ground);
 
-    // --- Collected coins ---
     final savedCoins = saved?['collected_coins'] as List?;
     if (savedCoins != null) {
       collectedCoins.addAll(savedCoins.cast<int>());
     }
 
-    // --- World renderer (entities) ---
     worldRenderer = WorldRenderer(worldMap)..priority = 1;
     add(worldRenderer);
 
-    // --- Coins ---
     coinManager = CoinManager(worldMap: worldMap, collectedCoins: collectedCoins)
       ..priority = 1
       ..onCoinCollected = (value) => onCoinCollected?.call(value);
     add(coinManager);
 
-    // --- Player ---
     player = Player(spritePath: characterPath)..priority = 2;
     await add(player);
     player.play(DinoAnim.scan);
 
-    // --- Effects & UI ---
     windLines = WindLines()..priority = 2;
     add(windLines);
 

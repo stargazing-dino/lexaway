@@ -40,7 +40,6 @@ class BubblePainter {
     const bodyRight = width;
     const bodyBottom = height - tailHeight;
 
-    // --- Border (drawn first, 1px thick) ---
     // Top edge (with 1px chamfer at corners)
     _hLine(canvas, borderPaint, bodyLeft + 1, bodyTop, bodyRight - 1);
     // Bottom edge
@@ -50,7 +49,6 @@ class BubblePainter {
     // Right edge
     _vLine(canvas, borderPaint, bodyRight - 1, bodyTop + 1, bodyBottom - 1);
 
-    // --- Fill ---
     // Main fill (inset by 1px from border)
     canvas.drawRect(
       Rect.fromLTRB(
@@ -62,7 +60,6 @@ class BubblePainter {
       fillPaint,
     );
 
-    // --- Tail ---
     final tailX = switch (tail) {
       TailDirection.bottomLeft => bodyLeft + 3,
       TailDirection.bottomCenter => (bodyRight ~/ 2) - (tailWidth ~/ 2),
