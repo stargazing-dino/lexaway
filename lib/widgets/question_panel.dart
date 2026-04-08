@@ -9,6 +9,7 @@ import '../game/lexaway_game.dart';
 import '../theme/app_colors.dart';
 import '../models/question.dart';
 import '../providers.dart';
+import 'mini_map.dart';
 
 enum _AnswerState { unanswered, correct, wrong }
 
@@ -221,14 +222,9 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                     filterQuality: FilterQuality.none,
                   ),
                 ),
-                child: Text(
-                  _buildProgressBar(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    letterSpacing: 2,
-                  ),
+                child: MiniMap(
+                  worldMap: widget.game.worldMap,
+                  scrollOffset: widget.game.ground.scrollOffset,
                 ),
               ),
             ),
@@ -346,12 +342,4 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     );
   }
 
-  String _buildProgressBar() {
-    final total = _questions.length;
-    final current = _questionIndex % total;
-    final pos = (current * 4 / total).floor();
-    final before = '-' * pos;
-    final after = '-' * (4 - pos);
-    return '$before*$after';
-  }
 }
