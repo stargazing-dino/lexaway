@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,6 +7,7 @@ import 'data/hive_keys.dart';
 import 'providers.dart';
 import 'screens/egg_selection_screen.dart';
 import 'screens/game_screen.dart';
+import 'screens/loading_screen.dart';
 import 'screens/pack_manager_screen.dart';
 import 'screens/settings_screen.dart';
 
@@ -19,6 +21,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     if (wasLoading || hasQuestions) refreshNotifier.notify();
   });
   ref.onDispose(refreshNotifier.dispose);
+
+  // Guard against a race where activePackProvider resolves before the
+  // listener above is attached — without this kick the router would
+  // never re-evaluate its redirect and stay stuck on /loading.
+  SchedulerBinding.instance.addPostFrameCallback((_) {
+    refreshNotifier.notify();
+  });
 
   return GoRouter(
     initialLocation: '/loading',
@@ -55,8 +64,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/loading',
-        builder: (context, state) =>
-            const Scaffold(body: Center(child: CircularProgressIndicator())),
+        builder: (context, state) => const LoadingScreen(),
       ),
       GoRoute(
         path: '/hatch',
