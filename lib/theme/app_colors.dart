@@ -14,6 +14,11 @@ abstract final class AppColors {
   static const textTertiary = Colors.white54;
   static const textFaint = Colors.white38;
 
+  // Text on light tile/parchment backgrounds
+  static const tileText = Color(0xFF3B2816);
+  static const tileTextSecondary = Color(0xFF6B4C30);
+  static const tileTextFaint = Color(0xFF9C7B5A);
+
   // Accent
   static final accent = Colors.amber.shade600;
   static final accentLight = Colors.amber.shade400;

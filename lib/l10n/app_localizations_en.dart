@@ -65,4 +65,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get communityContent =>
+      'Sentences are community-contributed and may not be reviewed.';
 }

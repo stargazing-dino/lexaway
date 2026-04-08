@@ -17,5 +17,6 @@
   "start": "Starten",
   "settings": "Einstellungen",
   "updateApp": "App aktualisieren",
-  "privacyPolicy": "Datenschutzrichtlinie"
+  "privacyPolicy": "Datenschutzrichtlinie",
+  "communityContent": "Die Sätze sind Beiträge der Community und möglicherweise nicht überprüft."
 }

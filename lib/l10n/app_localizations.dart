@@ -213,6 +213,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy Policy'**
   String get privacyPolicy;
+
+  /// No description provided for @communityContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sentences are community-contributed and may not be reviewed.'**
+  String get communityContent;
 }
 
 class _AppLocalizationsDelegate

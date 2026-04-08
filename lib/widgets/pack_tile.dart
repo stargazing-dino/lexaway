@@ -53,12 +53,12 @@ class PackTile extends StatelessWidget {
         image: DecorationImage(
           image: AssetImage(
             _isDownloaded
-                ? 'assets/images/ui/panel_metal_green_bg.png'
-                : 'assets/images/ui/panel_metal_bg.png',
+                ? 'assets/images/ui/tile_pack_green_bg.png'
+                : 'assets/images/ui/tile_pack_bg.png',
           ),
           centerSlice: _isDownloaded
-              ? const Rect.fromLTRB(18, 18, 78, 78)
-              : const Rect.fromLTRB(12, 12, 84, 84),
+              ? const Rect.fromLTRB(24, 24, 72, 72)
+              : const Rect.fromLTRB(15, 15, 81, 78),
           filterQuality: FilterQuality.none,
         ),
       ),
@@ -73,14 +73,14 @@ class PackTile extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.textPrimary.withValues(alpha: 0.12),
+                    color: AppColors.tileText.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     pack.lang.toUpperCase(),
                     style: GoogleFonts.pixelifySans(
-                      color: AppColors.textSecondary,
+                      color: AppColors.tileTextSecondary,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -91,7 +91,7 @@ class PackTile extends StatelessWidget {
                   child: Text(
                     pack.name,
                     style: GoogleFonts.pixelifySans(
-                      color: AppColors.textPrimary,
+                      color: AppColors.tileText,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -106,7 +106,7 @@ class PackTile extends StatelessWidget {
             thickness: 1,
             indent: 14,
             endIndent: 14,
-            color: AppColors.textPrimary.withValues(alpha: 0.08),
+            color: AppColors.tileText.withValues(alpha: 0.08),
           ),
           ContentRow(
             icon: Icons.text_snippet_outlined,
@@ -124,7 +124,9 @@ class PackTile extends StatelessWidget {
             Divider(
               height: 1,
               thickness: 1,
-              color: AppColors.textPrimary.withValues(alpha: 0.08),
+              indent: 14,
+              endIndent: 14,
+              color: AppColors.tileText.withValues(alpha: 0.08),
             ),
             ContentRow(
               icon: Icons.volume_up_rounded,
@@ -144,7 +146,7 @@ class PackTile extends StatelessWidget {
             thickness: 1,
             indent: 14,
             endIndent: 14,
-            color: AppColors.textPrimary.withValues(alpha: 0.08),
+            color: AppColors.tileText.withValues(alpha: 0.08),
           ),
           Material(
             color: Colors.transparent,
@@ -167,7 +169,7 @@ class PackTile extends StatelessWidget {
                         ? AppColors.accent
                         : _isDownloaded
                             ? AppColors.success
-                            : AppColors.textFaint,
+                            : AppColors.tileTextFaint,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),

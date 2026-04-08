@@ -54,8 +54,8 @@ class ContentRow extends StatelessWidget {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             value: progress! > 0 ? progress : null,
-                            color: AppColors.textTertiary,
-                            backgroundColor: AppColors.surfaceBright,
+                            color: AppColors.tileTextFaint,
+                            backgroundColor: AppColors.tileText.withValues(alpha: 0.08),
                           ),
                         )
                       : downloaded && updateAvailable
@@ -72,7 +72,7 @@ class ContentRow extends StatelessWidget {
                                 )
                               : Icon(
                                   icon,
-                                  color: AppColors.textFaint,
+                                  color: AppColors.tileTextFaint,
                                   size: 20,
                                 ),
                 ),
@@ -88,7 +88,7 @@ class ContentRow extends StatelessWidget {
                         Text(
                           label,
                           style: const TextStyle(
-                            color: AppColors.textSecondary,
+                            color: AppColors.tileTextSecondary,
                             fontSize: 13,
                           ),
                         ),
@@ -97,7 +97,7 @@ class ContentRow extends StatelessWidget {
                           Text(
                             sizeText!,
                             style: const TextStyle(
-                              color: AppColors.textTertiary,
+                              color: AppColors.tileTextFaint,
                               fontSize: 12,
                             ),
                           ),
@@ -108,7 +108,7 @@ class ContentRow extends StatelessWidget {
                       Text(
                         subtitle!,
                         style: const TextStyle(
-                          color: AppColors.textTertiary,
+                          color: AppColors.tileTextFaint,
                           fontSize: 11,
                         ),
                       ),
@@ -132,7 +132,7 @@ class ContentRow extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.delete_outline,
-                    color: AppColors.textTertiary,
+                    color: AppColors.tileTextFaint,
                     size: 18,
                   ),
                   visualDensity: VisualDensity.compact,
@@ -143,8 +143,8 @@ class ContentRow extends StatelessWidget {
                   icon: Icon(
                     Icons.download_rounded,
                     color: onDownload != null
-                        ? AppColors.textSecondary
-                        : AppColors.textFaint,
+                        ? AppColors.tileTextSecondary
+                        : AppColors.tileTextFaint,
                     size: 22,
                   ),
                   visualDensity: VisualDensity.compact,
@@ -159,7 +159,7 @@ class ContentRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(3),
               child: LinearProgressIndicator(
                 value: progress! > 0 ? progress : null,
-                backgroundColor: AppColors.surfaceBright,
+                backgroundColor: AppColors.tileText.withValues(alpha: 0.10),
                 valueColor: AlwaysStoppedAnimation(AppColors.accent),
                 minHeight: 4,
               ),

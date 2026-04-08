@@ -208,7 +208,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
             ),
           ),
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
                 height: MediaQuery.of(context).padding.top + kToolbarHeight,
@@ -217,11 +217,39 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   AppLocalizations.of(context)!.packManagerSubtitle,
+                  textAlign: TextAlign.center,
                   style:
                       TextStyle(color: AppColors.textSecondary, fontSize: 14),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+              FractionallySizedBox(
+                widthFactor: 0.5,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(
+                        'assets/images/ui/panel_metal_bg.png',
+                      ),
+                      centerSlice: Rect.fromLTRB(12, 12, 84, 84),
+                      filterQuality: FilterQuality.none,
+                    ),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context)!.communityContent,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.textTertiary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
 
               // Pack list
               Expanded(

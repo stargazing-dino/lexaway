@@ -65,4 +65,8 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get privacyPolicy => 'Datenschutzrichtlinie';
+
+  @override
+  String get communityContent =>
+      'Die Sätze sind Beiträge der Community und möglicherweise nicht überprüft.';
 }

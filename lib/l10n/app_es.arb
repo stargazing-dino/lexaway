@@ -17,5 +17,6 @@
   "start": "Comenzar",
   "settings": "Ajustes",
   "updateApp": "Actualizar App",
-  "privacyPolicy": "Política de privacidad"
+  "privacyPolicy": "Política de privacidad",
+  "communityContent": "Las oraciones son contribuciones de la comunidad y pueden no estar revisadas."
 }

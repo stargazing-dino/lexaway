@@ -27,5 +27,6 @@
   "start": "Start",
   "settings": "Settings",
   "updateApp": "Update App",
-  "privacyPolicy": "Privacy Policy"
+  "privacyPolicy": "Privacy Policy",
+  "communityContent": "Sentences are community-contributed and may not be reviewed."
 }
