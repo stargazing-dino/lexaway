@@ -70,15 +70,27 @@ class _TiledBackgroundState extends State<TiledBackground>
   Offset _offset = Offset.zero;
   Duration _lastTick = Duration.zero;
 
+  bool _reduceMotion = false;
+
   bool get _shouldAnimate =>
-      widget.scrollDirection != Offset.zero && widget.scrollSpeed > 0;
+      !_reduceMotion &&
+      widget.scrollDirection != Offset.zero &&
+      widget.scrollSpeed > 0;
 
   @override
   void initState() {
     super.initState();
     _loadImage();
     _ticker = createTicker(_onTick);
-    if (_shouldAnimate) _ticker.start();
+    // Ticker start is deferred to didChangeDependencies where we can read
+    // MediaQuery.disableAnimations.
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = MediaQuery.of(context).disableAnimations;
+    _syncTicker();
   }
 
   @override
@@ -88,12 +100,16 @@ class _TiledBackgroundState extends State<TiledBackground>
       _disposeImage();
       _loadImage();
     }
+    _syncTicker();
+  }
+
+  void _syncTicker() {
     if (_shouldAnimate && !_ticker.isActive) {
       _lastTick = Duration.zero;
       _ticker.start();
     } else if (!_shouldAnimate && _ticker.isActive) {
       _ticker.stop();
-      _offset = Offset.zero;
+      setState(() => _offset = Offset.zero);
     }
   }
 

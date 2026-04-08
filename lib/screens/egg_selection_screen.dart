@@ -175,6 +175,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                 // Title
                 Text(
                   l10n.chooseYourEgg,
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.pixelifySans(
                     color: AppColors.textPrimary,
                     fontSize: 36,
@@ -199,9 +200,9 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
 
                       // Triad positions
                       const triad = [
-                        Alignment(0, -0.35),        // top centre
-                        Alignment(-0.45, 0.3),       // bottom left
-                        Alignment(0.45, 0.3),        // bottom right
+                        Alignment(0, -0.35), // top centre
+                        Alignment(-0.45, 0.3), // bottom left
+                        Alignment(0.45, 0.3), // bottom right
                       ];
                       final alignment = _hatching && isSelected
                           ? Alignment.center
@@ -228,8 +229,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                               );
                             },
                             child: GestureDetector(
-                              onTap:
-                                  _hatching ? null : () => _onEggTapped(i),
+                              onTap: _hatching ? null : () => _onEggTapped(i),
                               child: SizedBox(
                                 width: 120,
                                 height: 120,
