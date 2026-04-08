@@ -34,6 +34,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   integration_test:
     sdk: flutter
+  flutter_native_splash: ^2.4.7
 
 flutter:
   generate: true
@@ -90,3 +91,8 @@ flutter:
     - assets/images/characters/male/olaf/egg/
     - assets/images/characters/male/sena/base/
     - assets/images/characters/male/sena/egg/
+
+flutter_native_splash:
+  color: "#3E2723"
+  ios: true
+  android: true
