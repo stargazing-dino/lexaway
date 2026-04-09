@@ -35,6 +35,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   flutter_native_splash: ^2.4.7
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   generate: true
@@ -96,3 +97,10 @@ flutter_native_splash:
   color: "#3E2723"
   ios: true
   android: true
+
+flutter_launcher_icons:
+  image_path: "assets/app_icon.png"
+  ios: true
+  android: true
+  adaptive_icon_background: "#3E2723"
+  adaptive_icon_foreground: "assets/app_icon.png"
