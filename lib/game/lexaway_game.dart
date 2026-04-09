@@ -15,6 +15,7 @@ import 'components/speech_bubble.dart';
 import 'components/speech_messages.dart';
 import 'components/wind_lines.dart';
 import 'movement_controller.dart';
+import 'world/biome_registry.dart';
 import 'world/world_generator.dart';
 import 'world/world_map.dart';
 import 'world/world_renderer.dart';
@@ -82,15 +83,10 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       _extendWorld();
     }
 
+    final initialBiome = BiomeRegistry.get(worldMap.segments.first.biome);
     final parallaxHeight = size.y * groundLevel + 16 * pixelScale - 40;
     parallaxComponent = await loadParallaxComponent(
-      [
-        ParallaxImageData('parallax/sky.png'),
-        ParallaxImageData('parallax/clouds_far.png'),
-        ParallaxImageData('parallax/clouds_near.png'),
-        ParallaxImageData('parallax/hills.png'),
-        ParallaxImageData('parallax/foreground.png'),
-      ],
+      initialBiome.parallaxLayers.map(ParallaxImageData.new).toList(),
       baseVelocity: Vector2.zero(),
       velocityMultiplierDelta: Vector2(1.4, 0),
       fill: LayerFill.height,

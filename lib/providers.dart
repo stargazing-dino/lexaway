@@ -300,12 +300,6 @@ final voiceDownloadProgressProvider = StateProvider.family<double?, String>(
   (ref, lang) => null,
 );
 
-/// Whether to include voice in the next download, keyed by lang code.
-/// Defaults to true.
-final includeVoiceProvider = StateProvider.family<bool, String>(
-  (ref, lang) => true,
-);
-
 // TTS
 
 /// Singleton TtsManager backed by the Hive box.
