@@ -1,0 +1,111 @@
+# App Store Connect Metadata
+# Localize each field per language. Apple limits noted in comments.
+
+# Same for all languages
+support_url: "https://lexaway.github.io/lexaway"
+marketing_url: "https://lexaway.github.io/lexaway"
+
+en:
+  # Max 170 chars. Shown above description, can be updated without a new build.
+  promotional_text: "A pixel-art language game. Pick a language, hatch a dino, and learn vocabulary as you walk through a world that grows with every correct answer."
+  # Max 4000 chars.
+  description: |
+    Lexaway is a language learning game with a simple loop: answer vocabulary questions correctly and your pixel-art dino walks forward. Keep going and see what the world has in store.
+
+    Pick a language, download the pack, and start playing — no account needed.
+
+    FEATURES
+    • French, Spanish, German, Italian, and Portuguese from English
+    • Fully offline — download a language pack and learn anywhere
+    • Text-to-speech pronunciation for every word
+    • Pixel-art world that grows as you progress
+    • No ads, no accounts, no tracking
+
+    Lexaway is open source. Feedback and contributions welcome at github.com/lexaway.
+  # Max 100 chars total, comma-separated.
+  keywords: "language learning,vocabulary,french,spanish,german,italian,portuguese,pixel art,game,offline"
+
+de:
+  promotional_text: "Ein Pixel-Art-Sprachspiel. Wähle eine Sprache, schlüpfe einen Dino und lerne Vokabeln auf dem Weg durch eine Welt, die mit jeder richtigen Antwort wächst."
+  description: |
+    Lexaway ist ein Sprachlernspiel mit einem einfachen Prinzip: Beantworte Vokabelfragen richtig und dein Pixel-Art-Dino läuft weiter. Mach weiter und entdecke, was die Welt zu bieten hat.
+
+    Wähle eine Sprache, lade das Paket herunter und leg los — kein Konto nötig.
+
+    FEATURES
+    • Französisch, Spanisch, Deutsch, Italienisch und Portugiesisch ab Englisch
+    • Komplett offline — lade ein Sprachpaket herunter und lerne überall
+    • Text-to-Speech-Aussprache für jedes Wort
+    • Pixel-Art-Welt, die mit deinem Fortschritt wächst
+    • Keine Werbung, keine Konten, kein Tracking
+
+    Lexaway ist Open Source. Feedback und Beiträge willkommen auf github.com/lexaway.
+  keywords: "Sprachen lernen,Vokabeln,Französisch,Spanisch,Deutsch,Italienisch,Portugiesisch,Pixel Art,Spiel,offline"
+
+es:
+  promotional_text: "Un juego de idiomas en pixel art. Elige un idioma, eclosiona un dino y aprende vocabulario mientras recorres un mundo que crece con cada respuesta correcta."
+  description: |
+    Lexaway es un juego para aprender idiomas con una mecánica sencilla: responde bien las preguntas de vocabulario y tu dino en pixel art avanza. Sigue adelante y descubre lo que el mundo tiene preparado.
+
+    Elige un idioma, descarga el paquete y empieza a jugar — no necesitas cuenta.
+
+    CARACTERÍSTICAS
+    • Francés, español, alemán, italiano y portugués desde inglés
+    • Totalmente offline — descarga un paquete de idioma y aprende donde quieras
+    • Pronunciación con texto a voz para cada palabra
+    • Mundo en pixel art que crece a medida que avanzas
+    • Sin anuncios, sin cuentas, sin rastreo
+
+    Lexaway es código abierto. Comentarios y contribuciones bienvenidos en github.com/lexaway.
+  keywords: "aprender idiomas,vocabulario,francés,español,alemán,italiano,portugués,pixel art,juego,offline"
+
+fr:
+  promotional_text: "Un jeu de langues en pixel art. Choisis une langue, fais éclore un dino et apprends du vocabulaire en traversant un monde qui grandit à chaque bonne réponse."
+  description: |
+    Lexaway est un jeu d'apprentissage des langues au principe simple : réponds correctement aux questions de vocabulaire et ton dino en pixel art avance. Continue et découvre ce que le monde te réserve.
+
+    Choisis une langue, télécharge le pack et commence à jouer — pas besoin de compte.
+
+    FONCTIONNALITÉS
+    • Français, espagnol, allemand, italien et portugais depuis l'anglais
+    • Entièrement hors ligne — télécharge un pack de langue et apprends où tu veux
+    • Prononciation vocale pour chaque mot
+    • Monde en pixel art qui s'étend au fil de ta progression
+    • Pas de pubs, pas de compte, pas de pistage
+
+    Lexaway est open source. Retours et contributions bienvenus sur github.com/lexaway.
+  keywords: "apprendre langues,vocabulaire,français,espagnol,allemand,italien,portugais,pixel art,jeu,hors ligne"
+
+it:
+  promotional_text: "Un gioco di lingue in pixel art. Scegli una lingua, schiudi un dino e impara vocaboli attraversando un mondo che cresce a ogni risposta corretta."
+  description: |
+    Lexaway è un gioco per imparare le lingue con un meccanismo semplice: rispondi correttamente alle domande di vocabolario e il tuo dino in pixel art avanza. Vai avanti e scopri cosa ha in serbo il mondo.
+
+    Scegli una lingua, scarica il pacchetto e inizia a giocare — nessun account necessario.
+
+    CARATTERISTICHE
+    • Francese, spagnolo, tedesco, italiano e portoghese dall'inglese
+    • Completamente offline — scarica un pacchetto lingua e impara ovunque
+    • Pronuncia vocale per ogni parola
+    • Mondo in pixel art che cresce con i tuoi progressi
+    • Niente pubblicità, niente account, niente tracciamento
+
+    Lexaway è open source. Feedback e contributi benvenuti su github.com/lexaway.
+  keywords: "imparare lingue,vocabolario,francese,spagnolo,tedesco,italiano,portoghese,pixel art,gioco,offline"
+
+pt:
+  promotional_text: "Um jogo de idiomas em pixel art. Escolha um idioma, choque um dino e aprenda vocabulário enquanto percorre um mundo que cresce a cada resposta certa."
+  description: |
+    Lexaway é um jogo de aprendizado de idiomas com uma mecânica simples: responda corretamente às perguntas de vocabulário e seu dino em pixel art avança. Continue e descubra o que o mundo reserva.
+
+    Escolha um idioma, baixe o pacote e comece a jogar — sem precisar de conta.
+
+    RECURSOS
+    • Francês, espanhol, alemão, italiano e português a partir do inglês
+    • Totalmente offline — baixe um pacote de idioma e aprenda em qualquer lugar
+    • Pronúncia por texto-para-fala em cada palavra
+    • Mundo em pixel art que cresce conforme você avança
+    • Sem anúncios, sem contas, sem rastreamento
+
+    Lexaway é código aberto. Feedback e contribuições são bem-vindos em github.com/lexaway.
+  keywords: "aprender idiomas,vocabulário,francês,espanhol,alemão,italiano,português,pixel art,jogo,offline"
