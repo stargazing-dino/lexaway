@@ -69,4 +69,22 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get communityContent =>
       'As frases são contribuições da comunidade e podem não ter sido revisadas.';
+
+  @override
+  String get settingsSound => 'Som';
+
+  @override
+  String get settingsMaster => 'Geral';
+
+  @override
+  String get settingsSfx => 'Efeitos';
+
+  @override
+  String get settingsGameplay => 'Jogabilidade';
+
+  @override
+  String get settingsHaptics => 'Vibração';
+
+  @override
+  String get settingsAbout => 'Sobre';
 }

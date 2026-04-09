@@ -70,4 +70,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get communityContent =>
       'Las oraciones son contribuciones de la comunidad y pueden no estar revisadas.';
+
+  @override
+  String get settingsSound => 'Sonido';
+
+  @override
+  String get settingsMaster => 'General';
+
+  @override
+  String get settingsSfx => 'Efectos';
+
+  @override
+  String get settingsGameplay => 'Juego';
+
+  @override
+  String get settingsHaptics => 'Vibración';
+
+  @override
+  String get settingsAbout => 'Acerca de';
 }

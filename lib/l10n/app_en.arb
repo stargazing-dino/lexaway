@@ -28,5 +28,11 @@
   "settings": "Settings",
   "updateApp": "Update App",
   "privacyPolicy": "Privacy Policy",
-  "communityContent": "Sentences are community-contributed and may not be reviewed."
+  "communityContent": "Sentences are community-contributed and may not be reviewed.",
+  "settingsSound": "Sound",
+  "settingsMaster": "Master",
+  "settingsSfx": "SFX",
+  "settingsGameplay": "Gameplay",
+  "settingsHaptics": "Haptics",
+  "settingsAbout": "About"
 }

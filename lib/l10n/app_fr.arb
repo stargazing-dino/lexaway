@@ -18,5 +18,11 @@
   "settings": "Paramètres",
   "updateApp": "Mettre à jour l'appli",
   "privacyPolicy": "Politique de confidentialité",
-  "communityContent": "Les phrases sont des contributions communautaires et peuvent ne pas être vérifiées."
+  "communityContent": "Les phrases sont des contributions communautaires et peuvent ne pas être vérifiées.",
+  "settingsSound": "Son",
+  "settingsMaster": "Général",
+  "settingsSfx": "Effets",
+  "settingsGameplay": "Jeu",
+  "settingsHaptics": "Haptique",
+  "settingsAbout": "À propos"
 }

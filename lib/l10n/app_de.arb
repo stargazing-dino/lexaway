@@ -18,5 +18,11 @@
   "settings": "Einstellungen",
   "updateApp": "App aktualisieren",
   "privacyPolicy": "Datenschutzrichtlinie",
-  "communityContent": "Die Sätze sind Beiträge der Community und möglicherweise nicht überprüft."
+  "communityContent": "Die Sätze sind Beiträge der Community und möglicherweise nicht überprüft.",
+  "settingsSound": "Ton",
+  "settingsMaster": "Gesamt",
+  "settingsSfx": "Effekte",
+  "settingsGameplay": "Spieleinstellungen",
+  "settingsHaptics": "Haptik",
+  "settingsAbout": "Über"
 }

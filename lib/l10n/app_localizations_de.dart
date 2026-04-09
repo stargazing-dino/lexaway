@@ -69,4 +69,22 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get communityContent =>
       'Die Sätze sind Beiträge der Community und möglicherweise nicht überprüft.';
+
+  @override
+  String get settingsSound => 'Ton';
+
+  @override
+  String get settingsMaster => 'Gesamt';
+
+  @override
+  String get settingsSfx => 'Effekte';
+
+  @override
+  String get settingsGameplay => 'Spieleinstellungen';
+
+  @override
+  String get settingsHaptics => 'Haptik';
+
+  @override
+  String get settingsAbout => 'Über';
 }

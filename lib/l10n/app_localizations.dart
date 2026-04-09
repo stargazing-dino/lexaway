@@ -219,6 +219,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sentences are community-contributed and may not be reviewed.'**
   String get communityContent;
+
+  /// No description provided for @settingsSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get settingsSound;
+
+  /// No description provided for @settingsMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Master'**
+  String get settingsMaster;
+
+  /// No description provided for @settingsSfx.
+  ///
+  /// In en, this message translates to:
+  /// **'SFX'**
+  String get settingsSfx;
+
+  /// No description provided for @settingsGameplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Gameplay'**
+  String get settingsGameplay;
+
+  /// No description provided for @settingsHaptics.
+  ///
+  /// In en, this message translates to:
+  /// **'Haptics'**
+  String get settingsHaptics;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
 }
 
 class _AppLocalizationsDelegate

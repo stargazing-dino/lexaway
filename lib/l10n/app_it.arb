@@ -18,5 +18,11 @@
   "settings": "Impostazioni",
   "updateApp": "Aggiorna l'app",
   "privacyPolicy": "Informativa sulla privacy",
-  "communityContent": "Le frasi sono contributi della comunità e potrebbero non essere verificate."
+  "communityContent": "Le frasi sono contributi della comunità e potrebbero non essere verificate.",
+  "settingsSound": "Audio",
+  "settingsMaster": "Generale",
+  "settingsSfx": "Effetti",
+  "settingsGameplay": "Gioco",
+  "settingsHaptics": "Feedback aptico",
+  "settingsAbout": "Info"
 }

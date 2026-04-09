@@ -63,10 +63,10 @@ class SettingsScreen extends ConsumerWidget {
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: [
-                      _SectionHeader(label: 'Sound'),
+                      _SectionHeader(label: AppLocalizations.of(context)!.settingsSound),
                       const SizedBox(height: AppSpacing.sm),
                       _VolumeSlider(
-                        label: 'Master',
+                        label: AppLocalizations.of(context)!.settingsMaster,
                         value: masterVol,
                         onChanged: (v) =>
                             ref.read(masterVolumeProvider.notifier).set(v),
@@ -74,7 +74,7 @@ class SettingsScreen extends ConsumerWidget {
                             ref.read(masterVolumeProvider.notifier).save(),
                       ),
                       _VolumeSlider(
-                        label: 'SFX',
+                        label: AppLocalizations.of(context)!.settingsSfx,
                         value: sfxVol,
                         onChanged: (v) =>
                             ref.read(sfxVolumeProvider.notifier).set(v),
@@ -82,7 +82,7 @@ class SettingsScreen extends ConsumerWidget {
                             ref.read(sfxVolumeProvider.notifier).save(),
                       ),
                       _VolumeSlider(
-                        label: 'Voice',
+                        label: AppLocalizations.of(context)!.voice,
                         value: ttsVol,
                         onChanged: (v) =>
                             ref.read(ttsVolumeProvider.notifier).set(v),
@@ -90,16 +90,16 @@ class SettingsScreen extends ConsumerWidget {
                             ref.read(ttsVolumeProvider.notifier).save(),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: 'Gameplay'),
+                      _SectionHeader(label: AppLocalizations.of(context)!.settingsGameplay),
                       const SizedBox(height: AppSpacing.sm),
                       _ToggleRow(
-                        label: 'Haptics',
+                        label: AppLocalizations.of(context)!.settingsHaptics,
                         value: haptics,
                         onChanged: (v) =>
                             ref.read(hapticsEnabledProvider.notifier).set(v),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _SectionHeader(label: 'About'),
+                      _SectionHeader(label: AppLocalizations.of(context)!.settingsAbout),
                       const SizedBox(height: AppSpacing.sm),
                       _LinkRow(
                         label: AppLocalizations.of(context)!.privacyPolicy,

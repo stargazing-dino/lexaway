@@ -18,5 +18,11 @@
   "settings": "Ajustes",
   "updateApp": "Actualizar App",
   "privacyPolicy": "Política de privacidad",
-  "communityContent": "Las oraciones son contribuciones de la comunidad y pueden no estar revisadas."
+  "communityContent": "Las oraciones son contribuciones de la comunidad y pueden no estar revisadas.",
+  "settingsSound": "Sonido",
+  "settingsMaster": "General",
+  "settingsSfx": "Efectos",
+  "settingsGameplay": "Juego",
+  "settingsHaptics": "Vibración",
+  "settingsAbout": "Acerca de"
 }
