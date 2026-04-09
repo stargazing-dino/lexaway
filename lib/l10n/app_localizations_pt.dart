@@ -87,4 +87,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get settingsAbout => 'Sobre';
+
+  @override
+  String get attributions => 'Atribuições';
 }

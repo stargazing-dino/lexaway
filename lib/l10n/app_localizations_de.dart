@@ -87,4 +87,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsAbout => 'Über';
+
+  @override
+  String get attributions => 'Quellenangaben';
 }

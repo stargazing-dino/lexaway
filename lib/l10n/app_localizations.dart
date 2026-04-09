@@ -255,6 +255,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'About'**
   String get settingsAbout;
+
+  /// No description provided for @attributions.
+  ///
+  /// In en, this message translates to:
+  /// **'Attributions'**
+  String get attributions;
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -101,6 +102,17 @@ class SettingsScreen extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.lg),
                       _SectionHeader(label: AppLocalizations.of(context)!.settingsAbout),
                       const SizedBox(height: AppSpacing.sm),
+                      _LinkRow(
+                        label: 'Discord',
+                        onTap: () => launchUrl(
+                          Uri.parse('https://discord.gg/DbGTJc7P'),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                      ),
+                      _LinkRow(
+                        label: AppLocalizations.of(context)!.attributions,
+                        onTap: () => context.push('/attributions'),
+                      ),
                       _LinkRow(
                         label: AppLocalizations.of(context)!.privacyPolicy,
                         onTap: () {

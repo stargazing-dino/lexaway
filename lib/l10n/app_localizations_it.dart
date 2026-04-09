@@ -88,4 +88,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsAbout => 'Info';
+
+  @override
+  String get attributions => 'Attribuzioni';
 }

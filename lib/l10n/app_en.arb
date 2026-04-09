@@ -34,5 +34,6 @@
   "settingsSfx": "SFX",
   "settingsGameplay": "Gameplay",
   "settingsHaptics": "Haptics",
-  "settingsAbout": "About"
+  "settingsAbout": "About",
+  "attributions": "Attributions"
 }
