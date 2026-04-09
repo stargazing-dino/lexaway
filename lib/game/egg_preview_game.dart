@@ -6,6 +6,7 @@ import 'package:flame/game.dart';
 import 'package:flame/sprite.dart';
 
 import '../models/character.dart';
+import 'audio_manager.dart';
 
 enum EggPhase { wobble, crack, hatch, reveal }
 
@@ -49,6 +50,12 @@ class EggPreviewGame extends FlameGame {
 
   Future<void> _showPhase(EggPhase phase) async {
     _phase = phase;
+
+    if (phase == EggPhase.crack) {
+      AudioManager.instance.playEggCrack();
+    } else if (phase == EggPhase.reveal) {
+      AudioManager.instance.playHatchChime();
+    }
 
     final assetPath = switch (phase) {
       EggPhase.wobble => character.eggMoveAsset,

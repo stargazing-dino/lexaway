@@ -25,6 +25,8 @@ class AudioManager {
       'streak.wav',
       'coin.wav',
       'gem.wav',
+      'crunch_crunchy.wav',
+      'hatch_chime.wav',
     ]);
   }
 
@@ -42,4 +44,9 @@ class AudioManager {
   void playCoin() => FlameAudio.play('coin.wav', volume: _vol);
 
   void playGem() => FlameAudio.play('gem.wav', volume: _vol);
+
+  void playEggCrack() =>
+      FlameAudio.play('crunch_crunchy.wav', volume: _vol * 0.4);
+
+  void playHatchChime() => FlameAudio.play('hatch_chime.wav', volume: _vol);
 }
