@@ -47,8 +47,8 @@ const ttsModelRegistry = <String, List<TtsModelInfo>>{
     TtsModelInfo(modelId: 'thorsten_emotional', displayName: 'Thorsten Emotional', archiveName: 'vits-piper-de_DE-thorsten_emotional-medium', onnxFile: 'de_DE-thorsten_emotional-medium.onnx', approximateSizeMB: 61),
   ],
   'spa': [
-    TtsModelInfo(modelId: 'davefx', displayName: 'Davefx', archiveName: 'vits-piper-es_ES-davefx-medium', onnxFile: 'es_ES-davefx-medium.onnx', approximateSizeMB: 61),
     TtsModelInfo(modelId: 'sharvard', displayName: 'Sharvard', archiveName: 'vits-piper-es_ES-sharvard-medium', onnxFile: 'es_ES-sharvard-medium.onnx', approximateSizeMB: 61),
+    TtsModelInfo(modelId: 'davefx', displayName: 'Davefx', archiveName: 'vits-piper-es_ES-davefx-medium', onnxFile: 'es_ES-davefx-medium.onnx', approximateSizeMB: 61),
     TtsModelInfo(modelId: 'carlfm', displayName: 'Carlfm', archiveName: 'vits-piper-es_ES-carlfm-x_low', onnxFile: 'es_ES-carlfm-x_low.onnx', approximateSizeMB: 16),
   ],
   'ita': [
