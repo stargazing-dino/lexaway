@@ -31,6 +31,52 @@ class Question {
   /// Text after the blank
   String get after => phrase.substring(blankIndex + answer.length);
 
-  /// Individual words in the phrase, split on whitespace.
-  List<String> get words => phrase.split(RegExp(r'\s+'));
+  /// Individual words in the phrase (non-whitespace runs), matching the
+  /// tokens rendered by [PhraseText]. Used by the TTS prefetcher so its
+  /// cache keys line up with the ones the tap handler requests.
+  List<String> get words =>
+      splitPhraseWords(phrase).map((w) => w.text).toList();
+}
+
+/// A non-whitespace run within a phrase, annotated with its character
+/// offsets in the original string.
+class PhraseWord {
+  /// Word text (no surrounding whitespace).
+  final String text;
+
+  /// Inclusive start character offset in the phrase.
+  final int start;
+
+  /// Exclusive end character offset in the phrase.
+  final int end;
+
+  const PhraseWord(this.text, this.start, this.end);
+}
+
+/// Split [phrase] into non-whitespace runs, each tagged with the
+/// character range it occupies in the original string.
+///
+/// Unlike `phrase.split(RegExp(r'\s+'))`, the offsets stay correct when
+/// the phrase contains leading whitespace, multiple consecutive spaces,
+/// tabs, newlines, or non-breaking spaces.
+List<PhraseWord> splitPhraseWords(String phrase) {
+  final words = <PhraseWord>[];
+  for (final match in RegExp(r'\S+').allMatches(phrase)) {
+    words.add(PhraseWord(match.group(0)!, match.start, match.end));
+  }
+  return words;
+}
+
+/// Return the index of the word in [words] whose character range contains
+/// [blankIndex], or `-1` if no word contains that offset.
+///
+/// Containment is half-open: a word covers `[start, end)`. An offset that
+/// falls on whitespace between words returns `-1`.
+int findBlankWordIndex(List<PhraseWord> words, int blankIndex) {
+  for (var i = 0; i < words.length; i++) {
+    if (blankIndex >= words[i].start && blankIndex < words[i].end) {
+      return i;
+    }
+  }
+  return -1;
 }

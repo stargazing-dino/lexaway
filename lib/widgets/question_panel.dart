@@ -13,6 +13,7 @@ import '../theme/app_spacing.dart';
 import '../models/question.dart';
 import '../providers.dart';
 import 'mini_map.dart';
+import 'phrase_text.dart';
 
 enum _AnswerState { unanswered, correct, wrong }
 
@@ -354,59 +355,21 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     );
   }
 
-  /// Find which word index corresponds to the blank based on character offset.
-  int _findBlankWordIndex(List<String> words) {
-    var offset = 0;
-    for (var i = 0; i < words.length; i++) {
-      if (offset == _current.blankIndex) return i;
-      offset += words[i].length + 1; // +1 for the space
-    }
-    return -1;
-  }
-
   Widget _buildPhrase() {
-    final words = _current.phrase.split(RegExp(r'\s+'));
-    final blankWordIdx = _findBlankWordIndex(words);
-
     final blankColor = _answerState == _AnswerState.correct
         ? Colors.greenAccent
         : _answerState == _AnswerState.wrong
         ? Colors.orangeAccent
         : AppColors.textPrimary;
 
-    return Text.rich(
-      TextSpan(
-        children: [
-          for (var i = 0; i < words.length; i++) ...[
-            if (i > 0)
-              const TextSpan(text: ' '),
-            WidgetSpan(
-              alignment: PlaceholderAlignment.baseline,
-              baseline: TextBaseline.alphabetic,
-              child: GestureDetector(
-                onTap: () {
-                  final isBlank = i == blankWordIdx;
-                  if (isBlank && _answerState == _AnswerState.unanswered) return;
-                  _speakWord(isBlank ? _current.answer : words[i]);
-                },
-                child: Text(
-                  i == blankWordIdx
-                      ? (_answerState == _AnswerState.unanswered ? '____' : _current.answer)
-                      : words[i],
-                  style: TextStyle(
-                    color: i == blankWordIdx ? blankColor : AppColors.textPrimary,
-                    fontSize: 20,
-                    fontWeight: i == blankWordIdx ? FontWeight.bold : FontWeight.normal,
-                    height: 1.1,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-      textAlign: TextAlign.center,
+    return PhraseText(
+      phrase: _current.phrase,
+      blankIndex: _current.blankIndex,
+      answer: _current.answer,
+      revealed: _answerState != _AnswerState.unanswered,
+      blankColor: blankColor,
+      textColor: AppColors.textPrimary,
+      onTapWord: _speakWord,
     );
   }
-
 }
