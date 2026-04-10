@@ -73,54 +73,52 @@ final nativeLangProvider = Provider<String>((ref) {
 
 // Settings
 
-final masterVolumeProvider = NotifierProvider<MasterVolumeNotifier, double>(
-  MasterVolumeNotifier.new,
-);
+/// Base class for Hive-backed volume sliders (0.0..1.0).
+/// Splits `set` (drag tick) from `save` (drag end) for responsive UI.
+abstract class HiveVolumeNotifier extends Notifier<double> {
+  String get key;
+  double get defaultValue => 1.0;
 
-class MasterVolumeNotifier extends Notifier<double> {
+  Box get _box => ref.read(hiveBoxProvider);
+
   @override
-  double build() {
-    return (ref.read(hiveBoxProvider).get(HiveKeys.volMaster, defaultValue: 1.0)
-        as num).toDouble();
-  }
+  double build() =>
+      (_box.get(key, defaultValue: defaultValue) as num).toDouble();
 
   /// Update in-memory state (call on every drag tick for responsive UI).
   void set(double v) => state = v.clamp(0.0, 1.0);
 
   /// Persist to Hive (call on drag end).
-  void save() => ref.read(hiveBoxProvider).put(HiveKeys.volMaster, state);
+  void save() => _box.put(key, state);
+}
+
+final masterVolumeProvider = NotifierProvider<MasterVolumeNotifier, double>(
+  MasterVolumeNotifier.new,
+);
+
+class MasterVolumeNotifier extends HiveVolumeNotifier {
+  @override
+  String get key => HiveKeys.volMaster;
 }
 
 final sfxVolumeProvider = NotifierProvider<SfxVolumeNotifier, double>(
   SfxVolumeNotifier.new,
 );
 
-class SfxVolumeNotifier extends Notifier<double> {
+class SfxVolumeNotifier extends HiveVolumeNotifier {
   @override
-  double build() {
-    return (ref.read(hiveBoxProvider).get(HiveKeys.volSfx, defaultValue: 0.5)
-        as num).toDouble();
-  }
-
-  void set(double v) => state = v.clamp(0.0, 1.0);
-
-  void save() => ref.read(hiveBoxProvider).put(HiveKeys.volSfx, state);
+  String get key => HiveKeys.volSfx;
+  @override
+  double get defaultValue => 0.5;
 }
 
 final ttsVolumeProvider = NotifierProvider<TtsVolumeNotifier, double>(
   TtsVolumeNotifier.new,
 );
 
-class TtsVolumeNotifier extends Notifier<double> {
+class TtsVolumeNotifier extends HiveVolumeNotifier {
   @override
-  double build() {
-    return (ref.read(hiveBoxProvider).get(HiveKeys.volTts, defaultValue: 1.0)
-        as num).toDouble();
-  }
-
-  void set(double v) => state = v.clamp(0.0, 1.0);
-
-  void save() => ref.read(hiveBoxProvider).put(HiveKeys.volTts, state);
+  String get key => HiveKeys.volTts;
 }
 
 final hapticsEnabledProvider =
