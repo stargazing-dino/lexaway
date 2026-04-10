@@ -99,6 +99,12 @@ class SettingsScreen extends ConsumerWidget {
                         onChanged: (v) =>
                             ref.read(hapticsEnabledProvider.notifier).set(v),
                       ),
+                      _ToggleRow(
+                        label: AppLocalizations.of(context)!.settingsAutoPlayVoice,
+                        value: ref.watch(autoPlayTtsProvider),
+                        onChanged: (v) =>
+                            ref.read(autoPlayTtsProvider.notifier).set(v),
+                      ),
                       const SizedBox(height: AppSpacing.lg),
                       _SectionHeader(label: AppLocalizations.of(context)!.settingsAbout),
                       const SizedBox(height: AppSpacing.sm),

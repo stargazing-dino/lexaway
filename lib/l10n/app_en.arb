@@ -34,6 +34,7 @@
   "settingsSfx": "SFX",
   "settingsGameplay": "Gameplay",
   "settingsHaptics": "Haptics",
+  "settingsAutoPlayVoice": "Auto-play voice",
   "settingsAbout": "About",
   "attributions": "Attributions",
   "extracting": "Extracting…"

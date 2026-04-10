@@ -6,6 +6,7 @@ import 'data/hive_keys.dart';
 import 'data/pack_database.dart';
 import 'data/pack_manager.dart';
 import 'data/question_source.dart';
+import 'data/tts_cache.dart';
 import 'data/tts_manager.dart';
 import 'data/tts_service.dart';
 
@@ -137,6 +138,22 @@ class HapticsEnabledNotifier extends Notifier<bool> {
   void set(bool v) {
     state = v;
     ref.read(hiveBoxProvider).put(HiveKeys.haptics, v);
+  }
+}
+
+final autoPlayTtsProvider =
+    NotifierProvider<AutoPlayTtsNotifier, bool>(AutoPlayTtsNotifier.new);
+
+class AutoPlayTtsNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    return ref.read(hiveBoxProvider).get(HiveKeys.ttsAutoPlay, defaultValue: true)
+        as bool;
+  }
+
+  void set(bool v) {
+    state = v;
+    ref.read(hiveBoxProvider).put(HiveKeys.ttsAutoPlay, v);
   }
 }
 
@@ -312,6 +329,14 @@ final ttsServiceProvider = Provider<TtsService>((ref) {
   final service = TtsService(tmpDir: ref.watch(tmpDirProvider));
   ref.onDispose(() => service.dispose());
   return service;
+});
+
+/// Singleton TtsCache — manages prefetch queue and in-memory audio cache.
+final ttsCacheProvider = Provider<TtsCache>((ref) {
+  return TtsCache(
+    ttsService: ref.watch(ttsServiceProvider),
+    ttsManager: ref.watch(ttsManagerProvider),
+  );
 });
 
 // App KV state (Hive-backed)

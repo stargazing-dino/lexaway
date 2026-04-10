@@ -30,4 +30,7 @@ class Question {
 
   /// Text after the blank
   String get after => phrase.substring(blankIndex + answer.length);
+
+  /// Individual words in the phrase, split on whitespace.
+  List<String> get words => phrase.split(RegExp(r'\s+'));
 }

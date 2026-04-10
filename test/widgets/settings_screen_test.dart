@@ -77,7 +77,7 @@ void main() {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
       expect(find.text('Haptics'), findsOneWidget);
-      expect(find.byType(Switch), findsOneWidget);
+      expect(find.byType(Switch), findsNWidgets(2));
     });
 
     testWidgets('sliders default to 1.0', (tester) async {
@@ -109,7 +109,7 @@ void main() {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
 
-      final toggle = tester.widget<Switch>(find.byType(Switch));
+      final toggle = tester.widget<Switch>(find.byType(Switch).first);
       expect(toggle.value, isTrue);
     });
 
@@ -119,7 +119,7 @@ void main() {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
 
-      final toggle = tester.widget<Switch>(find.byType(Switch));
+      final toggle = tester.widget<Switch>(find.byType(Switch).first);
       expect(toggle.value, isFalse);
     });
 
@@ -127,7 +127,7 @@ void main() {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(Switch).first);
       await tester.pumpAndSettle();
 
       expect(box.get(HiveKeys.haptics), isFalse);

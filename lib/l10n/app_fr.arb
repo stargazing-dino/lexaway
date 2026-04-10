@@ -24,6 +24,7 @@
   "settingsSfx": "Effets",
   "settingsGameplay": "Jeu",
   "settingsHaptics": "Haptique",
+  "settingsAutoPlayVoice": "Lecture vocale automatique",
   "settingsAbout": "À propos",
   "attributions": "Attributions",
   "extracting": "Extraction…"

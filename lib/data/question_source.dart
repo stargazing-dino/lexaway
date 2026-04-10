@@ -45,6 +45,16 @@ class QuestionSource {
     return current;
   }
 
+  /// Returns up to [count] upcoming questions after the current one,
+  /// without advancing the index. Returns fewer near batch boundaries.
+  List<Question> peek(int count) {
+    final result = <Question>[];
+    for (var i = 1; i <= count && _index + i < _batch.length; i++) {
+      result.add(_batch[_index + i]);
+    }
+    return result;
+  }
+
   /// Record the player's answer for a question.
   /// No-op for now — SM-2 will write back to the database here.
   void recordAnswer(Question q, {required bool correct}) {}

@@ -60,6 +60,13 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
       TweenSequenceItem(tween: Tween(begin: -6, end: 4), weight: 2),
       TweenSequenceItem(tween: Tween(begin: 4, end: 0), weight: 1),
     ]).animate(_shakeController);
+
+    _triggerPrefetch();
+    if (ref.read(autoPlayTtsProvider)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _speakSentence();
+      });
+    }
   }
 
   @override
@@ -101,6 +108,7 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
 
   Future<void> _advance() async {
     if (!mounted) return;
+    _speakGeneration++;
     await widget.source.advance();
     if (!mounted) return;
     setState(() {
@@ -108,6 +116,10 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
       _selectedOption = null;
       _shuffledOptions = _shuffleOptions(_current);
     });
+    _triggerPrefetch();
+    if (ref.read(autoPlayTtsProvider)) {
+      _speakSentence();
+    }
   }
 
   Color _buttonColor(String option) {
@@ -117,6 +129,50 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     if (option == _current.answer) return AppColors.successLight;
     if (option == _selectedOption) return AppColors.error;
     return AppColors.successDark.withValues(alpha: 0.4);
+  }
+
+  // -- TTS --
+
+  /// Incremented on each question advance to discard stale speak requests.
+  int _speakGeneration = 0;
+
+  bool get _ttsAvailable {
+    final lang = ref.read(activePackProvider.notifier).activeLang;
+    if (lang == null || !TtsManager.isSupported(lang)) return false;
+    return ref.read(ttsManagerProvider).isModelDownloaded(lang);
+  }
+
+  void _triggerPrefetch() {
+    final lang = ref.read(activePackProvider.notifier).activeLang;
+    if (lang == null || !TtsManager.isSupported(lang)) return;
+    final ttsManager = ref.read(ttsManagerProvider);
+    if (!ttsManager.isModelDownloaded(lang)) return;
+
+    final cache = ref.read(ttsCacheProvider);
+    final texts = <String>[_current.phrase, ..._current.words];
+    for (final q in widget.source.peek(2)) {
+      texts.add(q.phrase);
+      texts.addAll(q.words);
+    }
+    cache.prefetch(lang, texts);
+  }
+
+  void _speakSentence() => _speak(_current.phrase);
+  void _speakWord(String word) => _speak(word);
+
+  Future<void> _speak(String text) async {
+    if (!_ttsAvailable) return;
+    final myGen = _speakGeneration;
+    final lang = ref.read(activePackProvider.notifier).activeLang!;
+    final cache = ref.read(ttsCacheProvider);
+    final bytes = await cache.getOrGenerate(lang, text);
+    if (bytes == null || !mounted || myGen != _speakGeneration) return;
+    final masterVol = ref.read(masterVolumeProvider);
+    final ttsVol = ref.read(ttsVolumeProvider);
+    await ref.read(ttsServiceProvider).playBytes(
+      bytes,
+      volume: masterVol * ttsVol,
+    );
   }
 
   @override
@@ -150,44 +206,48 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
                 children: [
                   // Hand-tuned: clears the overlapping banner.
                   const SizedBox(height: 30),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(
-                          'assets/images/ui/panel_inset_bg.png',
-                        ),
-                        centerSlice: Rect.fromLTRB(12, 12, 84, 84),
-                        filterQuality: FilterQuality.none,
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _current.translation,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: AppColors.textPrimary.withValues(alpha: 0.6),
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            _buildPhrase(),
-                          ],
+                  GestureDetector(
+                    onTap: _speakSentence,
+                    behavior: HitTestBehavior.translucent,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(
+                            'assets/images/ui/panel_inset_bg.png',
                           ),
+                          centerSlice: Rect.fromLTRB(12, 12, 84, 84),
+                          filterQuality: FilterQuality.none,
                         ),
-                        Positioned(
-                          top: -4,
-                          right: -4,
-                          child: _buildSpeakerButton(),
-                        ),
-                      ],
+                      ),
+                      child: Stack(
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _current.translation,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: AppColors.textPrimary.withValues(alpha: 0.6),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              _buildPhrase(),
+                            ],
+                            ),
+                          ),
+                          Positioned(
+                            top: -4,
+                            right: -4,
+                            child: _buildSpeakerIcon(),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -272,24 +332,8 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     );
   }
 
-  void _speak() {
-    final ttsService = ref.read(ttsServiceProvider);
-    final ttsManager = ref.read(ttsManagerProvider);
-    final lang = ref.read(activePackProvider.notifier).activeLang;
-    if (lang != null && ttsManager.isModelDownloaded(lang)) {
-      final masterVol = ref.read(masterVolumeProvider);
-      final ttsVol = ref.read(ttsVolumeProvider);
-      ttsService.speak(
-        _current.phrase,
-        lang: lang,
-        ttsManager: ttsManager,
-        volume: masterVol * ttsVol,
-      );
-    }
-  }
-
-  Widget _buildSpeakerButton() {
-    // Watch the provider state (not .notifier) so we rebuild when pack changes
+  /// Visual-only speaker icon (the whole inset panel is tappable now).
+  Widget _buildSpeakerIcon() {
     ref.watch(activePackProvider);
     final lang = ref.read(activePackProvider.notifier).activeLang;
     if (lang == null || !TtsManager.isSupported(lang)) {
@@ -300,23 +344,30 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
       return const SizedBox.shrink();
     }
 
-    return GestureDetector(
-      onTap: _speak,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xs),
-        child: Icon(
-          Icons.volume_up_rounded,
-          color: AppColors.textPrimary.withValues(alpha: 0.5),
-          size: 22,
-        ),
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.xs),
+      child: Icon(
+        Icons.volume_up_rounded,
+        color: AppColors.textPrimary.withValues(alpha: 0.5),
+        size: 22,
       ),
     );
   }
 
+  /// Find which word index corresponds to the blank based on character offset.
+  int _findBlankWordIndex(List<String> words) {
+    var offset = 0;
+    for (var i = 0; i < words.length; i++) {
+      if (offset == _current.blankIndex) return i;
+      offset += words[i].length + 1; // +1 for the space
+    }
+    return -1;
+  }
+
   Widget _buildPhrase() {
-    final revealText = _answerState == _AnswerState.unanswered
-        ? '____'
-        : _current.answer;
+    final words = _current.phrase.split(RegExp(r'\s+'));
+    final blankWordIdx = _findBlankWordIndex(words);
+
     final blankColor = _answerState == _AnswerState.correct
         ? Colors.greenAccent
         : _answerState == _AnswerState.wrong
@@ -326,31 +377,32 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     return Text.rich(
       TextSpan(
         children: [
-          TextSpan(
-            text: _current.before,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 20,
-              height: 1.1,
+          for (var i = 0; i < words.length; i++) ...[
+            if (i > 0)
+              const TextSpan(text: ' '),
+            WidgetSpan(
+              alignment: PlaceholderAlignment.baseline,
+              baseline: TextBaseline.alphabetic,
+              child: GestureDetector(
+                onTap: () {
+                  final isBlank = i == blankWordIdx;
+                  if (isBlank && _answerState == _AnswerState.unanswered) return;
+                  _speakWord(isBlank ? _current.answer : words[i]);
+                },
+                child: Text(
+                  i == blankWordIdx
+                      ? (_answerState == _AnswerState.unanswered ? '____' : _current.answer)
+                      : words[i],
+                  style: TextStyle(
+                    color: i == blankWordIdx ? blankColor : AppColors.textPrimary,
+                    fontSize: 20,
+                    fontWeight: i == blankWordIdx ? FontWeight.bold : FontWeight.normal,
+                    height: 1.1,
+                  ),
+                ),
+              ),
             ),
-          ),
-          TextSpan(
-            text: revealText,
-            style: TextStyle(
-              color: blankColor,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              height: 1.1,
-            ),
-          ),
-          TextSpan(
-            text: _current.after,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 20,
-              height: 1.1,
-            ),
-          ),
+          ],
         ],
       ),
       textAlign: TextAlign.center,

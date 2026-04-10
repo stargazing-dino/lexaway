@@ -87,6 +87,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsHaptics => 'Haptique';
 
   @override
+  String get settingsAutoPlayVoice => 'Lecture vocale automatique';
+
+  @override
   String get settingsAbout => 'À propos';
 
   @override

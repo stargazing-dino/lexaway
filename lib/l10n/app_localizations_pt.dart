@@ -86,6 +86,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsHaptics => 'Vibração';
 
   @override
+  String get settingsAutoPlayVoice => 'Reproduzir voz automaticamente';
+
+  @override
   String get settingsAbout => 'Sobre';
 
   @override

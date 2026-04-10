@@ -15,6 +15,7 @@ abstract final class HiveKeys {
   static const volTts = 'vol_tts';
   static const haptics = 'haptics';
   static const gender = 'gender';
+  static const ttsAutoPlay = 'tts_auto_play';
 
   // Game stats
   static const streak = 'streak';

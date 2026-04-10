@@ -250,6 +250,12 @@ abstract class AppLocalizations {
   /// **'Haptics'**
   String get settingsHaptics;
 
+  /// No description provided for @settingsAutoPlayVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-play voice'**
+  String get settingsAutoPlayVoice;
+
   /// No description provided for @settingsAbout.
   ///
   /// In en, this message translates to:
