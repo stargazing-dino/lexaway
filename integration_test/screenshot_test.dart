@@ -26,6 +26,11 @@ Future<void> pumpFrames(WidgetTester tester, int n) async {
   }
 }
 
+/// On Android (running via `flutter test`), screenshots go to device storage
+/// so the host script can `adb pull` them. On iOS (running via `flutter drive`),
+/// the test driver's onScreenshot callback handles file I/O.
+const _androidScreenshotDir = '/sdcard/Download/lexaway_screenshots';
+
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -66,6 +71,13 @@ void main() {
       ),
     );
 
+    // On Android, convert the Flutter surface so screenshots can be captured.
+    // This requires the native integration_test plugin (loaded by `flutter test`,
+    // but NOT by `flutter drive` — which is why Android uses `flutter test`).
+    if (Platform.isAndroid) {
+      await binding.convertFlutterSurfaceToImage();
+    }
+
     // No active pack, no character → router redirects /loading → /packs
     await pumpFrames(tester, 30);
 
@@ -81,6 +93,20 @@ void main() {
         container.read(localPacksProvider.notifier) as FakeLocalPacksNotifier;
     fakeLocalPacks.setPacks(localeData.localPacks);
 
+    // On Android, also write PNGs to device storage so the host can adb pull.
+    // On iOS, the test driver's onScreenshot callback handles file I/O.
+    Future<void> screenshot(String name) async {
+      await binding.takeScreenshot(name);
+      if (Platform.isAndroid) {
+        final screenshots = binding.reportData!['screenshots'] as List;
+        final entry = screenshots.last as Map<String, dynamic>;
+        final bytes = entry['bytes'] as List<int>;
+        final dir = Directory('$_androidScreenshotDir/$lang');
+        await dir.create(recursive: true);
+        await File('${dir.path}/$name.png').writeAsBytes(bytes);
+      }
+    }
+
     // Helper to navigate via GoRouter
     void navigate(String path) {
       final ctx = tester.element(find.byType(Scaffold).first);
@@ -90,13 +116,13 @@ void main() {
     // --- 1. Pack Manager ---
     // We land here naturally since there are no active questions.
     expect(find.byType(PackManagerScreen), findsOneWidget);
-    await binding.takeScreenshot('01_packs');
+    await screenshot('01_packs');
 
     // --- 2. Settings ---
     navigate('/settings');
     await pumpFrames(tester, 30);
     expect(find.byType(SettingsScreen), findsOneWidget);
-    await binding.takeScreenshot('02_settings');
+    await screenshot('02_settings');
 
     // --- 3. Egg Selection ---
     // Activate the pack so the router sees questions, but no character yet.
@@ -105,7 +131,7 @@ void main() {
     navigate('/hatch');
     await pumpFrames(tester, 90);
     expect(find.byType(EggSelectionScreen), findsOneWidget);
-    await binding.takeScreenshot('03_egg_selection');
+    await screenshot('03_egg_selection');
 
     // --- 4. Game ---
     // Seed character + world state so the game screen can render.
@@ -122,7 +148,7 @@ void main() {
     // Give Flame time to load sprites and render the world.
     await pumpFrames(tester, 180);
     expect(find.byType(GameScreen), findsOneWidget);
-    await binding.takeScreenshot('04_game');
+    await screenshot('04_game');
 
     // --- 5. Loading Screen ---
     // Put the provider back into loading state so the router redirects to /loading.
@@ -130,6 +156,6 @@ void main() {
     navigate('/loading');
     await pumpFrames(tester, 60);
     expect(find.byType(LoadingScreen), findsOneWidget);
-    await binding.takeScreenshot('05_loading');
+    await screenshot('05_loading');
   });
 }

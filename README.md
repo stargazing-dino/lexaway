@@ -19,28 +19,32 @@ flutter drive --driver=test_driver/integration_test.dart \
   --target=integration_test/screenshot_test.dart
 ```
 
-## App Store Screenshots
+## Store Screenshots
 
-Full pipeline — captures raw screenshots across multiple iOS simulators, then composites marketing assets with dithered scrims and captions:
+Full pipeline — captures raw screenshots across iOS simulators and Android emulators, then composites marketing assets with dithered scrims and captions:
 
 ```bash
-./tools/screenshots.sh
+uv run --with pyyaml tools/screenshots.py
 ```
 
 Useful flags for iteration:
 
 ```bash
+# iOS only / Android only
+uv run --with pyyaml tools/screenshots.py --platform ios
+uv run --with pyyaml tools/screenshots.py --platform android
+
 # Capture only (skip compose step)
-./tools/screenshots.sh --capture-only
+uv run --with pyyaml tools/screenshots.py --capture-only
 
 # Compose only (re-process existing raw screenshots)
-./tools/screenshots.sh --compose-only
+uv run --with pyyaml tools/screenshots.py --compose-only
 
 # Single device
-./tools/screenshots.sh --device iPhone_16_Plus
+uv run --with pyyaml tools/screenshots.py --device iPhone_16_Plus
 
 # Combine flags
-./tools/screenshots.sh --device iPhone_16_Plus --capture-only
+uv run --with pyyaml tools/screenshots.py --platform ios --device iPhone_16_Plus --capture-only
 ```
 
 Device list, captions, and style are configured in `tools/screenshot_config.yaml`.

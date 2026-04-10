@@ -188,13 +188,94 @@ def resolve_caption(caption_field, lang: str) -> str | None:
     return None
 
 
+def compose_feature_graphic(style: dict, source_lang: str = "en"):
+    """Build a 1024x500 feature graphic for Google Play from a game screenshot.
+
+    Crops the scenic top portion (sky, dino, terrain), overlays a dithered scrim,
+    and stamps "LEXAWAY" in the center.
+    """
+    target_w, target_h = 1024, 500
+
+    # Find a game screenshot — prefer the first available device
+    lang_dir = RAW_DIR / source_lang
+    if not lang_dir.exists():
+        print(f"No raw screenshots for '{source_lang}' — can't build feature graphic")
+        return
+
+    source = None
+    for device_dir in sorted(lang_dir.iterdir()):
+        candidate = device_dir / "04_game.png"
+        if candidate.exists():
+            source = candidate
+            break
+
+    if source is None:
+        print("No 04_game.png found — can't build feature graphic")
+        return
+
+    print(f"Feature graphic from {source.relative_to(PROJECT_DIR)}")
+
+    img = Image.open(source).convert("RGBA")
+    src_w, src_h = img.size
+
+    # Crop a landscape slice centered on the dino + terrain (roughly 15%–37%
+    # down the portrait screenshot). Calculate crop height to preserve the
+    # target aspect ratio.
+    crop_h = int(src_w * target_h / target_w)
+    crop_top = int(src_h * 0.15)
+    img = img.crop((0, crop_top, src_w, crop_top + crop_h))
+
+    # Scale to exact target size
+    img = img.resize((target_w, target_h), Image.LANCZOS)
+
+    # Solid scrim band behind the title — positioned in the sky area
+    scrim_color = hex_to_rgb(style["scrim_color"])
+    band_h = 140
+    band_y = int(target_h * 0.12)
+    solid_alpha = int(255 * 0.75)
+    band = Image.new("RGBA", (target_w, band_h), (*scrim_color, solid_alpha))
+    img.alpha_composite(band, (0, band_y))
+
+    # Title text centered in the scrim band
+    font_path = SCRIPT_DIR / "fonts" / style["font"]
+    font_size = 64
+    try:
+        font = ImageFont.truetype(str(font_path), font_size)
+    except OSError:
+        font = ImageFont.load_default()
+
+    draw = ImageDraw.Draw(img)
+    text = "LEXAWAY"
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_w = bbox[2] - bbox[0]
+    text_h = bbox[3] - bbox[1]
+    text_x = (target_w - text_w) // 2
+    text_y = band_y + (band_h - text_h) // 2
+
+    draw.text((text_x, text_y), text, fill=(255, 255, 255, 255), font=font)
+
+    output = FINAL_DIR / "feature_graphic.png"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    img.save(output)
+    print(f"  → {output.relative_to(PROJECT_DIR)}")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--lang", help="Process a single language only")
+    parser.add_argument(
+        "--feature-graphic", action="store_true",
+        help="Build the 1024x500 Google Play feature graphic",
+    )
     args = parser.parse_args()
 
     config = load_config()
     style = config["style"]
+
+    if args.feature_graphic:
+        compose_feature_graphic(style, source_lang=args.lang or "en")
+        return
+
     languages = [args.lang] if args.lang else config.get("languages", ["en"])
 
     # Build per-screen lookups
