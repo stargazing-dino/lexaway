@@ -1,5 +1,5 @@
-# App Store Connect Metadata
-# Localize each field per language. Apple limits noted in comments.
+# App Store Connect + Google Play Metadata
+# Localize each field per language. Apple / Google limits noted in comments.
 
 # Same for all languages
 support_url: "https://lexaway.github.io/lexaway"
@@ -15,8 +15,10 @@ subtitle:
   pt: "Aprenda idiomas passo a passo"
 
 en:
-  # Max 170 chars. Shown above description, can be updated without a new build.
+  # Max 170 chars. Shown above description, can be updated without a new build. (Apple)
   promotional_text: "A pixel-art language game. Pick a language, hatch a dino, and learn vocabulary as you walk through a world that grows with every correct answer."
+  # Max 80 chars. Google Play short description — shown above the full description.
+  short_description: "Hatch a dino and learn vocabulary in a pixel-art world that grows as you play."
   # Max 4000 chars.
   description: |
     Lexaway is a language learning game with a simple loop: answer vocabulary questions correctly and your pixel-art dino walks forward. Keep going and see what the world has in store.
@@ -36,6 +38,7 @@ en:
 
 de:
   promotional_text: "Ein Pixel-Art-Sprachspiel. Wähle eine Sprache, schlüpfe einen Dino und lerne Vokabeln auf dem Weg durch eine Welt, die mit jeder richtigen Antwort wächst."
+  short_description: "Schlüpfe einen Dino und lerne Vokabeln in einer wachsenden Pixel-Art-Welt."
   description: |
     Lexaway ist ein Sprachlernspiel mit einem einfachen Prinzip: Beantworte Vokabelfragen richtig und dein Pixel-Art-Dino läuft weiter. Mach weiter und entdecke, was die Welt zu bieten hat.
 
@@ -53,6 +56,7 @@ de:
 
 es:
   promotional_text: "Un juego de idiomas en pixel art. Elige un idioma, eclosiona un dino y aprende vocabulario mientras recorres un mundo que crece con cada respuesta correcta."
+  short_description: "Eclosiona un dino y aprende vocabulario en un mundo pixel art que crece."
   description: |
     Lexaway es un juego para aprender idiomas con una mecánica sencilla: responde bien las preguntas de vocabulario y tu dino en pixel art avanza. Sigue adelante y descubre lo que el mundo tiene preparado.
 
@@ -70,6 +74,7 @@ es:
 
 fr:
   promotional_text: "Un jeu de langues en pixel art. Choisis une langue, fais éclore un dino et apprends du vocabulaire en traversant un monde qui grandit à chaque bonne réponse."
+  short_description: "Fais éclore un dino et apprends du vocabulaire dans un monde en pixel art."
   description: |
     Lexaway est un jeu d'apprentissage des langues au principe simple : réponds correctement aux questions de vocabulaire et ton dino en pixel art avance. Continue et découvre ce que le monde te réserve.
 
@@ -87,6 +92,7 @@ fr:
 
 it:
   promotional_text: "Un gioco di lingue in pixel art. Scegli una lingua, schiudi un dino e impara vocaboli attraversando un mondo che cresce a ogni risposta corretta."
+  short_description: "Schiudi un dino e impara vocaboli in un mondo pixel art che cresce."
   description: |
     Lexaway è un gioco per imparare le lingue con un meccanismo semplice: rispondi correttamente alle domande di vocabolario e il tuo dino in pixel art avanza. Vai avanti e scopri cosa ha in serbo il mondo.
 
@@ -104,6 +110,7 @@ it:
 
 pt:
   promotional_text: "Um jogo de idiomas em pixel art. Escolha um idioma, choque um dino e aprenda vocabulário enquanto percorre um mundo que cresce a cada resposta certa."
+  short_description: "Choque um dino e aprenda vocabulário em um mundo pixel art que cresce."
   description: |
     Lexaway é um jogo de aprendizado de idiomas com uma mecânica simples: responda corretamente às perguntas de vocabulário e seu dino em pixel art avança. Continue e descubra o que o mundo reserva.
 
