@@ -80,15 +80,15 @@ void main() {
       expect(find.byType(Switch), findsNWidgets(2));
     });
 
-    testWidgets('sliders default to 1.0', (tester) async {
+    testWidgets('sliders default correctly', (tester) async {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
 
       final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
       expect(sliders.length, 3);
-      for (final slider in sliders) {
-        expect(slider.value, 1.0);
-      }
+      expect(sliders[0].value, 1.0);  // master
+      expect(sliders[1].value, 0.5);  // sfx
+      expect(sliders[2].value, 1.0);  // tts
     });
 
     testWidgets('sliders read initial values from Hive', (tester) async {

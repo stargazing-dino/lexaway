@@ -98,7 +98,7 @@ final sfxVolumeProvider = NotifierProvider<SfxVolumeNotifier, double>(
 class SfxVolumeNotifier extends Notifier<double> {
   @override
   double build() {
-    return (ref.read(hiveBoxProvider).get(HiveKeys.volSfx, defaultValue: 1.0)
+    return (ref.read(hiveBoxProvider).get(HiveKeys.volSfx, defaultValue: 0.5)
         as num).toDouble();
   }
 
