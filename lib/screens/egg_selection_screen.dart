@@ -4,7 +4,6 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../data/hive_keys.dart';
 import '../game/egg_preview_game.dart';
@@ -177,7 +176,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                 Text(
                   l10n.chooseYourEgg,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.pixelifySans(
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
@@ -186,7 +185,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   l10n.whoWillHatch,
-                  style: GoogleFonts.pixelifySans(
+                  style: const TextStyle(
                     color: AppColors.textTertiary,
                     fontSize: 20,
                   ),

@@ -15,7 +15,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   flame: ^1.35.1
   flame_audio: ^2.11.14
-  google_fonts: ^8.0.2
   flutter_riverpod: ^2.6.1
   hive_ce: ^2.10.0
   sqlite_async: ^0.11.0
@@ -41,7 +40,28 @@ flutter:
   generate: true
   uses-material-design: true
 
+  fonts:
+    - family: Pixelify Sans
+      fonts:
+        - asset: assets/fonts/PixelifySans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/PixelifySans-Bold.ttf
+          weight: 700
+    - family: Atkinson Hyperlegible
+      fonts:
+        - asset: assets/fonts/AtkinsonHyperlegible-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/AtkinsonHyperlegible-Bold.ttf
+          weight: 700
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Nunito-Bold.ttf
+          weight: 700
+
   assets:
+    - assets/fonts/licenses/
     - assets/images/textures/
     - assets/images/parallax/
     - assets/images/terrain/

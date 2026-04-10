@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../data/app_font.dart';
 import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme/app_colors.dart';
@@ -106,6 +106,16 @@ class SettingsScreen extends ConsumerWidget {
                             ref.read(autoPlayTtsProvider.notifier).set(v),
                       ),
                       const SizedBox(height: AppSpacing.lg),
+                      _SectionHeader(label: AppLocalizations.of(context)!.settingsFont),
+                      const SizedBox(height: AppSpacing.sm),
+                      for (final font in AppFont.values)
+                        _FontPickerRow(
+                          font: font,
+                          selected: ref.watch(fontProvider) == font,
+                          onTap: () =>
+                              ref.read(fontProvider.notifier).set(font),
+                        ),
+                      const SizedBox(height: AppSpacing.lg),
                       _SectionHeader(label: AppLocalizations.of(context)!.settingsAbout),
                       const SizedBox(height: AppSpacing.sm),
                       _LinkRow(
@@ -154,7 +164,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: GoogleFonts.pixelifySans(
+      style: const TextStyle(
         color: AppColors.textSecondary,
         fontSize: 18,
       ),
@@ -189,7 +199,7 @@ class _VolumeSlider extends StatelessWidget {
               child: Text(
                 label,
                 maxLines: 1,
-                style: GoogleFonts.pixelifySans(
+                style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 16,
                 ),
@@ -238,7 +248,7 @@ class _ToggleRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.pixelifySans(
+              style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 16,
               ),
@@ -253,6 +263,48 @@ class _ToggleRow extends StatelessWidget {
             inactiveTrackColor: AppColors.controlInactive,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FontPickerRow extends StatelessWidget {
+  final AppFont font;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _FontPickerRow({
+    required this.font,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                font.displayName,
+                style: TextStyle(
+                  fontFamily: font.family,
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+            Icon(
+              selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              size: 20,
+              color: selected ? AppColors.accent : AppColors.textSecondary,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -275,7 +327,7 @@ class _LinkRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: GoogleFonts.pixelifySans(
+                style: TextStyle(
                   color: AppColors.accent,
                   fontSize: 16,
                 ),

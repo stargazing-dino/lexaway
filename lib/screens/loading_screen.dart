@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../providers.dart';
 import '../theme/app_colors.dart';
@@ -54,7 +53,7 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen> {
               children: [
                 Text(
                   'LEXAWAY',
-                  style: GoogleFonts.pixelifySans(
+                  style: TextStyle(
                     fontSize: 48,
                     color: AppColors.accent,
                     letterSpacing: 4,

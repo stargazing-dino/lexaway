@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -57,10 +56,11 @@ class LexawayApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
 
     final locale = ref.watch(localeProvider);
+    final font = ref.watch(fontProvider);
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(textTheme: GoogleFonts.pixelifySansTextTheme()),
+      theme: ThemeData(fontFamily: font.family),
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

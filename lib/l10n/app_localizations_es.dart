@@ -93,6 +93,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsAbout => 'Acerca de';
 
   @override
+  String get settingsFont => 'Fuente';
+
+  @override
   String get attributions => 'Atribuciones';
 
   @override

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../data/pack_manager.dart';
 import '../data/tts_manager.dart';
@@ -127,7 +126,7 @@ class PackTile extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     pack.lang.toUpperCase(),
-                    style: GoogleFonts.pixelifySans(
+                    style: const TextStyle(
                       color: AppColors.tileTextSecondary,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -138,7 +137,7 @@ class PackTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     pack.name,
-                    style: GoogleFonts.pixelifySans(
+                    style: const TextStyle(
                       color: AppColors.tileText,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -218,7 +217,7 @@ class PackTile extends StatelessWidget {
                           ? l10n.continueLabel
                           : l10n.start,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.pixelifySans(
+                  style: TextStyle(
                     color: packStatus == PackUpdateStatus.appUpdateRequired
                         ? AppColors.accent
                         : _isDownloaded

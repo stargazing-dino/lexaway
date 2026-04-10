@@ -11,6 +11,7 @@ void main() {
       LexawayGame(
         hiveBox: box,
         characterPath: 'characters/female/doux/base',
+        fontFamily: 'Pixelify Sans',
       ),
       isA<LexawayGame>(),
     );

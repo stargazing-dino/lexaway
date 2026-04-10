@@ -93,6 +93,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsAbout => 'À propos';
 
   @override
+  String get settingsFont => 'Police';
+
+  @override
   String get attributions => 'Attributions';
 
   @override

@@ -92,6 +92,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsAbout => 'Sobre';
 
   @override
+  String get settingsFont => 'Fonte';
+
+  @override
   String get attributions => 'Atribuições';
 
   @override

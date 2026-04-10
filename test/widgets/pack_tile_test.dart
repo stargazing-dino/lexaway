@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lexaway/data/pack_manager.dart';
 import 'package:lexaway/data/tts_manager.dart';
 import 'package:lexaway/widgets/pack_tile.dart';
 import 'package:lexaway/l10n/app_localizations.dart';
 
 void main() {
-  setUpAll(() {
-    GoogleFonts.config.allowRuntimeFetching = false;
-  });
-
   group('PackTile', () {
     Widget wrap(Widget child) {
       return MaterialApp(

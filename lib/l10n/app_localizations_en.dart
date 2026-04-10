@@ -92,6 +92,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAbout => 'About';
 
   @override
+  String get settingsFont => 'Font';
+
+  @override
   String get attributions => 'Attributions';
 
   @override

@@ -31,13 +31,27 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
   final Box hiveBox;
   final String characterPath;
+  String _fontFamily;
   String _locale;
+
+  /// The currently-rendered font family for in-game text. Updating this
+  /// forwards the change to [speechBubble] so a Settings change is picked up
+  /// while the game is running. If [onLoad] hasn't completed yet, the new
+  /// value is stored and picked up when [speechBubble] is constructed there.
+  String get fontFamily => _fontFamily;
+  set fontFamily(String value) {
+    if (value == _fontFamily) return;
+    _fontFamily = value;
+    if (isLoaded) speechBubble.fontFamily = value;
+  }
 
   LexawayGame({
     required this.hiveBox,
     String locale = 'en',
     required this.characterPath,
-  }) : _locale = locale;
+    required String fontFamily,
+  })  : _locale = locale,
+        _fontFamily = fontFamily;
 
   String get locale => _locale;
   set locale(String value) {
@@ -121,7 +135,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     windLines = WindLines()..priority = 2;
     add(windLines);
 
-    speechBubble = SpeechBubble()..priority = 3;
+    speechBubble = SpeechBubble(fontFamily: _fontFamily)..priority = 3;
     add(speechBubble);
 
     movementController = MovementController()

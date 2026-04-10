@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive_ce.dart';
 
+import 'data/app_font.dart';
 import 'data/hive_keys.dart';
 import 'data/pack_database.dart';
 import 'data/pack_manager.dart';
@@ -171,6 +172,23 @@ class GenderNotifier extends Notifier<String> {
   void set(String gender) {
     state = gender;
     ref.read(hiveBoxProvider).put(HiveKeys.gender, gender);
+  }
+}
+
+// Font preference
+
+final fontProvider = NotifierProvider<FontNotifier, AppFont>(FontNotifier.new);
+
+class FontNotifier extends Notifier<AppFont> {
+  @override
+  AppFont build() {
+    final key = ref.read(hiveBoxProvider).get(HiveKeys.font) as String?;
+    return AppFont.fromKey(key);
+  }
+
+  void set(AppFont font) {
+    state = font;
+    ref.read(hiveBoxProvider).put(HiveKeys.font, font.name);
   }
 }
 

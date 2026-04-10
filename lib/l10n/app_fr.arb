@@ -26,6 +26,7 @@
   "settingsHaptics": "Haptique",
   "settingsAutoPlayVoice": "Lecture vocale automatique",
   "settingsAbout": "À propos",
+  "settingsFont": "Police",
   "attributions": "Attributions",
   "extracting": "Extraction…"
 }

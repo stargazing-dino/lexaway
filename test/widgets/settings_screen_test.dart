@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:lexaway/data/hive_keys.dart';
 import 'package:lexaway/providers.dart';
@@ -12,10 +11,6 @@ import 'package:lexaway/screens/settings_screen.dart';
 
 void main() {
   late Box box;
-
-  setUpAll(() {
-    GoogleFonts.config.allowRuntimeFetching = false;
-  });
 
   setUp(() async {
     // Use an in-memory Hive box to avoid file I/O futures that can never

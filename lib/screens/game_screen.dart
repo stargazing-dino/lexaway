@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/app_font.dart';
 import '../data/hive_keys.dart';
 import '../data/pack_manager.dart';
 import '../game/audio_manager.dart';
@@ -42,6 +43,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
         hiveBox: box,
         locale: dinoLocale,
         characterPath: character.basePath,
+        fontFamily: ref.read(fontProvider).family,
       );
       _game!.onCoinCollected = (value) {
         ref.read(coinProvider.notifier).add(value);
@@ -81,6 +83,12 @@ class _GameScreenState extends ConsumerState<GameScreen>
   Widget build(BuildContext context) {
     final game = _game!;
     final source = ref.watch(activePackProvider).valueOrNull;
+
+    // Forward font selection changes from Settings into the running game so
+    // the speech bubble updates without requiring a game rebuild.
+    ref.listen<AppFont>(fontProvider, (prev, next) {
+      _game?.fontFamily = next.family;
+    });
 
     // Sync volume settings to the audio singleton
     final audio = AudioManager.instance;

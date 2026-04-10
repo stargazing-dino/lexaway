@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 
 import 'package:flame/components.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../lexaway_game.dart';
 import 'bubble_painter.dart';
@@ -11,6 +10,23 @@ class SpeechBubble extends PositionComponent
   static const double _scale = LexawayGame.pixelScale;
   static const double _padding = 2; // inner padding at native pixel res
   static const double _showDuration = 2.5;
+
+  String _fontFamily;
+
+  /// The currently-rendered font family. Setting this rebuilds the paragraph
+  /// in place so a font swap from Settings is reflected mid-game without
+  /// waiting for the next [show] call.
+  String get fontFamily => _fontFamily;
+  set fontFamily(String value) {
+    if (value == _fontFamily) return;
+    _fontFamily = value;
+    if (_loaded && _visible) {
+      _buildParagraph(_text);
+      _layout();
+    }
+  }
+
+  SpeechBubble({required String fontFamily}) : _fontFamily = fontFamily;
 
   late NineTileBox _box;
   late ui.Paint _paint;
@@ -24,14 +40,8 @@ class SpeechBubble extends PositionComponent
   // Max text width in native pixel-art pixels (before scale).
   static const double _maxTextWidth = 60;
 
-  late String _fontFamily;
-
   @override
   Future<void> onLoad() async {
-    final style = GoogleFonts.pixelifySans();
-    _fontFamily = style.fontFamily!;
-    await GoogleFonts.pendingFonts([style]);
-
     final image = await BubblePainter.generate();
     final sprite = Sprite(image);
     _box = NineTileBox.withGrid(

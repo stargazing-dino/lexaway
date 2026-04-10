@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
@@ -21,6 +20,9 @@ class AttributionsScreen extends StatelessWidget {
     _Attribution('Backgrounds & Textures', 'Morain', 'https://morain.itch.io/backgrounds-and-textures'),
     _Attribution('Fantasy Icons Pack', 'Shikashi', 'https://shikashipx.itch.io/shikashis-fantasy-icons-pack'),
     _Attribution('Assorted Icons', 'Quintino Pixels', 'https://quintino-pixels.itch.io/assorted-icons'),
+    _Attribution('Pixelify Sans (SIL OFL)', 'Stefie Justprince', 'https://fonts.google.com/specimen/Pixelify+Sans'),
+    _Attribution('Atkinson Hyperlegible (SIL OFL)', 'Braille Institute', 'https://brailleinstitute.org/freefont'),
+    _Attribution('Nunito (SIL OFL)', 'Vernon Adams et al.', 'https://fonts.google.com/specimen/Nunito'),
   ];
 
   @override
@@ -118,7 +120,7 @@ class _AttributionTile extends StatelessWidget {
                 children: [
                   Text(
                     attribution.asset,
-                    style: GoogleFonts.pixelifySans(
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
                     ),
@@ -126,7 +128,7 @@ class _AttributionTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     attribution.author,
-                    style: GoogleFonts.pixelifySans(
+                    style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
                     ),
