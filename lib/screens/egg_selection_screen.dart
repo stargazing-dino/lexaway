@@ -70,8 +70,7 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
     }).toList();
     // Start each at a random point in its cycle
     for (final c in _shakeControllers) {
-      c.value = _rng.nextDouble();
-      c.repeat();
+      c.repeat(from: _rng.nextDouble());
     }
 
     // Pick 3 names that are valid for both genders so toggling works.
