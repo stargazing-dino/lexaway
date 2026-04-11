@@ -17,10 +17,8 @@ mixin ScrollingWorldItem on PositionComponent {
 /// pre-generated [WorldMap] as the player scrolls, and cull them as they
 /// leave the viewport.
 ///
-/// Extracted from what used to be parallel spawn/cull loops in
-/// [CoinManager] and [WorldRenderer]. Subclasses supply the item factory
-/// and can read [activeItems] for fast lookups (e.g. to grab a coin's
-/// sprite state during its pickup handler).
+/// Subclasses supply the item factory and can read [activeItems] for fast
+/// lookups (e.g. to grab a coin's sprite state during its pickup handler).
 abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
     extends Component with HasGameReference<LexawayGame> {
   final WorldMap worldMap;

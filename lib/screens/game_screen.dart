@@ -144,7 +144,6 @@ class _GameScreenState extends ConsumerState<GameScreen>
                   64,
               bottom: -24,
               child: QuestionPanel(
-                // Identity equality — new source on pack switch rebuilds the panel.
                 key: ValueKey(source),
                 game: game,
                 source: source,

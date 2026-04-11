@@ -45,7 +45,6 @@ class ContentRow extends StatelessWidget {
         children: [
           Row(
             children: [
-              // -- Left: status indicator (44px to match header badge) --
               SizedBox(
                 width: 44,
                 height: 44,
@@ -81,7 +80,6 @@ class ContentRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              // -- Label + size --
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,7 +116,6 @@ class ContentRow extends StatelessWidget {
                   ],
                 ),
               ),
-              // -- Right: action button --
               if (_isDownloading)
                 const SizedBox(width: AppSpacing.xl)
               else if (downloaded && updateAvailable)
@@ -185,7 +182,6 @@ class ContentRow extends StatelessWidget {
               ],
             ],
           ),
-          // Progress bar
           if (_isDownloading) ...[
             const SizedBox(height: AppSpacing.sm),
             ClipRRect(

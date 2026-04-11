@@ -135,8 +135,6 @@ class _QuestionPanelState extends ConsumerState<QuestionPanel>
     return AppColors.successDark.withValues(alpha: 0.4);
   }
 
-  // -- TTS --
-
   List<String> _prefetchTexts() {
     final texts = <String>[_current.phrase, ..._current.words];
     for (final q in widget.source.peek(2)) {

@@ -76,8 +76,6 @@ class TtsManager {
     _migrateHiveIfNeeded();
   }
 
-  // -- espeak-ng-data (shared by all Piper models) --
-
   String get espeakDataPath => '$modelsDir/espeak-ng-data';
 
   bool get isEspeakDataDownloaded {
@@ -112,8 +110,6 @@ class TtsManager {
       _espeakDownload = null;
     }
   }
-
-  // -- Model download/delete --
 
   bool isModelDownloaded(String lang) {
     return downloadedModelId(lang) != null;
@@ -248,8 +244,6 @@ class TtsManager {
 
   /// Whether TTS is supported at all for this language.
   static bool isSupported(String lang) => ttsModelRegistry.containsKey(lang);
-
-  // -- Internals --
 
   /// Backfill model_id for downloads made before multi-voice support.
   void _migrateHiveIfNeeded() {

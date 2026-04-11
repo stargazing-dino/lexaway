@@ -57,7 +57,6 @@ class TtsService {
   bool _speaking = false;
   bool get isSpeaking => _speaking;
 
-  // -- Background isolate state --
   Isolate? _isolate;
   SendPort? _sendPort;
   ReceivePort? _receivePort;
@@ -235,8 +234,6 @@ class TtsService {
     releaseEngine();
   }
 }
-
-// -- Background isolate --
 
 /// Entry point for the long-lived TTS generation isolate.
 void _isolateEntryPoint(SendPort mainSendPort) {

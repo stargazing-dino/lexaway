@@ -111,7 +111,6 @@ class PackTile extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // -- Header row: badge + language name --
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
             child: Row(
@@ -147,7 +146,6 @@ class PackTile extends StatelessWidget {
               ],
             ),
           ),
-          // -- Sentences row --
           Divider(
             height: 1,
             thickness: 1,
@@ -167,7 +165,6 @@ class PackTile extends StatelessWidget {
             onUpdate: onUpdate,
             onDelete: onDelete,
           ),
-          // -- Voice row (optional, only if TTS is supported) --
           if (_hasVoiceSupport) ...[
             Divider(
               height: 1,
@@ -194,7 +191,6 @@ class PackTile extends StatelessWidget {
                   : null,
             ),
           ],
-          // -- Action button --
           Divider(
             height: 1,
             thickness: 1,

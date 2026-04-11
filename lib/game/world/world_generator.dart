@@ -140,7 +140,6 @@ class WorldGenerator {
     final minGapPx = def.minCoinGapTiles * _tilePx;
     final maxGapPx = def.maxCoinGapTiles * _tilePx;
 
-    // Build list of gaps: before first entity, between entities, after last.
     final gaps = <_Gap>[];
     if (entityPositions.isEmpty) {
       gaps.add(_Gap(startPx, endPx));

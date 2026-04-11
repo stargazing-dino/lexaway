@@ -157,8 +157,6 @@ class PackManager {
 
   PackManager(this._box, {required this.packsDir});
 
-  // -- Manifest --
-
   Future<Manifest> fetchManifest() async {
     try {
       final url = await packsUrl('manifest.json');
@@ -185,8 +183,6 @@ class PackManager {
     throw Exception('No manifest available (network failed, no cache)');
   }
 
-  // -- Download --
-
   Future<void> downloadPack(
     String lang, {
     required String fromLang,
@@ -209,8 +205,6 @@ class PackManager {
     await _updateMeta(packId, sizeBytes);
   }
 
-  // -- Delete --
-
   Future<void> deletePack(String packId) async {
     final dir = packsDir;
     final file = File('$dir/$packId.db');
@@ -221,8 +215,6 @@ class PackManager {
     _box.put(HiveKeys.packs, packs);
     if (_box.get(HiveKeys.lastUsed) == packId) _box.delete(HiveKeys.lastUsed);
   }
-
-  // -- Local state --
 
   Map<String, LocalPack> getLocalPacks() {
     final packs = _getPacks();
@@ -238,8 +230,6 @@ class PackManager {
   String? get lastUsed => _box.get(HiveKeys.lastUsed) as String?;
 
   void setLastUsed(String packId) => _box.put(HiveKeys.lastUsed, packId);
-
-  // -- Internals --
 
   Map<String, dynamic> _getPacks() {
     final raw = _box.get(HiveKeys.packs);

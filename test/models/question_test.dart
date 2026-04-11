@@ -91,23 +91,17 @@ void main() {
       expect(findBlankWordIndex(words, 12), 2); // x in 'fox'
     });
 
-    test('finds Spanish verb after leading ¿ (regression for the bug report)', () {
+    test('finds Spanish verb after leading ¿', () {
       // spaCy tokenizes '¿Crees que es viejo?' as:
       //   ¿ @ idx=0, Crees @ idx=1, que @ idx=7, es @ idx=11, viejo @ idx=14, ? @ idx=19
       // So the packs pipeline stores blank_index=1, answer='Crees'.
-      // The old algorithm walked cumulative offsets 0, 7, 11, 14 and
-      // only matched on exact equality, so it never resolved blankIndex=1
-      // and no word was rendered as a blank.
       const phrase = '¿Crees que es viejo?';
       final words = splitPhraseWords(phrase);
       expect(phrase.substring(1, 6), 'Crees');
       expect(findBlankWordIndex(words, 1), 0); // '¿Crees'
     });
 
-    test('still finds words that happen to land on a cumulative boundary', () {
-      // 'viejo' has idx=14 in the phrase above — a position the old
-      // algorithm also computed correctly by coincidence. Make sure
-      // the new algorithm still finds it.
+    test('finds a word when offset lands exactly on its start index', () {
       const phrase = '¿Crees que es viejo?';
       final words = splitPhraseWords(phrase);
       expect(findBlankWordIndex(words, 14), 3); // 'viejo?'

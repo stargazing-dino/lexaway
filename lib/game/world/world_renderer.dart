@@ -10,7 +10,7 @@ import 'scrolling_item_layer.dart';
 import 'world_map.dart';
 
 /// Materializes entities from the pre-generated [WorldMap] as the player
-/// scrolls. Replaces the old random-spawning EntityManager.
+/// scrolls.
 class WorldRenderer extends ScrollingItemLayer<Entity> {
   /// Sprite definitions keyed by biome, then entity name.
   final Map<BiomeType, Map<String, _EntityDef>> _defs = {};

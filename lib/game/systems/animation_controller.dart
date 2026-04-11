@@ -10,10 +10,6 @@ import '../lexaway_game.dart';
 /// Owns the dino's on-screen "personality": routing walk/run/idle animations,
 /// scheduling random fidget jumps while standing still, and firing idle
 /// chatter after a minute of silence.
-///
-/// `MovementController` used to mix all of this in with its walk state
-/// machine; splitting it out means an animation tweak no longer risks
-/// breaking scroll or audio.
 class AnimationController extends Component
     with HasGameReference<LexawayGame> {
   static const double _idleTimeout = 60.0;
