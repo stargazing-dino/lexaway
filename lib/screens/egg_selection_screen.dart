@@ -68,9 +68,12 @@ class _EggSelectionScreenState extends ConsumerState<EggSelectionScreen>
         TweenSequenceItem(tween: ConstantTween(0), weight: 15),
       ]).animate(c);
     }).toList();
-    // Start each at a random point in its cycle
+    // Start each at a random point in its cycle. `repeat()` uses the
+    // controller's current value as the phase offset, so seeding `value`
+    // first desyncs the three eggs.
     for (final c in _shakeControllers) {
-      c.repeat(from: _rng.nextDouble());
+      c.value = _rng.nextDouble();
+      c.repeat();
     }
 
     // Pick 3 names that are valid for both genders so toggling works.
