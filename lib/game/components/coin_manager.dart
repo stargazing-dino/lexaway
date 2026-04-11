@@ -56,6 +56,6 @@ class CoinManager extends Component with HasGameReference<LexawayGame> {
     collectedCoins.add(itemIndex);
     _activeIndices.remove(itemIndex);
     onCoinCollected?.call(value);
-    game.saveWorldState();
+    game.markWorldDirty();
   }
 }

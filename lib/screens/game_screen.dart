@@ -34,12 +34,12 @@ class _GameScreenState extends ConsumerState<GameScreen>
     final lang = ref.read(activePackProvider.notifier).activeLang!;
     final dinoLocale = iso3to2[lang] ?? 'en';
     if (_game == null) {
-      final box = ref.read(hiveBoxProvider);
+      final repo = ref.read(worldStateRepositoryProvider);
       final charKey = ref.read(characterProvider(lang)) ?? 'female/doux';
       final character = CharacterInfo.fromKey(charKey);
 
       _game = LexawayGame(
-        hiveBox: box,
+        worldStateRepository: repo,
         locale: dinoLocale,
         characterPath: character.basePath,
         fontFamily: ref.read(fontProvider).family,
@@ -57,14 +57,9 @@ class _GameScreenState extends ConsumerState<GameScreen>
 
   @override
   void dispose() {
-    // Lifecycle observer already saves on pause/inactive before dispose,
-    // but save again in case of direct navigation without backgrounding.
-    try {
-      _game?.movementController.finishMovement();
-      _game?.saveWorldState();
-    } catch (_) {
-      // Game components may already be detached during teardown.
-    }
+    // Lifecycle observer already flushes on pause/inactive before dispose,
+    // but flush again in case of direct navigation without backgrounding.
+    _flushGameState();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -73,8 +68,26 @@ class _GameScreenState extends ConsumerState<GameScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      _game?.movementController.finishMovement();
-      _game?.saveWorldState();
+      _flushGameState();
+    }
+  }
+
+  /// Best-effort save during teardown / backgrounding. Both underlying calls
+  /// can throw during teardown (finishMovement touches game components that
+  /// may already be detached; flushWorldState goes through Hive and could
+  /// surface disk errors) — neither should escape into the Flutter framework.
+  void _flushGameState() {
+    final game = _game;
+    if (game == null) return;
+    try {
+      game.movementController.finishMovement();
+    } catch (_) {
+      // Components already detached; fall through to flush.
+    }
+    try {
+      game.flushWorldState();
+    } catch (_) {
+      // Hive write failed during teardown; nothing useful we can do here.
     }
   }
 

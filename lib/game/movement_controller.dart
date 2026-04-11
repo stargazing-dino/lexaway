@@ -166,6 +166,6 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     game.windLines.stop();
     game.parallaxComponent.parallax!.baseVelocity = Vector2.zero();
     game.ground.stopScrolling();
-    game.saveWorldState();
+    game.markWorldDirty();
   }
 }

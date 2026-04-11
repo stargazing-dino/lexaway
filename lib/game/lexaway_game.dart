@@ -4,9 +4,9 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
-import 'package:hive_ce/hive_ce.dart';
 
-import '../data/hive_keys.dart';
+import '../data/world_state.dart';
+import '../data/world_state_repository.dart';
 import 'audio_manager.dart';
 import 'components/coin_manager.dart';
 import 'components/ground.dart';
@@ -29,7 +29,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double walkTarget = 3 * 16 * pixelScale;
   static const double cloudDrift = 1.5;
 
-  final Box hiveBox;
+  final WorldStateRepository worldStateRepository;
   final String characterPath;
   String _fontFamily;
   String _locale;
@@ -46,7 +46,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   }
 
   LexawayGame({
-    required this.hiveBox,
+    required this.worldStateRepository,
     String locale = 'en',
     required this.characterPath,
     required String fontFamily,
@@ -76,6 +76,10 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   /// How many extension batches have been appended.
   int _worldExtensions = 0;
 
+  /// Set by components when the persistable world state has changed.
+  /// Drained once per frame in [update] and on [flushWorldState].
+  bool _worldDirty = false;
+
   Function(int value)? onCoinCollected;
   Function(int steps)? onStepTaken;
 
@@ -84,9 +88,9 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
   @override
   Future<void> onLoad() async {
-    final saved = _loadWorldState();
-    final seed = saved?['seed'] as int? ?? Random().nextInt(1 << 32);
-    _worldExtensions = saved?['extensions'] as int? ?? 0;
+    final saved = worldStateRepository.load();
+    final seed = saved?.seed ?? Random().nextInt(1 << 32);
+    _worldExtensions = saved?.extensions ?? 0;
 
     worldMap = WorldGenerator().generate(seed);
     // Replay extensions with the same seeds used during original gameplay.
@@ -111,13 +115,12 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
     ground = Ground(worldMap: worldMap)..priority = 1;
     if (saved != null) {
-      ground.scrollOffset = (saved['scroll_offset'] as num?)?.toDouble() ?? 0;
+      ground.scrollOffset = saved.scrollOffset;
     }
     add(ground);
 
-    final savedCoins = saved?['collected_coins'] as List?;
-    if (savedCoins != null) {
-      collectedCoins.addAll(savedCoins.cast<int>());
+    if (saved != null) {
+      collectedCoins.addAll(saved.collectedCoins);
     }
 
     worldRenderer = WorldRenderer(worldMap)..priority = 1;
@@ -146,8 +149,10 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     await SpeechMessages.load('en');
     if (locale != 'en') await SpeechMessages.load(locale);
 
-    // Persist the seed on first run.
-    if (saved == null) saveWorldState();
+    // Persist the seed on first run. Calls the private writer directly
+    // because `isLoaded` is still false inside onLoad, so flushWorldState()
+    // would no-op.
+    if (saved == null) _writeWorldState();
   }
 
   @override
@@ -165,8 +170,12 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     if (ground.scrollOffset + 200 * tilePx > worldMap.totalLengthPx) {
       _worldExtensions++;
       _extendWorld();
-      saveWorldState();
+      _worldDirty = true;
     }
+
+    // Coalesce saves to at most one per frame. Components flip the dirty
+    // flag via [markWorldDirty]; the actual write happens here.
+    if (_worldDirty) _writeWorldState();
   }
 
   void correctAnswer({required int streak, required String answer}) {
@@ -190,24 +199,35 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     worldMap.nextItemIndex = extension.nextItemIndex;
   }
 
-  Map<String, dynamic>? _loadWorldState() {
-    try {
-      final saved = hiveBox.get(HiveKeys.world) as Map?;
-      if (saved == null) return null;
-      return Map<String, dynamic>.from(saved);
-    } catch (_) {
-      return null;
-    }
+  /// Mark the world state as changed. Components call this whenever they
+  /// mutate persistable state (walk finish, coin pickup, world extension);
+  /// the save itself is coalesced to one per frame inside [update].
+  void markWorldDirty() {
+    _worldDirty = true;
   }
 
-  /// Save world state to Hive. Called after walk completion,
-  /// coin collection, and on app lifecycle events.
-  void saveWorldState() {
-    hiveBox.put(HiveKeys.world, {
-      'seed': worldMap.seed,
-      'extensions': _worldExtensions,
-      'scroll_offset': ground.scrollOffset,
-      'collected_coins': collectedCoins.toList(),
-    });
+  /// Force an immediate synchronous write, bypassing the per-frame coalesce.
+  /// Use this from lifecycle hooks (pause/dispose) where [update] may never
+  /// run again before the process is torn down.
+  ///
+  /// No-ops if [onLoad] hasn't finished yet, because [_snapshot] reads `late`
+  /// fields that don't exist until mid-boot. This matters on the boot-failure
+  /// dispose path, where `GameScreen.dispose` can fire after a partial
+  /// `onLoad`.
+  void flushWorldState() {
+    if (!isLoaded) return;
+    _writeWorldState();
   }
+
+  void _writeWorldState() {
+    _worldDirty = false;
+    worldStateRepository.save(_snapshot());
+  }
+
+  WorldState _snapshot() => WorldState(
+        seed: worldMap.seed,
+        extensions: _worldExtensions,
+        scrollOffset: ground.scrollOffset,
+        collectedCoins: collectedCoins.toList(),
+      );
 }
