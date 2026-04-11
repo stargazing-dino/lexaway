@@ -308,5 +308,35 @@ void main() {
       await tester.tap(find.text('Start'));
       expect(selected, isFalse);
     });
+
+    // -- localOutdated state --
+
+    testWidgets('localOutdated shows Update Pack, non-tappable, update action fires onUpdate',
+        (tester) async {
+      var selected = false;
+      var updated = false;
+      await tester.pumpWidget(wrap(buildTile(
+        local: localPack,
+        downloadedModelId: 'siwis', // voice installed → no extra download_rounded
+        status: PackUpdateStatus.localOutdated,
+        onSelect: () => selected = true,
+        onUpdate: () => updated = true,
+      )));
+      await tester.pumpAndSettle();
+
+      // (a) label is "Update Pack"
+      expect(find.text('Update Pack'), findsOneWidget);
+
+      // (b) main action is non-tappable (dead-tap loop prevention)
+      await tester.tap(find.text('Update Pack'));
+      expect(selected, isFalse);
+
+      // (c) ContentRow up-arrow status icon is rendered (updateAvailable propagated)
+      expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
+
+      // (d) tapping the update download button fires onUpdate
+      await tester.tap(find.byIcon(Icons.download_rounded));
+      expect(updated, isTrue);
+    });
   });
 }

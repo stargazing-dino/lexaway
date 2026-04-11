@@ -65,6 +65,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get updateApp => 'Mettre à jour l\'appli';
 
   @override
+  String get updatePack => 'Mettre à jour le paquet';
+
+  @override
   String get privacyPolicy => 'Politique de confidentialité';
 
   @override

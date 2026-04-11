@@ -64,6 +64,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get updateApp => 'App aktualisieren';
 
   @override
+  String get updatePack => 'Paket aktualisieren';
+
+  @override
   String get privacyPolicy => 'Datenschutzrichtlinie';
 
   @override

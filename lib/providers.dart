@@ -194,6 +194,12 @@ class FontNotifier extends Notifier<AppFont> {
 
 // Pack management
 
+/// Schema version bounds for local pack compatibility.
+/// Overridable in tests so the gate can be exercised without mutating globals.
+final packSchemaBoundsProvider = Provider<({int min, int max})>((ref) {
+  return (min: minSupportedPackSchema, max: maxSupportedPackSchema);
+});
+
 /// Singleton PackManager backed by the Hive box.
 final packManagerProvider = Provider<PackManager>((ref) {
   return PackManager(ref.watch(hiveBoxProvider), packsDir: ref.watch(packsDirProvider));
@@ -450,7 +456,21 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
     final local = pm.getLocalPacks();
     if (local.isEmpty) return null;
 
-    final packId = pm.lastUsed ?? local.keys.first;
+    // Filter to schema-compatible packs so a stale `lastUsed` doesn't
+    // strand a multi-pack user on /packs when they have other valid packs.
+    final bounds = ref.read(packSchemaBoundsProvider);
+    final schemaOk = local.entries
+        .where((e) =>
+            localPackStatus(e.value, min: bounds.min, max: bounds.max) !=
+            PackUpdateStatus.localOutdated)
+        .map((e) => e.key)
+        .toSet();
+    if (schemaOk.isEmpty) return null;
+
+    final lastUsed = pm.lastUsed;
+    final packId = (lastUsed != null && schemaOk.contains(lastUsed))
+        ? lastUsed
+        : schemaOk.first;
     return _openAndLoad(packId);
   }
 
@@ -477,12 +497,26 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
   }
 
   Future<QuestionSource?> _openAndLoad(String packId) async {
+    // Non-destructive schema gate: if the local pack is outside the supported
+    // schema window, bail out *before* touching SQLite. Returning null mimics
+    // the fresh-install path in `build()`; the router then redirects to /packs
+    // where the user can re-download via the existing update affordance.
+    // Critically, we do NOT deletePack or setLastUsed here — offline users
+    // keep their file until the atomic re-download succeeds.
+    final pm = ref.read(packManagerProvider);
+    final localPack = pm.getLocalPacks()[packId];
+    final bounds = ref.read(packSchemaBoundsProvider);
+    if (localPackStatus(localPack, min: bounds.min, max: bounds.max) ==
+        PackUpdateStatus.localOutdated) {
+      _activePackId = null;
+      return null;
+    }
+
     try {
       await _db.open(packId);
     } catch (_) {
       // .db file missing or corrupt — close leaked handle, scrub stale metadata
       await _db.close();
-      final pm = ref.read(packManagerProvider);
       await pm.deletePack(packId);
       ref.invalidate(localPacksProvider);
       _activePackId = null;
@@ -491,13 +525,12 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
     final qs = await _db.loadQuestions(limit: 200);
     if (qs.isEmpty) {
       await _db.close();
-      final pm = ref.read(packManagerProvider);
       await pm.deletePack(packId);
       ref.invalidate(localPacksProvider);
       _activePackId = null;
       return null;
     }
-    ref.read(packManagerProvider).setLastUsed(packId);
+    pm.setLastUsed(packId);
     _activePackId = packId;
     return QuestionSource(_db, qs);
   }

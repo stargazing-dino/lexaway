@@ -208,6 +208,12 @@ abstract class AppLocalizations {
   /// **'Update App'**
   String get updateApp;
 
+  /// No description provided for @updatePack.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Pack'**
+  String get updatePack;
+
   /// No description provided for @privacyPolicy.
   ///
   /// In en, this message translates to:

@@ -160,7 +160,8 @@ class PackTile extends StatelessWidget {
             label: l10n.sentences,
             sizeText: _isDownloaded ? _formatMB(local!.sizeBytes) : null,
             downloaded: _isDownloaded,
-            updateAvailable: packStatus == PackUpdateStatus.updateAvailable,
+            updateAvailable: packStatus == PackUpdateStatus.updateAvailable ||
+                packStatus == PackUpdateStatus.localOutdated,
             progress: packProgress,
             onDownload: onDownload,
             onUpdate: onUpdate,
@@ -204,7 +205,9 @@ class PackTile extends StatelessWidget {
           Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: _isDownloaded && packStatus != PackUpdateStatus.appUpdateRequired
+              onTap: _isDownloaded &&
+                      packStatus != PackUpdateStatus.appUpdateRequired &&
+                      packStatus != PackUpdateStatus.localOutdated
                   ? onSelect
                   : null,
               child: Container(
@@ -213,12 +216,15 @@ class PackTile extends StatelessWidget {
                 child: Text(
                   packStatus == PackUpdateStatus.appUpdateRequired
                       ? l10n.updateApp
-                      : hasCharacter
-                          ? l10n.continueLabel
-                          : l10n.start,
+                      : packStatus == PackUpdateStatus.localOutdated
+                          ? l10n.updatePack
+                          : hasCharacter
+                              ? l10n.continueLabel
+                              : l10n.start,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: packStatus == PackUpdateStatus.appUpdateRequired
+                    color: (packStatus == PackUpdateStatus.appUpdateRequired ||
+                            packStatus == PackUpdateStatus.localOutdated)
                         ? AppColors.accent
                         : _isDownloaded
                             ? AppColors.success

@@ -9,19 +9,64 @@ import 'content_urls.dart';
 import 'download_helper.dart';
 import 'hive_keys.dart';
 
+// Schema-compatibility window for local pack files on disk.
+//
+// ⚠️  BUMP BOTH IN LOCKSTEP on breaking schema changes. When the on-disk
+// pack schema rev's (e.g. v1 → v2), set BOTH constants to 2.
+//
+// Why: a config like `min = 1, max = 2` makes a v1 local pack appear
+// "supported" (`1 >= 1 && 1 <= 2` → upToDate), so the gate in
+// `_openAndLoad` sleeps and v2 SQL runs against a v1 file. The query
+// throws, the destructive catch fires, and the offline user loses their
+// pack before they can re-download. The whole point of this gate is to
+// prevent exactly that — don't defeat it by trying to "keep backwards
+// compat" on a breaking change.
+//
+// Additive changes (a new nullable column the app tolerates) MAY widen
+// the window by bumping only `max`. Breaking changes MUST NOT.
+//
+// See `test/open_and_load_gate_test.dart` for the gate's live behavior
+// and `packUpdateStatus` below for the precedence rules.
+const minSupportedPackSchema = 1;
 const maxSupportedPackSchema = 1;
 
 const iso2to3 = {'en': 'eng', 'fr': 'fra', 'es': 'spa', 'de': 'deu', 'it': 'ita', 'pt': 'por'};
 const iso3to2 = {'eng': 'en', 'fra': 'fr', 'spa': 'es', 'deu': 'de', 'ita': 'it', 'por': 'pt'};
 
-enum PackUpdateStatus { notDownloaded, upToDate, updateAvailable, appUpdateRequired }
+enum PackUpdateStatus {
+  notDownloaded,
+  upToDate,
+  updateAvailable,
+  appUpdateRequired,
+  localOutdated,
+}
 
-PackUpdateStatus packUpdateStatus(PackInfo remote, LocalPack? local) {
+PackUpdateStatus packUpdateStatus(
+  PackInfo remote,
+  LocalPack? local, {
+  int min = minSupportedPackSchema,
+  int max = maxSupportedPackSchema,
+}) {
   if (local == null) return PackUpdateStatus.notDownloaded;
-  if (remote.schemaVersion > maxSupportedPackSchema) {
-    return PackUpdateStatus.appUpdateRequired;
+  if (remote.schemaVersion > max) return PackUpdateStatus.appUpdateRequired;
+  if (local.schemaVersion < min || local.schemaVersion > max) {
+    return PackUpdateStatus.localOutdated;
   }
   if (remote.builtAt != local.builtAt) return PackUpdateStatus.updateAvailable;
+  return PackUpdateStatus.upToDate;
+}
+
+/// Local-only status — works offline without a manifest.
+/// Used by `_openAndLoad` to gate pack opening on schema compatibility.
+PackUpdateStatus localPackStatus(
+  LocalPack? local, {
+  int min = minSupportedPackSchema,
+  int max = maxSupportedPackSchema,
+}) {
+  if (local == null) return PackUpdateStatus.notDownloaded;
+  if (local.schemaVersion < min || local.schemaVersion > max) {
+    return PackUpdateStatus.localOutdated;
+  }
   return PackUpdateStatus.upToDate;
 }
 
