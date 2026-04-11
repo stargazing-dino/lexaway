@@ -22,7 +22,13 @@ class BiomeDefinition {
 
   final int minCoinGapTiles;
   final int maxCoinGapTiles;
+
+  /// Independent probability that a coin slot becomes a diamond.
   final double diamondChance;
+
+  /// Independent probability that a coin slot becomes a two-coin cluster.
+  /// The remaining probability (`1 - diamondChance - clusterChance`) spawns
+  /// a single coin.
   final double clusterChance;
 
   const BiomeDefinition({
@@ -39,7 +45,11 @@ class BiomeDefinition {
     required this.maxCoinGapTiles,
     required this.diamondChance,
     required this.clusterChance,
-  });
+  }) : assert(diamondChance >= 0 && clusterChance >= 0),
+       assert(
+         diamondChance + clusterChance <= 1.0,
+         'diamondChance + clusterChance must not exceed 1.0',
+       );
 
   int get totalEntityWeight =>
       entityWeights.fold(0, (sum, w) => sum + w.weight);

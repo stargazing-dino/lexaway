@@ -29,8 +29,8 @@ class BiomeRegistry {
     maxEntityGapTiles: 20,
     minCoinGapTiles: 5,
     maxCoinGapTiles: 10,
-    diamondChance: 0.15,
-    clusterChance: 0.40, // cumulative: 15% diamond, 25% cluster, 60% single
+    diamondChance: 0.15, // 15% diamond, 25% cluster, 60% single coin
+    clusterChance: 0.25,
   );
 
   static BiomeDefinition get(BiomeType type) {

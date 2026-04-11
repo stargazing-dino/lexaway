@@ -164,7 +164,7 @@ class WorldGenerator {
         final roll = rng.nextDouble();
         if (roll < def.diamondChance) {
           coins.add(_CoinPlacement('diamond', x));
-        } else if (roll < def.clusterChance) {
+        } else if (roll < def.diamondChance + def.clusterChance) {
           coins.add(_CoinPlacement('coin', x));
           if (x + _tilePx < gapEnd) {
             coins.add(_CoinPlacement('coin', x + _tilePx));
