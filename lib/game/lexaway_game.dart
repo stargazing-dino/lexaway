@@ -14,7 +14,13 @@ import 'components/player.dart';
 import 'components/speech_bubble.dart';
 import 'components/speech_messages.dart';
 import 'components/wind_lines.dart';
+import 'events.dart';
 import 'movement_controller.dart';
+import 'systems/animation_controller.dart';
+import 'systems/audio_cue_controller.dart';
+import 'systems/dialogue_controller.dart';
+import 'systems/scroll_controller.dart';
+import 'systems/wind_controller.dart';
 import 'world/biome_registry.dart';
 import 'world/world_generator.dart';
 import 'world/world_map.dart';
@@ -59,6 +65,11 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     _locale = value;
     SpeechMessages.load(value);
   }
+
+  /// Typed event bus for sibling systems. Constructed eagerly so any
+  /// component can subscribe inside its own `onLoad` without boot-order
+  /// surprises.
+  final GameEvents events = GameEvents();
 
   late WorldMap worldMap;
   late WorldRenderer worldRenderer;
@@ -138,12 +149,19 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     windLines = WindLines()..priority = 2;
     add(windLines);
 
-    speechBubble = SpeechBubble(fontFamily: _fontFamily)..priority = 3;
+    speechBubble = SpeechBubble(follow: player, fontFamily: _fontFamily)
+      ..priority = 3;
     add(speechBubble);
 
     movementController = MovementController()
       ..onStepTaken = (steps) => onStepTaken?.call(steps);
     add(movementController);
+
+    add(AudioCueController());
+    add(ScrollController());
+    add(WindController());
+    add(AnimationController());
+    add(DialogueController());
 
     await AudioManager.instance.preload();
     await SpeechMessages.load('en');
@@ -158,11 +176,6 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   @override
   void update(double dt) {
     super.update(dt);
-
-    // Gentle cloud drift independent of player movement.
-    final layers = parallaxComponent.parallax!.layers;
-    layers[1].update(Vector2(cloudDrift * dt, 0), dt);
-    layers[2].update(Vector2(cloudDrift * 1.8 * dt, 0), dt);
 
     // Lazy world extension: if player is within 200 tiles of the end,
     // generate another batch.
@@ -222,6 +235,12 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   void _writeWorldState() {
     _worldDirty = false;
     worldStateRepository.save(_snapshot());
+  }
+
+  @override
+  void onRemove() {
+    events.dispose();
+    super.onRemove();
   }
 
   WorldState _snapshot() => WorldState(

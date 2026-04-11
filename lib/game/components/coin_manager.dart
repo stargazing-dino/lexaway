@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flame/components.dart';
 
+import '../events.dart';
 import '../lexaway_game.dart';
 import '../world/world_map.dart';
 import 'coin.dart';
@@ -17,7 +20,15 @@ class CoinManager extends Component with HasGameReference<LexawayGame> {
 
   Function(int value)? onCoinCollected;
 
+  StreamSubscription<CoinCollected>? _sub;
+
   CoinManager({required this.worldMap, required this.collectedCoins});
+
+  @override
+  void onMount() {
+    super.onMount();
+    _sub = game.events.on<CoinCollected>().listen(_onCoinCollected);
+  }
 
   @override
   void update(double dt) {
@@ -34,8 +45,7 @@ class CoinManager extends Component with HasGameReference<LexawayGame> {
       if (spawned >= _maxSpawnsPerFrame) break;
 
       final type = item.name == 'diamond' ? CoinType.diamond : CoinType.coin;
-      final coin = Coin(type: type, worldX: item.worldX, itemIndex: item.index)
-        ..onCollected = _onCoinCollected;
+      final coin = Coin(type: type, worldX: item.worldX, itemIndex: item.index);
       _activeIndices.add(item.index);
       add(coin);
       spawned++;
@@ -52,10 +62,16 @@ class CoinManager extends Component with HasGameReference<LexawayGame> {
     }
   }
 
-  void _onCoinCollected(int value, int itemIndex) {
-    collectedCoins.add(itemIndex);
-    _activeIndices.remove(itemIndex);
-    onCoinCollected?.call(value);
+  void _onCoinCollected(CoinCollected event) {
+    collectedCoins.add(event.itemIndex);
+    _activeIndices.remove(event.itemIndex);
+    onCoinCollected?.call(event.value);
     game.markWorldDirty();
+  }
+
+  @override
+  void onRemove() {
+    _sub?.cancel();
+    super.onRemove();
   }
 }

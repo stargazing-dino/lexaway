@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
-import '../audio_manager.dart';
+import '../events.dart';
 import '../lexaway_game.dart';
 import 'coin_fly_effect.dart';
 import 'player.dart';
@@ -54,9 +54,6 @@ class Coin extends SpriteAnimationComponent
     add(RectangleHitbox());
   }
 
-  /// Called with (coinValue, itemIndex) when the player collects this coin.
-  Function(int value, int itemIndex)? onCollected;
-
   @override
   void onCollisionStart(
     Set<Vector2> intersectionPoints,
@@ -67,13 +64,7 @@ class Coin extends SpriteAnimationComponent
     collected = true;
 
     final value = type == CoinType.diamond ? 3 : 1;
-    onCollected?.call(value, itemIndex);
-
-    if (type == CoinType.diamond) {
-      AudioManager.instance.playGem();
-    } else {
-      AudioManager.instance.playCoin();
-    }
+    game.events.emit(CoinCollected(type, value, itemIndex));
 
     // Spawn fly-to-counter effect
     final target = Vector2(game.size.x - 60, 50);

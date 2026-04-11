@@ -1,40 +1,24 @@
-import 'dart:math';
-
 import 'package:flame/components.dart';
 
-import 'audio_manager.dart';
-import 'components/player.dart' show DinoAnim;
-import 'components/speech_messages.dart' show SpeechMessages;
+import 'events.dart';
 import 'lexaway_game.dart';
+import 'walk_state.dart';
 
-/// Manages the walk state machine: animation, scrolling,
-/// parallax, footstep audio, step counting, and idle chatter.
+/// The walk state machine. Owns only the "is the dino moving, and how far
+/// until it stops" logic — animation, scrolling, audio, wind, and dialogue
+/// are each handled by their own sibling system subscribed to the events
+/// this controller emits.
 ///
-/// Walks now stack — answering while already walking extends the
-/// journey instead of being ignored.
+/// Walks stack: answering while already walking extends the journey instead
+/// of being ignored.
 class MovementController extends Component with HasGameReference<LexawayGame> {
-  double _walkRemaining = 0;
-  bool _isWalking = false;
-  bool _isRunning = false;
-  double _stepTimer = 0;
-  double _idleTimer = 0;
-  double _fidgetTimer = 0;
-  double _nextFidgetAt = _rollFidgetDelay();
+  final WalkState _state = WalkState();
 
   static const double _stepInterval = 0.3;
-  static const double _idleTimeout = 60.0;
   static const int _runStreakThreshold = 3;
-  static const double _runSpeedMultiplier = 1.8;
   static const double _runDistanceMultiplier = 1.5;
-  // Random fidget every 8–20 seconds while idle
-  static const double _fidgetMin = 8.0;
-  static const double _fidgetMax = 20.0;
-  static final _rng = Random();
 
-  static double _rollFidgetDelay() =>
-      _fidgetMin + _rng.nextDouble() * (_fidgetMax - _fidgetMin);
-
-  bool get isWalking => _isWalking;
+  bool get isWalking => _state.walking;
 
   Function(int steps)? onStepTaken;
 
@@ -43,129 +27,67 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     final distance = shouldRun
         ? LexawayGame.walkTarget * _runDistanceMultiplier
         : LexawayGame.walkTarget;
-    _walkRemaining += distance;
-    _idleTimer = 0;
-    _fidgetTimer = 0;
+    _state.remaining += distance;
 
-    // Upgrade to run mid-walk if streak crosses the threshold
-    if (shouldRun && !_isRunning) {
-      _isRunning = true;
-      game.player.run();
-      game.windLines.start();
-      final speed = LexawayGame.walkSpeed * _runSpeedMultiplier;
-      game.parallaxComponent.parallax!.baseVelocity =
-          Vector2(speed * 0.1, 0);
-      game.ground.startScrolling(speed);
-    }
-
-    if (!_isWalking) {
-      _isWalking = true;
-      _stepTimer = _stepInterval; // first step fires immediately
-      if (!_isRunning) {
-        game.player.walk();
-        game.parallaxComponent.parallax!.baseVelocity =
-            Vector2(LexawayGame.walkSpeed * 0.1, 0);
-        game.ground.startScrolling(LexawayGame.walkSpeed);
+    // Upgrade to run mid-walk if streak crosses the threshold.
+    final wasAlreadyWalking = _state.walking;
+    if (shouldRun && !_state.running) {
+      _state.running = true;
+      if (wasAlreadyWalking) {
+        game.events.emit(const WalkSpeedChanged(running: true));
       }
     }
 
-    if (streak == 5 || streak == 10 || streak == 25) {
-      AudioManager.instance.playStreak();
-    } else {
-      AudioManager.instance.playCorrect();
+    if (!_state.walking) {
+      _state.walking = true;
+      _state.stepTimer = _stepInterval; // first step fires immediately
+      game.events.emit(WalkStarted(running: _state.running));
     }
 
-    final msg = SpeechMessages.pickCorrectMessage(
-      streak,
-      answer,
-      locale: game.locale,
-    );
-    if (msg != null) game.speechBubble.show(msg);
+    game.events.emit(AnswerCorrect(streak, answer));
   }
 
   void wrongAnswer() {
-    _idleTimer = 0;
-    _fidgetTimer = 0;
-
-    // Downgrade from run to walk if currently dashing
-    if (_isRunning && _isWalking) {
-      _isRunning = false;
-      game.player.walk();
-      game.windLines.stop();
-      game.parallaxComponent.parallax!.baseVelocity =
-          Vector2(LexawayGame.walkSpeed * 0.1, 0);
-      game.ground.startScrolling(LexawayGame.walkSpeed);
+    // Downgrade from run to walk if currently dashing.
+    if (_state.running && _state.walking) {
+      _state.running = false;
+      game.events.emit(const WalkSpeedChanged(running: false));
     }
-
-    AudioManager.instance.playWrong();
-    final msg = SpeechMessages.pickWrongMessage(locale: game.locale);
-    if (msg != null) game.speechBubble.show(msg);
+    game.events.emit(const AnswerWrong());
   }
 
   @override
   void update(double dt) {
-    if (_isWalking) {
-      final speed = _isRunning
-          ? LexawayGame.walkSpeed * _runSpeedMultiplier
-          : LexawayGame.walkSpeed;
-      _walkRemaining -= speed * dt;
-      _stepTimer += dt;
-      if (_stepTimer >= _stepInterval) {
-        _stepTimer -= _stepInterval;
-        AudioManager.instance.playFootstep();
-        onStepTaken?.call(1);
-      }
-      if (_walkRemaining <= 0) {
-        _walkRemaining = 0;
-        _stop();
-      }
-    }
+    if (!_state.walking) return;
 
-    // Idle chatter (clamp dt to prevent spam after backgrounding)
-    _idleTimer += dt.clamp(0, 1);
-    if (_idleTimer >= _idleTimeout) {
-      _idleTimer = 0;
-      game.speechBubble.show(
-        SpeechMessages.pickIdleMessage(locale: game.locale),
-      );
+    _state.remaining -= _state.currentSpeed * dt;
+    _state.stepTimer += dt;
+    if (_state.stepTimer >= _stepInterval) {
+      _state.stepTimer -= _stepInterval;
+      game.events.emit(const StepTaken(1));
+      onStepTaken?.call(1);
     }
-
-    // Random fidgets while standing still
-    if (!_isWalking && !game.player.isBusy) {
-      _fidgetTimer += dt.clamp(0, 1);
-      if (_fidgetTimer >= _nextFidgetAt) {
-        _fidgetTimer = 0;
-        _nextFidgetAt = _rollFidgetDelay();
-        game.player.play(DinoAnim.jump);
-      }
+    if (_state.remaining <= 0) {
+      _state.remaining = 0;
+      _stop();
     }
   }
 
   /// Finish any in-progress walk immediately (no animation).
   void finishMovement() {
-    if (!_isWalking) return;
-    game.ground.scrollOffset += _walkRemaining;
-    final speed = _isRunning
-        ? LexawayGame.walkSpeed * _runSpeedMultiplier
-        : LexawayGame.walkSpeed;
-    // Count the steps we're skipping
+    if (!_state.walking) return;
+    final skipDistance = _state.remaining;
     final skippedSteps =
-        (_walkRemaining / (speed * _stepInterval)).ceil();
+        (skipDistance / (_state.currentSpeed * _stepInterval)).ceil();
     if (skippedSteps > 0) onStepTaken?.call(skippedSteps);
-    _walkRemaining = 0;
-    _stop();
+    _state.remaining = 0;
+    _stop(skipDistance: skipDistance);
   }
 
-  void _stop() {
-    _isWalking = false;
-    _isRunning = false;
-    _stepTimer = 0;
-    _fidgetTimer = 0;
-    _nextFidgetAt = _rollFidgetDelay();
-    game.player.idle();
-    game.windLines.stop();
-    game.parallaxComponent.parallax!.baseVelocity = Vector2.zero();
-    game.ground.stopScrolling();
-    game.markWorldDirty();
+  void _stop({double skipDistance = 0}) {
+    _state.walking = false;
+    _state.running = false;
+    _state.stepTimer = 0;
+    game.events.emit(WalkStopped(skipDistance: skipDistance));
   }
 }

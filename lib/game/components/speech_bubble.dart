@@ -5,11 +5,14 @@ import 'package:flame/components.dart';
 import '../lexaway_game.dart';
 import 'bubble_painter.dart';
 
-class SpeechBubble extends PositionComponent
-    with HasGameReference<LexawayGame> {
+class SpeechBubble extends PositionComponent {
   static const double _scale = LexawayGame.pixelScale;
   static const double _padding = 2; // inner padding at native pixel res
   static const double _showDuration = 2.5;
+
+  /// The component the bubble hovers over. Injected so the bubble doesn't
+  /// need to know about `game.player` (or anything else in the game tree).
+  final PositionComponent follow;
 
   String _fontFamily;
 
@@ -26,7 +29,8 @@ class SpeechBubble extends PositionComponent
     }
   }
 
-  SpeechBubble({required String fontFamily}) : _fontFamily = fontFamily;
+  SpeechBubble({required this.follow, required String fontFamily})
+      : _fontFamily = fontFamily;
 
   late NineTileBox _box;
   late ui.Paint _paint;
@@ -104,11 +108,10 @@ class SpeechBubble extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    // Track the player — nudged right so the tail sits under the dino's head.
-    final player = game.player;
+    // Track the follow — nudged right so the tail sits under its head.
     position = Vector2(
-      player.position.x + player.size.x * 0.3,
-      player.position.y - size.y + player.size.y * 0.1,
+      follow.position.x + follow.size.x * 0.3,
+      follow.position.y - size.y + follow.size.y * 0.1,
     );
 
     if (!_visible) return;
