@@ -106,16 +106,16 @@ class EggPreviewGame extends FlameGame {
       loop: loop,
     );
 
-    add(SpriteAnimationComponent(
+    final component = SpriteAnimationComponent(
       animation: animation,
       size: spriteSize,
       position: pos,
       paint: noPaint,
-    ));
+    );
+    add(component);
 
     if (!loop) {
-      final durationMs = (frameCount * stepTime * 1000).toInt();
-      Future.delayed(Duration(milliseconds: durationMs), () {
+      component.animationTicker!.completed.then((_) {
         if (_disposed) return;
         _advance();
       });
