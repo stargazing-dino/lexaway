@@ -10,6 +10,7 @@ import 'data/question_source.dart';
 import 'data/tts_cache.dart';
 import 'data/tts_manager.dart';
 import 'data/tts_service.dart';
+import 'models/question.dart';
 
 // Bootstrap
 
@@ -512,8 +513,14 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
       return null;
     }
 
+    // SqliteDatabase(path:) is lazy — `open` doesn't actually touch disk, so
+    // genuine corruption (truncated file, malformed sqlite, bad phrases table)
+    // usually surfaces on the first real query. Both paths share the same
+    // cleanup: close the handle, scrub Hive, redirect to /packs.
+    final List<Question> qs;
     try {
       await _db.open(packId);
+      qs = await _db.loadQuestions(limit: 200);
     } catch (_) {
       // .db file missing or corrupt — close leaked handle, scrub stale metadata
       await _db.close();
@@ -522,7 +529,6 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
       _activePackId = null;
       return null;
     }
-    final qs = await _db.loadQuestions(limit: 200);
     if (qs.isEmpty) {
       await _db.close();
       await pm.deletePack(packId);
