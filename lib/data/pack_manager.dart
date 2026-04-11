@@ -258,7 +258,11 @@ class PackManager {
 
       final packs = _getPacks();
       packs[packId] = {
-        'schema_version': int.parse(meta['schema_version'] ?? '1'),
+        // Default to 0 — outside every supported window — so a pipeline bug
+        // that omits `meta.schema_version` produces a loud `localOutdated`
+        // recovery instead of silently masquerading as whatever the current
+        // schema happens to be.
+        'schema_version': int.parse(meta['schema_version'] ?? '0'),
         'built_at': meta['built_at'] ?? '',
         'size_bytes': sizeBytes,
       };
