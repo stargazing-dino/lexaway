@@ -8,8 +8,19 @@ import '../world/world_map.dart';
 class _TerrainSprites {
   final Sprite surface;
   final Sprite fill;
+  final Sprite surfaceLeft;
+  final Sprite surfaceRight;
+  final Sprite fillLeft;
+  final Sprite fillRight;
 
-  _TerrainSprites({required this.surface, required this.fill});
+  _TerrainSprites({
+    required this.surface,
+    required this.fill,
+    required this.surfaceLeft,
+    required this.surfaceRight,
+    required this.fillLeft,
+    required this.fillRight,
+  });
 }
 
 class _PierSprites {
@@ -77,17 +88,18 @@ class Ground extends Component with HasGameReference<LexawayGame> {
     final def = BiomeRegistry.get(biome);
     final image = await game.images.load(def.terrainAsset);
 
+    final sx = def.surfaceSrcPosition[0];
+    final sy = def.surfaceSrcPosition[1];
+    Sprite tile(double x, double y) =>
+        Sprite(image, srcPosition: Vector2(x, y), srcSize: Vector2.all(16));
+
     _sprites[biome] = _TerrainSprites(
-      surface: Sprite(
-        image,
-        srcPosition: Vector2(def.surfaceSrcPosition[0], def.surfaceSrcPosition[1]),
-        srcSize: Vector2.all(16),
-      ),
-      fill: Sprite(
-        image,
-        srcPosition: Vector2(def.fillSrcPosition[0], def.fillSrcPosition[1]),
-        srcSize: Vector2.all(16),
-      ),
+      surface: tile(sx, sy),
+      fill: tile(def.fillSrcPosition[0], def.fillSrcPosition[1]),
+      surfaceLeft: tile(sx - 16, sy),
+      surfaceRight: tile(sx + 16, sy),
+      fillLeft: tile(sx - 16, sy + 16),
+      fillRight: tile(sx + 16, sy + 16),
     );
 
     if (biome == BiomeType.tropics && _pierSprites == null) {
@@ -151,7 +163,7 @@ class Ground extends Component with HasGameReference<LexawayGame> {
       if (pierZone != null && _pierSprites != null) {
         _renderPierColumn(canvas, x, groundTop, tileSize, tileX, pierZone);
       } else {
-        _renderTerrainColumn(canvas, x, groundTop, tileSize, worldX);
+        _renderTerrainColumn(canvas, x, groundTop, tileSize, worldX, tileX);
       }
     }
   }
@@ -162,11 +174,29 @@ class Ground extends Component with HasGameReference<LexawayGame> {
     double groundTop,
     double tileSize,
     double worldX,
+    int tileX,
   ) {
     final biome = worldMap.biomeAt(worldX);
     final terrain = _sprites[biome] ?? _sprites.values.first;
 
-    terrain.surface.render(
+    // Check if we're on the edge next to a pier.
+    final pierRight = worldMap.pierZoneAt(tileX + 1);
+    final pierLeft = worldMap.pierZoneAt(tileX - 1);
+
+    final Sprite surfaceSprite;
+    final Sprite fillSprite;
+    if (pierRight != null && tileX + 1 == pierRight.startTile) {
+      surfaceSprite = terrain.surfaceRight;
+      fillSprite = terrain.fillRight;
+    } else if (pierLeft != null && tileX - 1 == pierLeft.endTile - 1) {
+      surfaceSprite = terrain.surfaceLeft;
+      fillSprite = terrain.fillLeft;
+    } else {
+      surfaceSprite = terrain.surface;
+      fillSprite = terrain.fill;
+    }
+
+    surfaceSprite.render(
       canvas,
       position: Vector2(x, groundTop),
       size: Vector2.all(tileSize),
@@ -175,7 +205,7 @@ class Ground extends Component with HasGameReference<LexawayGame> {
 
     var y = groundTop + tileSize;
     while (y < game.size.y) {
-      terrain.fill.render(
+      fillSprite.render(
         canvas,
         position: Vector2(x, y),
         size: Vector2.all(tileSize),
