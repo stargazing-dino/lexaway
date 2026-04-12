@@ -1,4 +1,5 @@
 import '../audio_manager.dart';
+import '../lexaway_game.dart';
 import 'biome_definition.dart';
 import 'world_map.dart';
 
@@ -31,6 +32,18 @@ class BiomeRegistry {
     maxCoinGapTiles: 10,
     diamondChance: 0.15, // 15% diamond, 25% cluster, 60% single coin
     clusterChance: 0.25,
+    creatureWeights: [WeightedEntity('minibunny', 1)],
+    minCreatureGapTiles: 40,
+    maxCreatureGapTiles: 80,
+    creatureDefs: {
+      'minibunny': CreatureSpriteDef(
+        sheetPath: 'creatures/minibunny.png',
+        frameWidth: 32,
+        frameHeight: 32,
+        scale: LexawayGame.pixelScale,
+        behavior: CreatureBehavior(),
+      ),
+    },
   );
 
   static BiomeDefinition get(BiomeType type) {

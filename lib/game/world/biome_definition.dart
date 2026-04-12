@@ -8,6 +8,75 @@ class WeightedEntity {
   const WeightedEntity(this.name, this.weight);
 }
 
+/// Per-creature animation + behavior config. Lives on [CreatureSpriteDef]
+/// so biome registry entries can describe creatures declaratively without a
+/// separate JSON manifest (we only have one creature today).
+class CreatureBehavior {
+  final int idleRow;
+  final int idleFrames;
+  final double idleStepTime;
+
+  final int hopRow;
+  final int hopFrames;
+  final double hopStepTime;
+
+  /// Row/frame counts for animations we load but don't trigger in the MVP.
+  /// Keeping them on the config keeps the sheet slicing exercised so a future
+  /// predator ticket doesn't discover broken row indexes.
+  final int hitRow;
+  final int hitFrames;
+  final double hitStepTime;
+
+  final int deathRow;
+  final int deathFrames;
+  final double deathStepTime;
+
+  /// Seconds between hops (inclusive lower bound, exclusive upper).
+  final double minHopIntervalSec;
+  final double maxHopIntervalSec;
+
+  const CreatureBehavior({
+    this.idleRow = 0,
+    this.idleFrames = 4,
+    this.idleStepTime = 0.18,
+    this.hopRow = 1,
+    this.hopFrames = 4,
+    this.hopStepTime = 0.12,
+    this.hitRow = 2,
+    this.hitFrames = 2,
+    this.hitStepTime = 0.14,
+    this.deathRow = 3,
+    this.deathFrames = 3,
+    this.deathStepTime = 0.18,
+    this.minHopIntervalSec = 4.0,
+    this.maxHopIntervalSec = 9.0,
+  });
+}
+
+/// Describes a creature's sprite sheet layout and default behavior. Held in
+/// [BiomeDefinition.creatureDefs] so a biome declares its entire creature
+/// roster inline.
+///
+/// Frame size is stored as two `double`s rather than a `Vector2` so the
+/// whole def (and the enclosing biome literal) stays `const`-constructible
+/// — Flame's `Vector2` is a mutable class and can't appear in const context.
+class CreatureSpriteDef {
+  /// Path relative to the `images/` directory (Flame's images cache root).
+  final String sheetPath;
+  final double frameWidth;
+  final double frameHeight;
+  final double scale;
+  final CreatureBehavior behavior;
+
+  const CreatureSpriteDef({
+    required this.sheetPath,
+    required this.frameWidth,
+    required this.frameHeight,
+    required this.scale,
+    required this.behavior,
+  });
+}
+
 class BiomeDefinition {
   final BiomeType type;
   final String terrainAsset;
@@ -31,6 +100,14 @@ class BiomeDefinition {
   /// a single coin.
   final double clusterChance;
 
+  /// Creature roster for this biome. Empty list means no ambient creatures.
+  final List<WeightedEntity> creatureWeights;
+  final int minCreatureGapTiles;
+  final int maxCreatureGapTiles;
+
+  /// Sprite/behavior config for each creature name in [creatureWeights].
+  final Map<String, CreatureSpriteDef> creatureDefs;
+
   const BiomeDefinition({
     required this.type,
     required this.terrainAsset,
@@ -45,6 +122,10 @@ class BiomeDefinition {
     required this.maxCoinGapTiles,
     required this.diamondChance,
     required this.clusterChance,
+    this.creatureWeights = const [],
+    this.minCreatureGapTiles = 40,
+    this.maxCreatureGapTiles = 80,
+    this.creatureDefs = const {},
   }) : assert(diamondChance >= 0 && clusterChance >= 0),
        assert(
          diamondChance + clusterChance <= 1.0,
@@ -53,4 +134,7 @@ class BiomeDefinition {
 
   int get totalEntityWeight =>
       entityWeights.fold(0, (sum, w) => sum + w.weight);
+
+  int get totalCreatureWeight =>
+      creatureWeights.fold(0, (sum, w) => sum + w.weight);
 }

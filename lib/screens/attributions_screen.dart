@@ -11,14 +11,14 @@ class AttributionsScreen extends StatelessWidget {
 
   static const _attributions = [
     _Attribution('Dino Characters', 'Arks', 'https://arks.itch.io/dino-characters'),
-    _Attribution('Dino Family', 'Demching', 'https://demching.itch.io/dino-family'),
+    _Attribution('Dino Family', 'ScissorMarks & Demching', 'https://demching.itch.io/dino-family'),
     _Attribution('400 Sounds Pack', 'Ci', 'https://ci.itch.io/400-sounds-pack'),
     _Attribution('Footsteps', 'Nox_Sound', 'https://freesound.org/people/Nox_Sound/'),
     _Attribution('Seasonal Tilesets', 'GrafxKid', 'https://grafxkid.itch.io/seasonal-tilesets'),
     _Attribution('UI Pack Pixel Adventure', 'Kenney', 'https://kenney.nl/assets/ui-pack-pixel-adventure'),
     _Attribution('Gems & Coins', 'La Red Games', 'https://laredgames.itch.io/gems-coins-free'),
     _Attribution('Backgrounds & Textures', 'Morain', 'https://morain.itch.io/backgrounds-and-textures'),
-    _Attribution('Fantasy Icons Pack', 'Shikashi', 'https://shikashipx.itch.io/shikashis-fantasy-icons-pack'),
+    _Attribution('Fantasy Icons Pack', 'Matt Firth (shikashipx) & game-icons.net', 'https://shikashipx.itch.io/shikashis-fantasy-icons-pack'),
     _Attribution('Assorted Icons', 'Quintino Pixels', 'https://quintino-pixels.itch.io/assorted-icons'),
     _Attribution('Pixelify Sans (SIL OFL)', 'Stefie Justprince', 'https://fonts.google.com/specimen/Pixelify+Sans'),
     _Attribution('Atkinson Hyperlegible (SIL OFL)', 'Braille Institute', 'https://brailleinstitute.org/freefont'),

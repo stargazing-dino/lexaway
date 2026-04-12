@@ -71,6 +71,32 @@ class WorldGenerator {
         ));
       }
 
+      // Ambient creature placement — independent of entity/coin slots. A
+      // bunny can stand in front of a bush or next to a coin and that's
+      // fine; they're purely visual and much sparser than either.
+      //
+      // `totalCreatureWeight > 0` (rather than `isNotEmpty`) guards against
+      // a biome that declares creatures but with all-zero weights —
+      // `_pickWeightedCreature` uses `rng.nextInt(total)` which crashes on 0.
+      if (def.totalCreatureWeight > 0) {
+        final creaturePositions = _poissonDisk(
+          rng,
+          startPx: tile * _tilePx,
+          endPx: segEnd * _tilePx,
+          minGapPx: def.minCreatureGapTiles * _tilePx,
+          maxGapPx: def.maxCreatureGapTiles * _tilePx,
+        );
+
+        for (final x in creaturePositions) {
+          items.add(PlacedItem(
+            name: _pickWeightedCreature(rng, def),
+            category: ItemCategory.creature,
+            worldX: x,
+            index: itemIndex++,
+          ));
+        }
+      }
+
       items.sort((a, b) => a.worldX.compareTo(b.worldX));
 
       segments.add(WorldSegment(
@@ -126,6 +152,15 @@ class WorldGenerator {
       if (roll < 0) return w.name;
     }
     return def.entityWeights.last.name;
+  }
+
+  String _pickWeightedCreature(Random rng, BiomeDefinition def) {
+    var roll = rng.nextInt(def.totalCreatureWeight);
+    for (final w in def.creatureWeights) {
+      roll -= w.weight;
+      if (roll < 0) return w.name;
+    }
+    return def.creatureWeights.last.name;
   }
 
   /// Places coins in gaps between entities within a segment.

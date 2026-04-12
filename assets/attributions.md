@@ -24,6 +24,8 @@ background textures: https://morain.itch.io/backgrounds-and-textures
 
 icons by shikashi: https://shikashipx.itch.io/shikashis-fantasy-icons-pack
 
+creatures: https://lyaseek.itch.io/miniffanimals
+
 unused
 
 frog: https://eduardscarpato.itch.io/toxic-frog-animations-pixel-art-2d-free

@@ -23,6 +23,7 @@ import 'systems/wind_controller.dart';
 import 'systems/world_state_persister.dart';
 import 'systems/world_streamer.dart';
 import 'world/biome_registry.dart';
+import 'world/creature_layer.dart';
 import 'world/world_generator.dart';
 import 'world/world_map.dart';
 import 'world/world_renderer.dart';
@@ -31,9 +32,11 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double pixelScale = 4.0;
   static const double groundLevel = 0.35;
 
-  // Three tiles at 4x scale = 192px. Walk them in ~2.4s.
+  /// Tiles of ground covered by a single (non-streak) correct answer.
+  /// At 4x pixel scale that's 192px, walked in ~2.4s.
+  static const int tilesPerCorrectAnswer = 3;
   static const double walkSpeed = 80;
-  static const double walkTarget = 3 * 16 * pixelScale;
+  static const double walkTarget = tilesPerCorrectAnswer * 16 * pixelScale;
   static const double cloudDrift = 1.5;
 
   final WorldStateRepository worldStateRepository;
@@ -74,6 +77,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
   late WorldMap worldMap;
   late WorldRenderer worldRenderer;
+  late CreatureLayer creatureLayer;
   late Player player;
   late Ground ground;
   late ParallaxComponent parallaxComponent;
@@ -128,6 +132,9 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
 
     worldRenderer = WorldRenderer(worldMap)..priority = 1;
     add(worldRenderer);
+
+    creatureLayer = CreatureLayer(worldMap)..priority = 1;
+    add(creatureLayer);
 
     // CoinManager shares the collectedCoins Set with the persister so its
     // spawn loop can dedup against saved pickups; the persister owns the
