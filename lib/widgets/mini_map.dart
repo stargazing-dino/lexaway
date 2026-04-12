@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../game/lexaway_game.dart';
@@ -21,7 +22,7 @@ const _windowPx = _windowTiles * 16.0 * LexawayGame.pixelScale;
 /// Shows a windowed track around the player with biome coloring and a marker.
 class MiniMap extends StatelessWidget {
   final WorldMap worldMap;
-  final double scrollOffset;
+  final ValueListenable<double> scrollOffset;
 
   const MiniMap({super.key, required this.worldMap, required this.scrollOffset});
 
@@ -39,9 +40,10 @@ class MiniMap extends StatelessWidget {
 
 class _MiniMapPainter extends CustomPainter {
   final WorldMap worldMap;
-  final double scrollOffset;
+  final ValueListenable<double> scrollOffset;
 
-  _MiniMapPainter({required this.worldMap, required this.scrollOffset});
+  _MiniMapPainter({required this.worldMap, required this.scrollOffset})
+      : super(repaint: scrollOffset);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -51,7 +53,8 @@ class _MiniMapPainter extends CustomPainter {
     if (totalPx <= 0) return;
 
     // Window: player at 1/3 from the left, showing _windowPx of world.
-    final windowStart = max(0.0, scrollOffset - _windowPx / 3);
+    final offset = scrollOffset.value;
+    final windowStart = max(0.0, offset - _windowPx / 3);
     final windowEnd = min(totalPx, windowStart + _windowPx);
     final windowLen = windowEnd - windowStart;
     if (windowLen <= 0) return;
@@ -87,7 +90,7 @@ class _MiniMapPainter extends CustomPainter {
     }
 
     // Player marker
-    final markerX = ((scrollOffset - windowStart) / windowLen * size.width)
+    final markerX = ((offset - windowStart) / windowLen * size.width)
         .clamp(0.0, size.width);
     final markerSize = 8.0;
 
@@ -122,6 +125,5 @@ class _MiniMapPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_MiniMapPainter oldDelegate) =>
-      oldDelegate.scrollOffset != scrollOffset ||
       oldDelegate.worldMap != worldMap;
 }

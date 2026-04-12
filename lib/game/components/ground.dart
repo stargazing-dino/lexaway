@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart';
 import '../lexaway_game.dart';
 import '../world/biome_registry.dart';
 import '../world/world_map.dart';
@@ -57,7 +58,10 @@ class _PierSprites {
 class Ground extends Component with HasGameReference<LexawayGame> {
   final WorldMap worldMap;
 
-  double scrollOffset = 0;
+  final ValueNotifier<double> scrollNotifier = ValueNotifier(0.0);
+  double get scrollOffset => scrollNotifier.value;
+  set scrollOffset(double v) => scrollNotifier.value = v;
+
   double _scrollSpeed = 0;
 
   Ground({required this.worldMap});
