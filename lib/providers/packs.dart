@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/pack_database.dart';
@@ -279,25 +280,40 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
     // cleanup: close the handle, scrub Hive, redirect to /packs.
     final List<Question> qs;
     try {
-      await _db.open(packId);
-      qs = await _db.loadQuestions(limit: 200);
+      qs = await _loadQuestions(packId);
     } catch (_) {
-      // .db file missing or corrupt — close leaked handle, scrub stale metadata
+      // .db file missing or corrupt — close leaked handle, scrub stale metadata.
+      // Protect each step so one failure doesn't block the rest.
       await _db.close();
-      await pm.deletePack(packId);
-      ref.invalidate(localPacksProvider);
+      try { await pm.deletePack(packId); } catch (_) {}
+      try { ref.invalidate(localPacksProvider); } catch (_) {}
       _activePackId = null;
       return null;
     }
     if (qs.isEmpty) {
-      await _db.close();
-      await pm.deletePack(packId);
-      ref.invalidate(localPacksProvider);
+      try { await _db.close(); } catch (_) {}
+      try { await pm.deletePack(packId); } catch (_) {}
+      try { ref.invalidate(localPacksProvider); } catch (_) {}
       _activePackId = null;
       return null;
     }
     pm.setLastUsed(packId);
     _activePackId = packId;
     return QuestionSource(_db, qs);
+  }
+
+  /// Open and query the pack database. Retries once on failure — the retry
+  /// re-closes and re-opens the handle, which recovers from a partially-
+  /// initialized native SQLite connection (common on cold boot).
+  Future<List<Question>> _loadQuestions(String packId) async {
+    try {
+      await _db.open(packId);
+      return await _db.loadQuestions(limit: 200);
+    } catch (e) {
+      assert(() { debugPrint('Pack DB first attempt failed: $e'); return true; }());
+      await _db.close();
+      await _db.open(packId);
+      return await _db.loadQuestions(limit: 200);
+    }
   }
 }

@@ -41,7 +41,12 @@ class PackDatabase {
   }
 
   Future<void> close() async {
-    await _db?.close();
+    final db = _db;
     _db = null;
+    try {
+      await db?.close();
+    } catch (_) {
+      // Abandon the connection — native handle will be GC'd.
+    }
   }
 }

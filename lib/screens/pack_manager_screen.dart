@@ -151,7 +151,16 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
 
   Future<void> _select(String packId) async {
     await ref.read(activePackProvider.notifier).switchPack(packId);
-    if (mounted) context.go('/game');
+    if (!mounted) return;
+    final loaded = ref.read(activePackProvider).valueOrNull?.hasQuestions ?? false;
+    if (loaded) {
+      context.go('/game');
+    } else {
+      _showError(
+        AppLocalizations.of(context)!.downloadFailed('Pack failed to load'),
+        onRetry: () => _select(packId),
+      );
+    }
   }
 
   @override

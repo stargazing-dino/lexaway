@@ -22,8 +22,11 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen> {
   @override
   void initState() {
     super.initState();
-    // If we're still here after 3 seconds, kick the provider to unstick.
-    _failsafe = Timer(const Duration(seconds: 3), () {
+    // Last-resort unstick. The retry logic in _loadQuestions handles transient
+    // cold-boot failures directly; this only fires if something truly hangs.
+    // Don't go lower — invalidating while _openAndLoad is in-flight creates a
+    // race where the old build's catch block deletes the pack concurrently.
+    _failsafe = Timer(const Duration(seconds: 5), () {
       if (mounted) ref.invalidate(activePackProvider);
     });
   }
