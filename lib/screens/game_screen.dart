@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -133,7 +134,24 @@ class _GameScreenState extends ConsumerState<GameScreen>
     return Scaffold(
       body: Stack(
         children: [
-          GameWidget(game: game),
+          GestureDetector(
+            onDoubleTap: kDebugMode
+                ? () {
+                    game.toggleDebugWalk();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          game.debugWalk
+                              ? '🦕 Debug walk ON — strolling forever'
+                              : '🦕 Debug walk OFF',
+                        ),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  }
+                : null,
+            child: GameWidget(game: game),
+          ),
           Positioned(left: 0, right: 0, top: 0, child: const HudBar()),
           if (source != null)
             Positioned(

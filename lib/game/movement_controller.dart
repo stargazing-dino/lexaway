@@ -1,8 +1,10 @@
 import 'package:flame/components.dart';
 
+import 'audio_manager.dart' show Terrain;
 import 'events.dart';
 import 'lexaway_game.dart';
 import 'walk_state.dart';
+import 'world/biome_registry.dart';
 
 /// The walk state machine. Owns only the "is the dino moving, and how far
 /// until it stops" logic — animation, scrolling, audio, wind, and dialogue
@@ -18,7 +20,15 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
   static const int _runStreakThreshold = 3;
   static const double _runDistanceMultiplier = 1.5;
 
+  /// Debug mode: dino walks forever without needing correct answers.
+  bool debugWalk = false;
+
   bool get isWalking => _state.walking;
+
+  Terrain get _currentTerrain {
+    final biome = game.worldMap.biomeAt(game.ground.scrollOffset);
+    return BiomeRegistry.get(biome).footstepTerrain;
+  }
 
   void correctAnswer({required int streak, required String answer}) {
     final shouldRun = streak >= _runStreakThreshold;
@@ -62,7 +72,7 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     _state.stepTimer += dt;
     if (_state.stepTimer >= _stepInterval) {
       _state.stepTimer -= _stepInterval;
-      game.events.emit(const StepTaken(1));
+      game.events.emit(StepTaken(1, terrain: _currentTerrain));
     }
     if (_state.remaining <= 0) {
       _state.remaining = 0;
@@ -76,15 +86,34 @@ class MovementController extends Component with HasGameReference<LexawayGame> {
     final skipDistance = _state.remaining;
     final skippedSteps =
         (skipDistance / (_state.currentSpeed * _stepInterval)).ceil();
-    if (skippedSteps > 0) game.events.emit(StepTaken(skippedSteps));
+    if (skippedSteps > 0) {
+      game.events.emit(StepTaken(skippedSteps, terrain: _currentTerrain));
+    }
     _state.remaining = 0;
     _stop(skipDistance: skipDistance);
   }
 
   void _stop({double skipDistance = 0}) {
+    if (debugWalk) {
+      // Keep walking forever — top up the distance instead of stopping.
+      _state.remaining += LexawayGame.walkTarget;
+      return;
+    }
     _state.walking = false;
     _state.running = false;
     _state.stepTimer = 0;
     game.events.emit(WalkStopped(skipDistance: skipDistance));
+  }
+
+  /// Toggle continuous debug walking. When enabled, the dino walks forward
+  /// endlessly without needing correct answers.
+  void toggleDebugWalk() {
+    debugWalk = !debugWalk;
+    if (debugWalk && !_state.walking) {
+      _state.remaining = LexawayGame.walkTarget;
+      _state.walking = true;
+      _state.stepTimer = _stepInterval;
+      game.events.emit(const WalkStarted(running: false));
+    }
   }
 }

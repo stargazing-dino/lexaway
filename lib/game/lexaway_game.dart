@@ -189,6 +189,10 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     movementController.wrongAnswer();
   }
 
+  /// Toggle debug mode: dino walks continuously without answering.
+  void toggleDebugWalk() => movementController.toggleDebugWalk();
+  bool get debugWalk => movementController.debugWalk;
+
   /// Force an immediate synchronous write, bypassing the per-frame
   /// coalesce in [WorldStatePersister]. Use this from lifecycle hooks
   /// (pause, dispose) where the next tick may never run.
