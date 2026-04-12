@@ -3,10 +3,10 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
-import 'package:flame/parallax.dart';
 
 import '../data/world_state_repository.dart';
 import 'audio_manager.dart';
+import 'components/biome_parallax.dart';
 import 'components/coin_manager.dart';
 import 'components/ground.dart';
 import 'components/player.dart';
@@ -22,7 +22,6 @@ import 'systems/scroll_controller.dart';
 import 'systems/wind_controller.dart';
 import 'systems/world_state_persister.dart';
 import 'systems/world_streamer.dart';
-import 'world/biome_registry.dart';
 import 'world/creature_layer.dart';
 import 'world/world_generator.dart';
 import 'world/world_map.dart';
@@ -79,7 +78,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   late CreatureLayer creatureLayer;
   late Player player;
   late Ground ground;
-  late ParallaxComponent parallaxComponent;
+  late BiomeParallax biomeParallax;
   late SpeechBubble speechBubble;
   late CoinManager coinManager;
   late WindLines windLines;
@@ -111,17 +110,11 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
       initialCollectedCoins: saved?.collectedCoins ?? const [],
     );
 
-    final initialBiome = BiomeRegistry.get(worldMap.segments.first.biome);
     final parallaxHeight = size.y * groundLevel + 16 * pixelScale - 40;
-    parallaxComponent = await loadParallaxComponent(
-      initialBiome.parallaxLayers.map(ParallaxImageData.new).toList(),
-      baseVelocity: Vector2.zero(),
-      velocityMultiplierDelta: Vector2(1.4, 0),
-      fill: LayerFill.height,
-      filterQuality: FilterQuality.none,
-      size: Vector2(size.x, parallaxHeight),
-    );
-    add(parallaxComponent);
+    biomeParallax = BiomeParallax(
+      initialScrollOffset: saved?.scrollOffset ?? 0,
+    )..size = Vector2(size.x, parallaxHeight);
+    await add(biomeParallax);
 
     ground = Ground(worldMap: worldMap)..priority = 1;
     if (saved != null) {
@@ -172,6 +165,8 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     // first-frame race-prone — keep them in this order.
     add(worldStatePersister);
 
+    events.on<WorldExtended>().listen((_) => _loadNewBiomes());
+
     await AudioManager.instance.preload();
     await SpeechMessages.load('en');
     if (locale != 'en') await SpeechMessages.load(locale);
@@ -179,6 +174,15 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
     // Persist the seed on first run. The persister isn't mounted yet so
     // its per-frame dirty drain hasn't started — flush() writes directly.
     if (saved == null) worldStatePersister.flush();
+  }
+
+  void _loadNewBiomes() {
+    for (final seg in worldMap.segments) {
+      ground.ensureBiomeLoaded(seg.biome);
+      worldRenderer.ensureBiomeLoaded(seg.biome);
+      creatureLayer.ensureBiomeLoaded(seg.biome);
+      biomeParallax.ensureBiomeLoaded(seg.biome);
+    }
   }
 
   void correctAnswer({required int streak, required String answer}) {

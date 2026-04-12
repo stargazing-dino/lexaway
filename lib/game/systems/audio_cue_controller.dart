@@ -33,11 +33,11 @@ class AudioCueController extends Component
         }
       case AnswerWrong():
         audio.playWrong();
-      case StepTaken():
+      case StepTaken(:final terrain):
         // One chirp per step event regardless of count — matches the
         // previous behavior where `finishMovement` skipped ahead without
         // spamming footstep sounds in the same frame.
-        audio.playFootstep();
+        audio.playFootstep(terrain: terrain);
       case CoinCollected(:final type):
         if (type == CoinType.diamond) {
           audio.playGem();

@@ -2,27 +2,34 @@ import 'dart:async';
 
 import 'package:flame/components.dart';
 
+import '../components/biome_parallax.dart';
 import '../components/ground.dart';
 import '../events.dart';
 import '../lexaway_game.dart';
 import '../walk_state.dart';
+import '../world/world_map.dart';
 
 /// Owns anything that scrolls: parallax velocity, ground scroll speed, and
 /// gentle cloud drift. Subscribes to walk events and translates them into
-/// `ParallaxComponent.baseVelocity` + ground scroll speed changes.
+/// parallax base-velocity + ground scroll speed changes.
+///
+/// Also detects biome boundaries and triggers parallax crossfades via
+/// [BiomeParallax.transitionTo].
 class ScrollController extends Component with HasGameReference<LexawayGame> {
   StreamSubscription<GameEvent>? _sub;
 
-  // Cached refs captured in onMount — avoids going through `game.*`
-  // every frame for cloud drift.
-  late final ParallaxComponent _parallax;
+  late final BiomeParallax _biomeParallax;
   late final Ground _ground;
+  late BiomeType _currentBiome;
 
   @override
   void onMount() {
     super.onMount();
-    _parallax = game.parallaxComponent;
+    _biomeParallax = game.biomeParallax;
     _ground = game.ground;
+    _currentBiome = game.worldMap.biomeAt(
+      _ground.scrollOffset + game.size.x / 2,
+    );
     _sub = game.events.on<GameEvent>().listen(_handle);
   }
 
@@ -34,7 +41,7 @@ class ScrollController extends Component with HasGameReference<LexawayGame> {
         _applySpeed(running: running);
       case WalkStopped(:final skipDistance):
         if (skipDistance > 0) _ground.scrollOffset += skipDistance;
-        _parallax.parallax!.baseVelocity = Vector2.zero();
+        _biomeParallax.setBaseVelocity(Vector2.zero());
         _ground.stopScrolling();
       default:
         break;
@@ -45,24 +52,23 @@ class ScrollController extends Component with HasGameReference<LexawayGame> {
     final speed = running
         ? LexawayGame.walkSpeed * WalkState.runSpeedMultiplier
         : LexawayGame.walkSpeed;
-    _parallax.parallax!.baseVelocity = Vector2(speed * 0.1, 0);
+    _biomeParallax.setBaseVelocity(Vector2(speed * 0.1, 0));
     _ground.startScrolling(speed);
   }
 
   @override
   void update(double dt) {
-    // Gentle cloud drift independent of player movement. Moved out of
-    // `LexawayGame.update` so all scrolling behavior lives in one place.
-    //
-    // Layers 1 and 2 are the back/front cloud layers. Guarded for biomes
-    // that may ship with fewer than three parallax layers — drift just
-    // no-ops in that case.
-    final layers = _parallax.parallax!.layers;
-    if (layers.length > 1) {
-      layers[1].update(Vector2(LexawayGame.cloudDrift * dt, 0), dt);
-    }
-    if (layers.length > 2) {
-      layers[2].update(Vector2(LexawayGame.cloudDrift * 1.8 * dt, 0), dt);
+    _biomeParallax.applyCloudDrift(dt);
+
+    // Detect biome boundary crossings at screen centre.
+    final biome = game.worldMap.biomeAt(
+      _ground.scrollOffset + game.size.x / 2,
+    );
+    if (biome != _currentBiome) {
+      final previous = _currentBiome;
+      _currentBiome = biome;
+      _biomeParallax.transitionTo(biome);
+      game.events.emit(BiomeChanged(previous: previous, current: biome));
     }
   }
 

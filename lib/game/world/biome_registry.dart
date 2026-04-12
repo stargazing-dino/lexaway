@@ -46,10 +46,38 @@ class BiomeRegistry {
     },
   );
 
+  static const _tropics = BiomeDefinition(
+    type: BiomeType.tropics,
+    terrainAsset: 'terrain/tropics.png',
+    entitySheet: 'entities/tropics.png',
+    entityManifest: 'assets/images/entities/tropics.json',
+    parallaxLayers: [
+      'parallax/sky.png',
+      'parallax/tropics_clouds_far.png',
+      'parallax/tropics_clouds_near.png',
+      'parallax/tropics_water.png',
+    ],
+    footstepTerrain: Terrain.dirt,
+    entityWeights: [
+      WeightedEntity('palm_tree', 30),
+      WeightedEntity('wooden_fence', 25),
+      WeightedEntity('rock', 25),
+      WeightedEntity('pier', 20),
+    ],
+    minEntityGapTiles: 8,
+    maxEntityGapTiles: 20,
+    minCoinGapTiles: 5,
+    maxCoinGapTiles: 10,
+    diamondChance: 0.15,
+    clusterChance: 0.25,
+  );
+
   static BiomeDefinition get(BiomeType type) {
     switch (type) {
       case BiomeType.grassland:
         return _grassland;
+      case BiomeType.tropics:
+        return _tropics;
     }
   }
 }

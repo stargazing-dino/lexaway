@@ -108,6 +108,13 @@ class BiomeDefinition {
   /// Sprite/behavior config for each creature name in [creatureWeights].
   final Map<String, CreatureSpriteDef> creatureDefs;
 
+  /// Source position of the surface tile in the terrain sheet.
+  /// Stored as `[x, y]` rather than `Vector2` to keep `const`-constructible.
+  final List<double> surfaceSrcPosition;
+
+  /// Source position of the fill tile in the terrain sheet.
+  final List<double> fillSrcPosition;
+
   const BiomeDefinition({
     required this.type,
     required this.terrainAsset,
@@ -122,6 +129,8 @@ class BiomeDefinition {
     required this.maxCoinGapTiles,
     required this.diamondChance,
     required this.clusterChance,
+    this.surfaceSrcPosition = const [64, 16],
+    this.fillSrcPosition = const [64, 48],
     this.creatureWeights = const [],
     this.minCreatureGapTiles = 40,
     this.maxCreatureGapTiles = 80,

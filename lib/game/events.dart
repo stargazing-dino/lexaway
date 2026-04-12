@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'audio_manager.dart' show Terrain;
 import 'components/coin.dart' show CoinType;
+import 'world/world_map.dart' show BiomeType;
 
 /// Typed game event channel. Sibling components subscribe to the events they
 /// care about instead of reaching across the tree via `game.*`.
@@ -51,7 +53,8 @@ class WalkStopped extends GameEvent {
 /// a movement is fast-forwarded via `finishMovement`.
 class StepTaken extends GameEvent {
   final int count;
-  const StepTaken(this.count);
+  final Terrain terrain;
+  const StepTaken(this.count, {this.terrain = Terrain.grass});
 }
 
 /// A coin or diamond was collected.
@@ -66,6 +69,14 @@ class CoinCollected extends GameEvent {
 /// picks the localized message.
 class IdleChatterTriggered extends GameEvent {
   const IdleChatterTriggered();
+}
+
+/// The player has crossed into a different biome. Fired by
+/// [ScrollController] when the on-screen biome changes.
+class BiomeChanged extends GameEvent {
+  final BiomeType previous;
+  final BiomeType current;
+  const BiomeChanged({required this.previous, required this.current});
 }
 
 /// A batch of additional world segments has been appended. Fired by

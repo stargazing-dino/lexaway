@@ -117,9 +117,7 @@ class WorldGenerator {
   }
 
   BiomeType _pickBiome(Random rng) {
-    // Phase 1: always grassland.
-    // Future: weighted selection with transition rules.
-    return BiomeType.grassland;
+    return rng.nextDouble() < 0.6 ? BiomeType.grassland : BiomeType.tropics;
   }
 
   /// 1D Poisson disk sampling: places points with at least [minGapPx] between

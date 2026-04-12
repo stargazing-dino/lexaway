@@ -1,0 +1,36 @@
+{
+  "source": "tropics.png",
+  "tileSize": 16,
+  "entities": {
+    "palm_tree": {
+      "col": 1, "row": 1,
+      "widthTiles": 3, "heightTiles": 3,
+      "src": [16, 16], "size": [48, 48]
+    },
+    "pier": {
+      "col": 11, "row": 2,
+      "widthTiles": 5, "heightTiles": 2,
+      "src": [176, 32], "size": [80, 32]
+    },
+    "wooden_fence": {
+      "col": 5, "row": 3,
+      "widthTiles": 3, "heightTiles": 1,
+      "src": [80, 48], "size": [48, 16]
+    },
+    "rock": {
+      "col": 9, "row": 3,
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [144, 48], "size": [16, 16]
+    },
+    "ocean_1": {
+      "col": 12, "row": 5,
+      "widthTiles": 1, "heightTiles": 2,
+      "src": [192, 80], "size": [16, 32]
+    },
+    "ocean_2": {
+      "col": 14, "row": 5,
+      "widthTiles": 1, "heightTiles": 2,
+      "src": [224, 80], "size": [16, 32]
+    }
+  }
+}
