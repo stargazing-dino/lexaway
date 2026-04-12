@@ -33,8 +33,7 @@ class LexawayGame extends FlameGame with HasCollisionDetection {
   static const double groundLevel = 0.35;
 
   /// Tiles of ground covered by a single (non-streak) correct answer.
-  /// At 4x pixel scale that's 192px, walked in ~2.4s.
-  static const int tilesPerCorrectAnswer = 3;
+  static const int tilesPerCorrectAnswer = 4;
   static const double walkSpeed = 80;
   static const double walkTarget = tilesPerCorrectAnswer * 16 * pixelScale;
   static const double cloudDrift = 1.5;
