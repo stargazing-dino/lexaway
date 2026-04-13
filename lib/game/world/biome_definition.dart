@@ -1,4 +1,5 @@
 import '../audio_manager.dart';
+import '../components/behaviors/behavior_config.dart';
 import 'world_map.dart';
 
 class WeightedEntity {
@@ -46,10 +47,10 @@ class SpawnLayer {
        assert(threshold >= 0 && threshold < 1.0);
 }
 
-/// Per-creature animation + behavior config. Lives on [CreatureSpriteDef]
-/// so biome registry entries can describe creatures declaratively without a
-/// separate JSON manifest (we only have one creature today).
-class CreatureBehavior {
+/// Per-creature animation config (row indices, frame counts, step times).
+/// Lives on [CreatureSpriteDef] so biome registry entries can describe
+/// creatures declaratively without a separate JSON manifest.
+class CreatureAnimConfig {
   final int idleRow;
   final int idleFrames;
   final double idleStepTime;
@@ -69,11 +70,7 @@ class CreatureBehavior {
   final int deathFrames;
   final double deathStepTime;
 
-  /// Seconds between hops (inclusive lower bound, exclusive upper).
-  final double minHopIntervalSec;
-  final double maxHopIntervalSec;
-
-  const CreatureBehavior({
+  const CreatureAnimConfig({
     this.idleRow = 0,
     this.idleFrames = 4,
     this.idleStepTime = 0.18,
@@ -86,8 +83,6 @@ class CreatureBehavior {
     this.deathRow = 3,
     this.deathFrames = 3,
     this.deathStepTime = 0.18,
-    this.minHopIntervalSec = 4.0,
-    this.maxHopIntervalSec = 9.0,
   });
 }
 
@@ -104,14 +99,16 @@ class CreatureSpriteDef {
   final double frameWidth;
   final double frameHeight;
   final double scale;
-  final CreatureBehavior behavior;
+  final CreatureAnimConfig animConfig;
+  final List<BehaviorConfig> behaviors;
 
   const CreatureSpriteDef({
     required this.sheetPath,
     required this.frameWidth,
     required this.frameHeight,
     required this.scale,
-    required this.behavior,
+    required this.animConfig,
+    this.behaviors = const [],
   });
 }
 

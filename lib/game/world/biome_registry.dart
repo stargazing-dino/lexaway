@@ -1,4 +1,5 @@
 import '../audio_manager.dart';
+import '../components/behaviors/behavior_config.dart';
 import '../lexaway_game.dart';
 import 'biome_definition.dart';
 import 'world_map.dart';
@@ -95,7 +96,11 @@ class BiomeRegistry {
         frameWidth: 32,
         frameHeight: 32,
         scale: LexawayGame.pixelScale,
-        behavior: CreatureBehavior(),
+        animConfig: CreatureAnimConfig(),
+        behaviors: [
+          FleeConfig(),
+          IdleHopConfig(),
+        ],
       ),
     },
   );

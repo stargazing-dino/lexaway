@@ -56,7 +56,7 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
   void update(double dt) {
     // Tag fleeing creatures before the base class culls them.
     for (final entry in activeItems.entries) {
-      if (entry.value.fleeing) _fledIndices.add(entry.key);
+      if (entry.value.isExcited) _fledIndices.add(entry.key);
     }
     super.update(dt);
   }
@@ -72,7 +72,8 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
       frameWidth: def.frameWidth,
       frameHeight: def.frameHeight,
       spriteScale: def.scale,
-      behavior: def.behavior,
+      animConfig: def.animConfig,
+      behaviorConfigs: def.behaviors,
       worldX: item.worldX,
       itemIndex: item.index,
     );
