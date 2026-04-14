@@ -10,6 +10,7 @@ class AttributionsScreen extends StatelessWidget {
   const AttributionsScreen({super.key});
 
   static const _attributions = [
+    _Attribution('Sentence Data (CC BY 2.0 FR)', 'Tatoeba contributors — sentences adapted for fill-in-the-blank', 'https://tatoeba.org'),
     _Attribution('Dino Characters', 'Arks', 'https://arks.itch.io/dino-characters'),
     _Attribution('Dino Family', 'ScissorMarks & Demching', 'https://demching.itch.io/dino-family'),
     _Attribution('400 Sounds Pack', 'Ci', 'https://ci.itch.io/400-sounds-pack'),
