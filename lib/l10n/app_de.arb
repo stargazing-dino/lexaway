@@ -29,5 +29,9 @@
   "settingsAbout": "Über",
   "settingsFont": "Schrift",
   "attributions": "Quellenangaben",
-  "extracting": "Entpacken…"
+  "extracting": "Entpacken…",
+  "settingsDifficulty": "Schwierigkeit",
+  "difficultyBeginner": "Anfänger",
+  "difficultyIntermediate": "Mittelstufe",
+  "difficultyAdvanced": "Fortgeschritten"
 }

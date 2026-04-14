@@ -7,6 +7,7 @@ import '../data/question_source.dart';
 import '../data/tts_manager.dart';
 import '../models/question.dart';
 import 'bootstrap.dart';
+import 'settings.dart';
 import 'tts.dart';
 
 /// Schema version bounds for local pack compatibility.
@@ -278,9 +279,9 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
     // genuine corruption (truncated file, malformed sqlite, bad phrases table)
     // usually surfaces on the first real query. Both paths share the same
     // cleanup: close the handle, scrub Hive, redirect to /packs.
-    final List<Question> qs;
+    final ({List<Question> fresh, List<Question> review, String difficulty}) loaded;
     try {
-      qs = await _loadQuestions(packId);
+      loaded = await _loadQuestions(packId);
     } catch (_) {
       // .db file missing or corrupt — close leaked handle, scrub stale metadata.
       // Protect each step so one failure doesn't block the rest.
@@ -290,7 +291,7 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
       _activePackId = null;
       return null;
     }
-    if (qs.isEmpty) {
+    if (loaded.fresh.isEmpty && loaded.review.isEmpty) {
       try { await _db.close(); } catch (_) {}
       try { await pm.deletePack(packId); } catch (_) {}
       try { ref.invalidate(localPacksProvider); } catch (_) {}
@@ -299,21 +300,50 @@ class ActivePackNotifier extends AsyncNotifier<QuestionSource?> {
     }
     pm.setLastUsed(packId);
     _activePackId = packId;
-    return QuestionSource(_db, qs);
+    return QuestionSource(
+      _db,
+      loaded.fresh,
+      initialReview: loaded.review,
+      reviewRatio: _reviewRatio(loaded.difficulty),
+      difficulty: loaded.difficulty,
+    );
+  }
+
+  /// Map difficulty to review ratio — beginners see more review to reinforce
+  /// basics; advanced players see less repetition.
+  static double _reviewRatio(String difficulty) {
+    switch (difficulty) {
+      case 'beginner':
+        return 0.33;
+      case 'intermediate':
+        return 0.25;
+      default:
+        return 0.15;
+    }
   }
 
   /// Open and query the pack database. Retries once on failure — the retry
   /// re-closes and re-opens the handle, which recovers from a partially-
   /// initialized native SQLite connection (common on cold boot).
-  Future<List<Question>> _loadQuestions(String packId) async {
+  Future<({List<Question> fresh, List<Question> review, String difficulty})>
+      _loadQuestions(String packId) async {
+    final difficulty = ref.read(difficultyProvider);
     try {
       await _db.open(packId);
-      return await _db.loadQuestions(limit: 200);
+      final fresh =
+          await _db.loadQuestions(difficulty: difficulty, limit: 200);
+      final review =
+          await _db.loadReviewQuestions(difficulty: difficulty, limit: 50);
+      return (fresh: fresh, review: review, difficulty: difficulty);
     } catch (e) {
       assert(() { debugPrint('Pack DB first attempt failed: $e'); return true; }());
       await _db.close();
       await _db.open(packId);
-      return await _db.loadQuestions(limit: 200);
+      final fresh =
+          await _db.loadQuestions(difficulty: difficulty, limit: 200);
+      final review =
+          await _db.loadReviewQuestions(difficulty: difficulty, limit: 50);
+      return (fresh: fresh, review: review, difficulty: difficulty);
     }
   }
 }

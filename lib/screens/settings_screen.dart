@@ -106,6 +106,20 @@ class SettingsScreen extends ConsumerWidget {
                             ref.read(autoPlayTtsProvider.notifier).set(v),
                       ),
                       const SizedBox(height: AppSpacing.lg),
+                      _SectionHeader(label: AppLocalizations.of(context)!.settingsDifficulty),
+                      const SizedBox(height: AppSpacing.sm),
+                      for (final entry in {
+                        'beginner': AppLocalizations.of(context)!.difficultyBeginner,
+                        'intermediate': AppLocalizations.of(context)!.difficultyIntermediate,
+                        'advanced': AppLocalizations.of(context)!.difficultyAdvanced,
+                      }.entries)
+                        _RadioRow(
+                          label: entry.value,
+                          selected: ref.watch(difficultyProvider) == entry.key,
+                          onTap: () =>
+                              ref.read(difficultyProvider.notifier).set(entry.key),
+                        ),
+                      const SizedBox(height: AppSpacing.lg),
                       _SectionHeader(label: AppLocalizations.of(context)!.settingsFont),
                       const SizedBox(height: AppSpacing.sm),
                       for (final font in AppFont.values)
@@ -295,6 +309,47 @@ class _FontPickerRow extends StatelessWidget {
                   fontFamily: font.family,
                   color: AppColors.textPrimary,
                   fontSize: 18,
+                ),
+              ),
+            ),
+            Icon(
+              selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              size: 20,
+              color: selected ? AppColors.accent : AppColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RadioRow extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _RadioRow({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
                 ),
               ),
             ),

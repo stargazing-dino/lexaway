@@ -29,5 +29,9 @@
   "settingsAbout": "Sobre",
   "settingsFont": "Fonte",
   "attributions": "Atribuições",
-  "extracting": "Extraindo…"
+  "extracting": "Extraindo…",
+  "settingsDifficulty": "Dificuldade",
+  "difficultyBeginner": "Iniciante",
+  "difficultyIntermediate": "Intermediário",
+  "difficultyAdvanced": "Avançado"
 }

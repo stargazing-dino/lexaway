@@ -1,27 +1,41 @@
 import 'dart:convert';
 
 class Question {
+  final int id;
   final String phrase;
   final String translation;
   final int blankIndex;
   final String answer;
   final List<String> options;
 
+  // SM-2 state — carried along so recordAnswer can compute the next state.
+  final double easiness;
+  final int intervalDays;
+  final int repetitions;
+
   const Question({
+    required this.id,
     required this.phrase,
     required this.translation,
     required this.blankIndex,
     required this.answer,
     required this.options,
+    this.easiness = 2.5,
+    this.intervalDays = 0,
+    this.repetitions = 0,
   });
 
   factory Question.fromMap(Map<String, dynamic> row) {
     return Question(
+      id: row['id'] as int,
       phrase: row['phrase'] as String,
       translation: row['translation'] as String,
       blankIndex: row['blank_index'] as int,
       answer: row['answer'] as String,
       options: (jsonDecode(row['options'] as String) as List).cast<String>(),
+      easiness: (row['easiness'] as num?)?.toDouble() ?? 2.5,
+      intervalDays: (row['interval_days'] as num?)?.toInt() ?? 0,
+      repetitions: (row['repetitions'] as num?)?.toInt() ?? 0,
     );
   }
 

@@ -28,16 +28,104 @@ class PackDatabase {
     // Add migrations here when users have local packs that can't be rebuilt.
   }
 
-  Future<List<Question>> loadQuestions({String? level, int limit = 200}) async {
+  static const _sm2Cols =
+      'id, phrase, translation, blank_index, answer, options, '
+      'easiness, interval_days, repetitions';
+
+  /// Build a WHERE clause for the difficulty filter.
+  /// beginner → only beginner rows; intermediate → beginner + intermediate;
+  /// advanced / null → no filter.
+  static ({String clause, List<String> args}) _difficultyFilter(
+      String? difficulty) {
+    switch (difficulty) {
+      case 'beginner':
+        return (clause: "level = ?", args: ['beginner']);
+      case 'intermediate':
+        return (
+          clause: "level IN (?, ?)",
+          args: ['beginner', 'intermediate'],
+        );
+      default:
+        return (clause: '', args: <String>[]);
+    }
+  }
+
+  /// Load fresh (not-yet-due-for-review) questions.
+  Future<List<Question>> loadQuestions({
+    String? difficulty,
+    int limit = 200,
+  }) async {
     final db = _db!;
-    final where = level != null ? 'WHERE level = ?' : '';
-    final args = level != null ? [level] : <String>[];
+    final diff = _difficultyFilter(difficulty);
+    final today = _today();
+
+    final conditions = <String>[
+      // Exclude items currently due for review — they come from loadReviewQuestions.
+      "(next_review = '' OR next_review > ?)",
+    ];
+    final args = <Object>[today];
+
+    if (diff.clause.isNotEmpty) {
+      conditions.add(diff.clause);
+      args.addAll(diff.args);
+    }
+    args.add(limit);
+
+    final where = 'WHERE ${conditions.join(' AND ')}';
     final rows = await db.getAll(
-      'SELECT phrase, translation, blank_index, answer, options '
-      'FROM phrases $where ORDER BY RANDOM() LIMIT ?',
-      [...args, limit],
+      'SELECT $_sm2Cols FROM phrases $where ORDER BY RANDOM() LIMIT ?',
+      args,
     );
     return rows.map((r) => Question.fromMap(r)).toList();
+  }
+
+  /// Load questions that are due for review (next_review <= today).
+  Future<List<Question>> loadReviewQuestions({
+    String? difficulty,
+    int limit = 50,
+  }) async {
+    final db = _db!;
+    final diff = _difficultyFilter(difficulty);
+    final today = _today();
+
+    final conditions = <String>[
+      "next_review != ''",
+      "next_review <= ?",
+    ];
+    final args = <Object>[today];
+
+    if (diff.clause.isNotEmpty) {
+      conditions.add(diff.clause);
+      args.addAll(diff.args);
+    }
+    args.add(limit);
+
+    final where = 'WHERE ${conditions.join(' AND ')}';
+    final rows = await db.getAll(
+      'SELECT $_sm2Cols FROM phrases $where ORDER BY next_review ASC LIMIT ?',
+      args,
+    );
+    return rows.map((r) => Question.fromMap(r)).toList();
+  }
+
+  /// Write updated SM-2 state back to a single row.
+  Future<void> updateSm2(
+    int id, {
+    required double easiness,
+    required int intervalDays,
+    required int repetitions,
+    required String nextReview,
+  }) async {
+    await _db!.execute(
+      'UPDATE phrases SET easiness = ?, interval_days = ?, '
+      'repetitions = ?, next_review = ? WHERE id = ?',
+      [easiness, intervalDays, repetitions, nextReview, id],
+    );
+  }
+
+  static String _today() {
+    final now = DateTime.now().toUtc();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
   Future<void> close() async {

@@ -39,5 +39,9 @@
   "settingsAbout": "About",
   "settingsFont": "Font",
   "attributions": "Attributions",
-  "extracting": "Extracting…"
+  "extracting": "Extracting…",
+  "settingsDifficulty": "Difficulty",
+  "difficultyBeginner": "Beginner",
+  "difficultyIntermediate": "Intermediate",
+  "difficultyAdvanced": "Advanced"
 }

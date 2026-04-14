@@ -17,6 +17,7 @@ abstract final class HiveKeys {
   static const gender = 'gender';
   static const font = 'font';
   static const ttsAutoPlay = 'tts_auto_play';
+  static const difficulty = 'difficulty';
 
   // Game stats
   static const streak = 'streak';

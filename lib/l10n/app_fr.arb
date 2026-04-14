@@ -29,5 +29,9 @@
   "settingsAbout": "À propos",
   "settingsFont": "Police",
   "attributions": "Attributions",
-  "extracting": "Extraction…"
+  "extracting": "Extraction…",
+  "settingsDifficulty": "Difficulté",
+  "difficultyBeginner": "Débutant",
+  "difficultyIntermediate": "Intermédiaire",
+  "difficultyAdvanced": "Avancé"
 }

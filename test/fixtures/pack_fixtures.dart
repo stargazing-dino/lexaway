@@ -85,19 +85,24 @@ Future<File> seedRealPack({
     // sync with that file if the real build ever adds NOT NULL columns.
     await db.execute('''
       CREATE TABLE phrases (
+        id INTEGER PRIMARY KEY,
         phrase TEXT NOT NULL,
         translation TEXT NOT NULL,
         blank_index INTEGER NOT NULL,
         answer TEXT NOT NULL,
         answer_pos TEXT NOT NULL,
         options TEXT NOT NULL,
-        level TEXT
+        level TEXT NOT NULL DEFAULT 'beginner',
+        easiness REAL NOT NULL DEFAULT 2.5,
+        interval_days INTEGER NOT NULL DEFAULT 0,
+        repetitions INTEGER NOT NULL DEFAULT 0,
+        next_review TEXT NOT NULL DEFAULT ''
       )
     ''');
     await db.execute(
       'INSERT INTO phrases (phrase, translation, blank_index, answer, '
       'answer_pos, options, level) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      ['hola mundo', 'hello world', 0, 'hola', 'NOUN', '["hola","adios"]', 'a1'],
+      ['hola mundo', 'hello world', 0, 'hola', 'NOUN', '["hola","adios"]', 'beginner'],
     );
   } finally {
     await db.close();

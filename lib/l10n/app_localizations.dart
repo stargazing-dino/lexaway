@@ -285,6 +285,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Extracting…'**
   String get extracting;
+
+  /// No description provided for @settingsDifficulty.
+  ///
+  /// In en, this message translates to:
+  /// **'Difficulty'**
+  String get settingsDifficulty;
+
+  /// No description provided for @difficultyBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get difficultyBeginner;
+
+  /// No description provided for @difficultyIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get difficultyIntermediate;
+
+  /// No description provided for @difficultyAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get difficultyAdvanced;
 }
 
 class _AppLocalizationsDelegate

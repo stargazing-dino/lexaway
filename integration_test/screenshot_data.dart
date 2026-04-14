@@ -44,6 +44,7 @@ final screenshotLocaleData = <String, ScreenshotLocaleData>{
     characterKey: 'fra',
     questions: const [
       Question(
+        id: 0,
         phrase: 'Le chat dort sur le canapé',
         translation: 'The cat sleeps on the couch',
         blankIndex: 20,
@@ -60,6 +61,7 @@ final screenshotLocaleData = <String, ScreenshotLocaleData>{
     characterKey: 'eng',
     questions: const [
       Question(
+        id: 0,
         phrase: 'The cat sleeps on the couch',
         translation: 'Le chat dort sur le canapé',
         blankIndex: 18,
@@ -81,6 +83,7 @@ final screenshotLocaleData = <String, ScreenshotLocaleData>{
     characterKey: 'eng',
     questions: const [
       Question(
+        id: 0,
         phrase: 'The cat sleeps on the couch',
         translation: 'Die Katze schläft auf dem Sofa',
         blankIndex: 18,
@@ -102,6 +105,7 @@ final screenshotLocaleData = <String, ScreenshotLocaleData>{
     characterKey: 'eng',
     questions: const [
       Question(
+        id: 0,
         phrase: 'The cat sleeps on the couch',
         translation: 'El gato duerme en el sofá',
         blankIndex: 18,
@@ -123,6 +127,7 @@ final screenshotLocaleData = <String, ScreenshotLocaleData>{
     characterKey: 'eng',
     questions: const [
       Question(
+        id: 0,
         phrase: 'The cat sleeps on the couch',
         translation: 'Il gatto dorme sul divano',
         blankIndex: 18,
@@ -144,6 +149,7 @@ final screenshotLocaleData = <String, ScreenshotLocaleData>{
     characterKey: 'eng',
     questions: const [
       Question(
+        id: 0,
         phrase: 'The cat sleeps on the couch',
         translation: 'O gato dorme no sofá',
         blankIndex: 18,

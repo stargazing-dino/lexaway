@@ -102,4 +102,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get extracting => 'Entpacken…';
+
+  @override
+  String get settingsDifficulty => 'Schwierigkeit';
+
+  @override
+  String get difficultyBeginner => 'Anfänger';
+
+  @override
+  String get difficultyIntermediate => 'Mittelstufe';
+
+  @override
+  String get difficultyAdvanced => 'Fortgeschritten';
 }

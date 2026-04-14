@@ -103,4 +103,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get extracting => 'Extrayendo…';
+
+  @override
+  String get settingsDifficulty => 'Dificultad';
+
+  @override
+  String get difficultyBeginner => 'Principiante';
+
+  @override
+  String get difficultyIntermediate => 'Intermedio';
+
+  @override
+  String get difficultyAdvanced => 'Avanzado';
 }

@@ -4,6 +4,7 @@ import 'package:hive_ce/hive_ce.dart';
 import '../data/app_font.dart';
 import '../data/hive_keys.dart';
 import 'bootstrap.dart';
+import 'packs.dart';
 
 /// Base class for Hive-backed volume sliders (0.0..1.0).
 /// Splits `set` (drag tick) from `save` (drag end) for responsive UI.
@@ -103,6 +104,26 @@ class GenderNotifier extends Notifier<String> {
   void set(String gender) {
     state = gender;
     ref.read(hiveBoxProvider).put(HiveKeys.gender, gender);
+  }
+}
+
+// Difficulty preference
+
+final difficultyProvider = NotifierProvider<DifficultyNotifier, String>(
+  DifficultyNotifier.new,
+);
+
+class DifficultyNotifier extends Notifier<String> {
+  @override
+  String build() {
+    return ref.read(hiveBoxProvider).get(HiveKeys.difficulty, defaultValue: 'beginner')
+        as String;
+  }
+
+  void set(String difficulty) {
+    state = difficulty;
+    ref.read(hiveBoxProvider).put(HiveKeys.difficulty, difficulty);
+    ref.invalidate(activePackProvider);
   }
 }
 

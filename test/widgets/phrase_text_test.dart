@@ -190,6 +190,7 @@ void main() {
       // miss on punctuation-attached words.
       const phrase = '¿Crees que es viejo?';
       final tokens = Question(
+        id: 0,
         phrase: phrase,
         translation: '',
         blankIndex: 1,

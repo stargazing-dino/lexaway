@@ -146,6 +146,7 @@ void main() {
 
   group('Question.words', () {
     Question q(String phrase) => Question(
+          id: 0,
           phrase: phrase,
           translation: '',
           blankIndex: 0,
