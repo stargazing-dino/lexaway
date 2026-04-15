@@ -22,7 +22,7 @@
   "tts_espeak_ng_data": true,
   "tts_models": {
     "fra": {
-      "archive_name": "vits-piper-fr_FR-siwis-medium.tar.bz2",
+      "archive_name": "vits-piper-fr_FR-siwis-medium",
       "downloaded_at": "2025-01-15T12:00:00Z"
     }
   },

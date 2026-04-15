@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lexaway/data/pack_manager.dart';
+import 'package:lexaway/data/tts_manager.dart' show ttsModelRegistry;
 import 'package:lexaway/game/world/world_generator.dart';
 import 'package:lexaway/game/world/world_map.dart';
 import 'package:lexaway/main.dart' show hiveSchemaVersion;
@@ -72,10 +73,18 @@ void main() {
 
     test('tts model metadata matches TtsManager expectations', () {
       final models = fixture['tts_models'] as Map<String, dynamic>;
-      for (final entry in models.values) {
-        final model = Map<String, dynamic>.from(entry as Map);
-        expect(model['archive_name'] as String, isA<String>());
+      final allArchiveNames = ttsModelRegistry.values
+          .expand((voices) => voices)
+          .map((m) => m.archiveName)
+          .toSet();
+      for (final entry in models.entries) {
+        final lang = entry.key;
+        final model = Map<String, dynamic>.from(entry.value as Map);
+        final archiveName = model['archive_name'] as String;
         expect(model['downloaded_at'] as String, isA<String>());
+        expect(allArchiveNames, contains(archiveName),
+            reason: 'archive_name "$archiveName" for lang "$lang" '
+                'not found in ttsModelRegistry');
       }
     });
   });
