@@ -1,5 +1,6 @@
 import 'creature_behavior_component.dart';
 import 'flee_behavior.dart';
+import 'ground_anchor_behavior.dart';
 import 'idle_hop_behavior.dart';
 
 /// Const-constructible config that produces a [CreatureBehaviorComponent].
@@ -7,6 +8,14 @@ import 'idle_hop_behavior.dart';
 abstract class BehaviorConfig {
   const BehaviorConfig();
   CreatureBehaviorComponent create();
+}
+
+/// Config for [GroundAnchorBehavior].
+class GroundAnchorConfig extends BehaviorConfig {
+  const GroundAnchorConfig();
+
+  @override
+  GroundAnchorBehavior create() => GroundAnchorBehavior();
 }
 
 /// Config for [IdleHopBehavior].

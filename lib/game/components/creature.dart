@@ -96,13 +96,12 @@ class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
     current = CreatureAnim.idle;
     size = Vector2(frameWidth, frameHeight) * spriteScale;
 
-    final groundTop = game.size.y * LexawayGame.groundLevel;
-    position.y = groundTop - size.y;
-
     paint = Paint()..filterQuality = FilterQuality.none;
 
+    // Await so behaviors that affect initial state (e.g. GroundAnchor
+    // setting position.y) finish loading before Creature itself mounts.
     for (final config in behaviorConfigs) {
-      add(config.create());
+      await add(config.create());
     }
   }
 
