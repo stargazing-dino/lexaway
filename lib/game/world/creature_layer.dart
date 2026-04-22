@@ -13,16 +13,17 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
   /// — the only real work [_ensureBiome] does is the PNG load.
   final Set<BiomeType> _loadedBiomes = {};
 
-  /// Indices of creatures that have already fled off-screen. Prevents
-  /// respawning at their original world position.
-  final Set<int> _fledIndices = {};
-
   CreatureLayer(WorldMap worldMap)
       : super(
           worldMap: worldMap,
           category: ItemCategory.creature,
           spawnMarginPx: 640,
           cullMarginPx: 128,
+          // Creatures mutate their worldX at runtime (flee, drift, etc.)
+          // so once one leaves the viewport, spawning a fresh copy at the
+          // PlacedItem's static coordinate would pop in wherever that
+          // coordinate now happens to be on-screen.
+          cullPermanent: true,
         );
 
   @override
@@ -50,13 +51,12 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
   Future<void> ensureBiomeLoaded(BiomeType biome) => _ensureBiome(biome);
 
   @override
-  bool shouldSkip(int index) => _fledIndices.contains(index);
-
-  @override
   void update(double dt) {
-    // Tag fleeing creatures before the base class culls them.
+    // Fleeing creatures can sprint off-screen faster than the cull margin
+    // catches up — mark them eagerly so they can't re-spawn during the
+    // in-flight frames. Idempotent; normal cull also marks them.
     for (final entry in activeItems.entries) {
-      if (entry.value.isExcited) _fledIndices.add(entry.key);
+      if (entry.value.isExcited) markCulled(entry.key);
     }
     super.update(dt);
   }
@@ -76,6 +76,8 @@ class CreatureLayer extends ScrollingItemLayer<Creature> {
       behaviorConfigs: def.behaviors,
       worldX: item.worldX,
       itemIndex: item.index,
+      tintPalette: def.tintPalette,
+      sourceDownsample: def.sourceDownsample,
     );
   }
 }

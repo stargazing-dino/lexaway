@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import '../audio_manager.dart';
 import '../components/behaviors/behavior_config.dart';
 import '../lexaway_game.dart';
@@ -87,7 +89,10 @@ class BiomeRegistry {
     maxCoinGapTiles: 10,
     diamondChance: 0.15, // 15% diamond, 25% cluster, 60% single coin
     clusterChance: 0.25,
-    creatureWeights: [WeightedEntity('minibunny', 1)],
+    creatureWeights: [
+      WeightedEntity('minibunny', 2),
+      WeightedEntity('butterfly', 3),
+    ],
     minCreatureGapTiles: 40,
     maxCreatureGapTiles: 80,
     creatureDefs: {
@@ -101,6 +106,42 @@ class BiomeRegistry {
           GroundAnchorConfig(),
           FleeConfig(),
           IdleHopConfig(),
+        ],
+      ),
+      'butterfly': CreatureSpriteDef(
+        sheetPath: 'creatures/butterfly.png',
+        frameWidth: 52,
+        frameHeight: 52,
+        scale: LexawayGame.pixelScale * 0.20,
+        sourceDownsample: 4,
+        animConfig: CreatureAnimConfig(
+          idleFrames: 8,
+          idleStepTime: 0.07,
+          hopRow: 0,
+          hopFrames: 1,
+          hitRow: 0,
+          hitFrames: 1,
+          deathRow: 0,
+          deathFrames: 1,
+        ),
+        behaviors: [
+          FlightConfig(
+            minAltitude: 40,
+            maxAltitude: 240,
+            bobAmplitude: 10,
+            bobFrequency: 1.4,
+            driftSpeed: -25,
+            swayAmplitude: 14,
+            swayFrequency: 2.2,
+          ),
+        ],
+        tintPalette: [
+          Color(0xFFFF7A3D), // monarch orange
+          Color(0xFF5DA9FF), // morpho blue
+          Color(0xFFFF8FD1), // pink
+          Color(0xFFBDF26B), // lime
+          Color(0xFFC79BFF), // lavender
+          Color(0xFFFFE45E), // sulphur yellow
         ],
       ),
     },

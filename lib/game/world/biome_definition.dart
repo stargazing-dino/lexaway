@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import '../audio_manager.dart';
 import '../components/behaviors/behavior_config.dart';
 import 'world_map.dart';
@@ -102,6 +104,17 @@ class CreatureSpriteDef {
   final CreatureAnimConfig animConfig;
   final List<BehaviorConfig> behaviors;
 
+  /// If non-empty, a color is picked from this list (seeded by the creature's
+  /// item index) and applied as a `BlendMode.modulate` tint — perfect for
+  /// recoloring greyscale/white art like the butterfly sheet.
+  final List<Color> tintPalette;
+
+  /// Nearest-neighbor decimation factor applied to the sheet at load time.
+  /// A value of 2 means every 2×2 block of source pixels collapses to 1 —
+  /// effectively halving the art's resolution so pixels read chunkier when
+  /// paired with an integer render scale.
+  final int sourceDownsample;
+
   const CreatureSpriteDef({
     required this.sheetPath,
     required this.frameWidth,
@@ -109,7 +122,9 @@ class CreatureSpriteDef {
     required this.scale,
     required this.animConfig,
     this.behaviors = const [],
-  });
+    this.tintPalette = const [],
+    this.sourceDownsample = 1,
+  }) : assert(sourceDownsample >= 1);
 }
 
 class BiomeDefinition {

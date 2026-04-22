@@ -34,10 +34,23 @@ abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
   /// long pause doesn't produce a frame spike.
   final int maxSpawnsPerFrame;
 
+  /// When true, any item that gets culled (or is proactively passed to
+  /// [markCulled]) is blacklisted from re-spawning for the rest of the
+  /// session. Required for entities whose on-screen `worldX` mutates away
+  /// from their static [PlacedItem.worldX] — otherwise, once they scroll
+  /// off, the still-static PlacedItem re-enters the spawn window and a
+  /// fresh copy pops in wherever the original coordinate now lies (mid-
+  /// screen for drifting creatures).
+  final bool cullPermanent;
+
   /// Items currently on-screen, keyed by item index. Subclasses can read
   /// this directly for domain lookups (e.g. pickup handlers) but should
   /// not mutate it — the base class owns the lifecycle.
   final Map<int, T> activeItems = {};
+
+  /// Indexes that should never re-spawn this session. Populated by the cull
+  /// step (when [cullPermanent] is true) or directly via [markCulled].
+  final Set<int> _culledIndices = {};
 
   ScrollingItemLayer({
     required this.worldMap,
@@ -45,6 +58,7 @@ abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
     this.spawnMarginPx = 64,
     this.cullMarginPx = 64,
     this.maxSpawnsPerFrame = 1 << 30,
+    this.cullPermanent = false,
   });
 
   /// Build a T for the given world item. Return `null` to skip (e.g.
@@ -54,6 +68,11 @@ abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
   /// Whether to skip spawning an item with this index. Subclasses can
   /// override to suppress items that have already been consumed or fled.
   bool shouldSkip(int index) => false;
+
+  /// Proactively blacklist [index] from future spawns — e.g. when a creature
+  /// flees faster than the cull margin can catch up, or when a pickup is
+  /// collected. Idempotent.
+  void markCulled(int index) => _culledIndices.add(index);
 
   @override
   void update(double dt) {
@@ -65,6 +84,7 @@ abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
     for (final item in worldMap.itemsInRange(startX, endX)) {
       if (item.category != category) continue;
       if (activeItems.containsKey(item.index)) continue;
+      if (_culledIndices.contains(item.index)) continue;
       if (shouldSkip(item.index)) continue;
       if (spawned >= maxSpawnsPerFrame) break;
 
@@ -89,6 +109,7 @@ abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
     }
     for (final index in toRemove) {
       activeItems.remove(index)?.removeFromParent();
+      if (cullPermanent) _culledIndices.add(index);
     }
   }
 }

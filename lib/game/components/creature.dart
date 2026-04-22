@@ -24,6 +24,8 @@ class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
   final double spriteScale;
   final CreatureAnimConfig animConfig;
   final List<BehaviorConfig> behaviorConfigs;
+  final List<Color> tintPalette;
+  final int sourceDownsample;
 
   @override
   double worldX;
@@ -45,6 +47,8 @@ class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
     required this.behaviorConfigs,
     required this.worldX,
     required this.itemIndex,
+    this.tintPalette = const [],
+    this.sourceDownsample = 1,
   }) : rng = Random(itemIndex);
 
   /// True when any child behavior has taken exclusive control (fleeing, etc.).
@@ -57,10 +61,29 @@ class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
 
   @override
   Future<void> onLoad() async {
-    final image = await game.images.load(sheetPath);
+    var image = await game.images.load(sheetPath);
+    var srcW = frameWidth;
+    var srcH = frameHeight;
+    if (sourceDownsample > 1) {
+      assert(
+        frameWidth % sourceDownsample == 0 &&
+            frameHeight % sourceDownsample == 0 &&
+            image.width % sourceDownsample == 0 &&
+            image.height % sourceDownsample == 0,
+        'sourceDownsample must evenly divide frame & sheet dimensions — '
+        'otherwise decimated frame stride drifts and SpriteSheet walks '
+        'off-by-one across frames (sheet=${image.width}x${image.height}, '
+        'frame=${frameWidth}x$frameHeight, factor=$sourceDownsample)',
+      );
+      // TODO: cache the decimated Image per (sheetPath, factor) — currently
+      // every creature re-runs PictureRecorder → toImage on spawn.
+      image = await _decimate(image, sourceDownsample);
+      srcW = frameWidth / sourceDownsample;
+      srcH = frameHeight / sourceDownsample;
+    }
     final sheet = SpriteSheet(
       image: image,
-      srcSize: Vector2(frameWidth, frameHeight),
+      srcSize: Vector2(srcW, srcH),
     );
 
     animations = {
@@ -97,6 +120,10 @@ class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
     size = Vector2(frameWidth, frameHeight) * spriteScale;
 
     paint = Paint()..filterQuality = FilterQuality.none;
+    if (tintPalette.isNotEmpty) {
+      final tint = tintPalette[rng.nextInt(tintPalette.length)];
+      paint.colorFilter = ColorFilter.mode(tint, BlendMode.modulate);
+    }
 
     // Await so behaviors that affect initial state (e.g. GroundAnchor
     // setting position.y) finish loading before Creature itself mounts.
@@ -122,4 +149,21 @@ class Creature extends SpriteAnimationGroupComponent<CreatureAnim>
     worldX += delta;
   }
 
+  /// Nearest-neighbor downsample an image by an integer factor. Used to
+  /// intentionally reduce the effective source resolution of a sheet so
+  /// the art reads chunkier at the final render scale.
+  Future<Image> _decimate(Image src, int factor) async {
+    final w = src.width ~/ factor;
+    final h = src.height ~/ factor;
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+    final paint = Paint()..filterQuality = FilterQuality.none;
+    canvas.drawImageRect(
+      src,
+      Rect.fromLTWH(0, 0, src.width.toDouble(), src.height.toDouble()),
+      Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+      paint,
+    );
+    return recorder.endRecording().toImage(w, h);
+  }
 }
