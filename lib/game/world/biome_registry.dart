@@ -20,9 +20,9 @@ class BiomeRegistry {
       'parallax/foreground.png',
     ],
     footstepTerrain: Terrain.grass,
-    entityLayers: [
+    features: [
       // Bushes — everywhere, the bread and butter of grassland foliage.
-      SpawnLayer(
+      ScatterFeature(
         entityName: 'bush',
         noiseScale: 0.04,
         threshold: 0.2,
@@ -31,7 +31,7 @@ class BiomeRegistry {
         noiseSeedOffset: 0,
       ),
       // Mushrooms — frequent little accents, tight patchy clusters.
-      SpawnLayer(
+      ScatterFeature(
         entityName: 'mushroom',
         noiseScale: 0.06,
         threshold: 0.25,
@@ -40,7 +40,7 @@ class BiomeRegistry {
         noiseSeedOffset: 50,
       ),
       // Round trees — clumpy groves with broad noise.
-      SpawnLayer(
+      ScatterFeature(
         entityName: 'round_tree',
         noiseScale: 0.02,
         threshold: 0.25,
@@ -49,7 +49,7 @@ class BiomeRegistry {
         noiseSeedOffset: 100,
       ),
       // Pine trees — similar to round trees but offset noise = different groves.
-      SpawnLayer(
+      ScatterFeature(
         entityName: 'pine_tree',
         noiseScale: 0.02,
         threshold: 0.25,
@@ -58,7 +58,7 @@ class BiomeRegistry {
         noiseSeedOffset: 150,
       ),
       // Flower trees — less rare now, nice scattered blooms.
-      SpawnLayer(
+      ScatterFeature(
         entityName: 'flower_tree',
         noiseScale: 0.03,
         threshold: 0.35,
@@ -67,7 +67,7 @@ class BiomeRegistry {
         noiseSeedOffset: 200,
       ),
       // Fences — sparse, isolated stretches.
-      SpawnLayer(
+      ScatterFeature(
         entityName: 'fence',
         noiseScale: 0.015,
         threshold: 0.55,
@@ -76,13 +76,33 @@ class BiomeRegistry {
         noiseSeedOffset: 250,
       ),
       // Flower fences — rare pops of color.
-      SpawnLayer(
+      ScatterFeature(
         entityName: 'flower_fence',
         noiseScale: 0.02,
         threshold: 0.6,
         minGapTiles: 20,
         maxGapTiles: 45,
         noiseSeedOffset: 300,
+      ),
+      // Flower meadow — a dense patch of mingling wildflowers, all four colors
+      // sharing the same region so they interleave naturally instead of
+      // forming mono-color blobs. `allowChildOverlap` lets colors sit on
+      // adjacent tiles; scatters may still place inside (non-exclusive).
+      RegionFeature(
+        kind: 'flower_meadow',
+        minSpacingTiles: 40,
+        maxSpacingTiles: 120,
+        minWidthTiles: 8,
+        maxWidthTiles: 20,
+        noiseSeedOffset: 1000,
+        exclusive: false,
+        allowChildOverlap: true,
+        children: [
+          RegionChild(entityName: 'flower_red', weight: 0.30, minGapTiles: 1),
+          RegionChild(entityName: 'flower_orange', weight: 0.25, minGapTiles: 1),
+          RegionChild(entityName: 'flower_yellow', weight: 0.25, minGapTiles: 1),
+          RegionChild(entityName: 'flower_blue', weight: 0.20, minGapTiles: 1),
+        ],
       ),
     ],
     minCoinGapTiles: 5,
@@ -159,9 +179,23 @@ class BiomeRegistry {
       'parallax/tropics_water.png',
     ],
     footstepTerrain: Terrain.dirt,
-    entityLayers: [
+    features: [
+      // Piers — exclusive coastal platforms; their footprints are exported to
+      // `WorldSegment.pierZones` so the terrain renderer can swap tiles.
+      // No entity children for now; the pier is purely a terrain feature.
+      RegionFeature(
+        kind: 'pier',
+        minSpacingTiles: 15,
+        maxSpacingTiles: 60,
+        minWidthTiles: 5,
+        maxWidthTiles: 12,
+        noiseSeedOffset: 2000,
+        exclusive: true,
+        allowChildOverlap: false,
+        children: [],
+      ),
       // Palm trees — dominant, dense groves rolling across the coast.
-      SpawnLayer(
+      ScatterFeature(
         entityName: 'palm_tree',
         noiseScale: 0.025,
         threshold: 0.2,
@@ -170,7 +204,7 @@ class BiomeRegistry {
         noiseSeedOffset: 0,
       ),
       // Wooden fences — medium frequency, independent rhythm.
-      SpawnLayer(
+      ScatterFeature(
         entityName: 'wooden_fence',
         noiseScale: 0.04,
         threshold: 0.35,
@@ -179,13 +213,30 @@ class BiomeRegistry {
         noiseSeedOffset: 100,
       ),
       // Rocks — scattered boulders, fairly sparse.
-      SpawnLayer(
+      ScatterFeature(
         entityName: 'rock',
         noiseScale: 0.05,
         threshold: 0.35,
         minGapTiles: 12,
         maxGapTiles: 28,
         noiseSeedOffset: 200,
+      ),
+      // Flower meadow — hibiscus-ish pops clustered between the palms.
+      RegionFeature(
+        kind: 'flower_meadow',
+        minSpacingTiles: 40,
+        maxSpacingTiles: 120,
+        minWidthTiles: 8,
+        maxWidthTiles: 20,
+        noiseSeedOffset: 1000,
+        exclusive: false,
+        allowChildOverlap: true,
+        children: [
+          RegionChild(entityName: 'flower_red', weight: 0.30, minGapTiles: 1),
+          RegionChild(entityName: 'flower_orange', weight: 0.25, minGapTiles: 1),
+          RegionChild(entityName: 'flower_yellow', weight: 0.25, minGapTiles: 1),
+          RegionChild(entityName: 'flower_blue', weight: 0.20, minGapTiles: 1),
+        ],
       ),
     ],
     minCoinGapTiles: 5,

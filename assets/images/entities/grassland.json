@@ -46,6 +46,26 @@
       "col": 9, "row": 5,
       "widthTiles": 4, "heightTiles": 1,
       "src": [144, 80], "size": [64, 16]
+    },
+    "flower_red": {
+      "source": "entities/flowers.png",
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [0, 0], "size": [16, 16]
+    },
+    "flower_orange": {
+      "source": "entities/flowers.png",
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [16, 0], "size": [16, 16]
+    },
+    "flower_yellow": {
+      "source": "entities/flowers.png",
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [32, 0], "size": [16, 16]
+    },
+    "flower_blue": {
+      "source": "entities/flowers.png",
+      "widthTiles": 1, "heightTiles": 1,
+      "src": [48, 0], "size": [16, 16]
     }
   }
 }

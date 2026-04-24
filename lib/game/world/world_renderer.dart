@@ -36,7 +36,7 @@ class WorldRenderer extends ScrollingItemLayer<Entity> {
     final def = BiomeRegistry.get(biome);
     final jsonStr = await rootBundle.loadString(def.entityManifest);
     final json = jsonDecode(jsonStr) as Map<String, dynamic>;
-    final image = await game.images.load(def.entitySheet);
+    final defaultImage = await game.images.load(def.entitySheet);
     final entities = json['entities'] as Map<String, dynamic>;
 
     final defs = <String, _EntityDef>{};
@@ -44,6 +44,9 @@ class WorldRenderer extends ScrollingItemLayer<Entity> {
       final e = entry.value as Map<String, dynamic>;
       final src = (e['src'] as List).cast<int>();
       final sz = (e['size'] as List).cast<int>();
+      final source = e['source'] as String?;
+      final image =
+          source == null ? defaultImage : await game.images.load(source);
 
       defs[entry.key] = _EntityDef(
         sprite: Sprite(

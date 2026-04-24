@@ -11,12 +11,18 @@ class WeightedEntity {
   const WeightedEntity(this.name, this.weight);
 }
 
-/// One noise-driven placement layer for a single entity type.
-///
-/// Each layer runs its own independent Poisson disk pass, with density
-/// modulated by 1D value noise. Stack layers like Minecraft stacks Perlin
-/// octaves — each one controls a single entity type's distribution.
-class SpawnLayer {
+/// Base type for every world-generation feature. A feature is either a
+/// `ScatterFeature` (flat noise-driven Poisson scatter across a segment) or
+/// a `RegionFeature` (a contiguous span that claims a footprint and lays out
+/// its own children).
+sealed class Feature {
+  const Feature();
+}
+
+/// Flat noise-modulated Poisson scatter across a whole segment. Each instance
+/// runs its own independent pass; placements are merged with size-aware
+/// collision against everything already placed in the segment.
+class ScatterFeature extends Feature {
   /// Which entity to place (must match a key in the biome's entity manifest).
   final String entityName;
 
@@ -24,8 +30,8 @@ class SpawnLayer {
   /// larger values create tight, patchy clusters.
   final double noiseScale;
 
-  /// Noise must exceed this to allow any spawning. 0.0 = always active,
-  /// 0.9 = only at the tallest noise peaks. Controls overall rarity.
+  /// Noise must exceed this to allow spawning. 0.0 = always active, 0.9 = only
+  /// at the tallest noise peaks. Controls overall rarity.
   final double threshold;
 
   /// Spacing range (in tiles) when the layer is active. Noise interpolates
@@ -33,12 +39,12 @@ class SpawnLayer {
   final int minGapTiles;
   final int maxGapTiles;
 
-  /// Offset added to the world seed so this layer samples different noise than
-  /// its siblings. Just needs to be unique per layer — the actual value doesn't
+  /// Offset added to the world seed so this scatter samples different noise
+  /// than its siblings. Just needs to be unique — the actual value doesn't
   /// matter.
   final int noiseSeedOffset;
 
-  const SpawnLayer({
+  const ScatterFeature({
     required this.entityName,
     this.noiseScale = 0.03,
     this.threshold = 0.3,
@@ -47,6 +53,74 @@ class SpawnLayer {
     this.noiseSeedOffset = 0,
   }) : assert(minGapTiles < maxGapTiles),
        assert(threshold >= 0 && threshold < 1.0);
+}
+
+/// A contiguous span that is placed once, claims a footprint, and lays out
+/// its own child entities internally. Flower meadows, palm groves, pier
+/// zones, and future composite content all share this shape.
+class RegionFeature extends Feature {
+  /// Stable identifier used to tag resulting footprints. Terrain/renderer code
+  /// filters on this (e.g. `kind == 'pier'` drives the pier tile sprite).
+  final String kind;
+
+  /// Poisson spacing between instances of this region, in tiles.
+  final int minSpacingTiles;
+  final int maxSpacingTiles;
+
+  /// Each placed instance picks a random width in this range (tiles).
+  final int minWidthTiles;
+  final int maxWidthTiles;
+
+  /// Offset added to the world seed so this region samples independently from
+  /// other features.
+  final int noiseSeedOffset;
+
+  /// Children laid out inside a placed region footprint.
+  final List<RegionChild> children;
+
+  /// If true, scatter features skip this footprint entirely, AND (for
+  /// kind == 'pier') the footprint is exported to `WorldSegment.pierZones`.
+  /// If false, scatters may still place inside, subject to size-aware
+  /// collision against the region's children.
+  final bool exclusive;
+
+  /// If true, children sit at adjacent tiles with no collision check between
+  /// them (flower meadows — colors mingle, overlap allowed). If false,
+  /// children respect size-aware collision against each other.
+  final bool allowChildOverlap;
+
+  const RegionFeature({
+    required this.kind,
+    required this.minSpacingTiles,
+    required this.maxSpacingTiles,
+    required this.minWidthTiles,
+    required this.maxWidthTiles,
+    this.noiseSeedOffset = 0,
+    this.children = const [],
+    this.exclusive = false,
+    this.allowChildOverlap = false,
+  }) : assert(minSpacingTiles <= maxSpacingTiles),
+       assert(minWidthTiles <= maxWidthTiles),
+       assert(minWidthTiles > 0);
+}
+
+class RegionChild {
+  final String entityName;
+
+  /// Weight for the weighted pick when `allowChildOverlap` is true. Ignored
+  /// otherwise (siblings are placed sequentially in list order).
+  final double weight;
+
+  /// Minimum gap between successive child emissions inside a region, in
+  /// tiles. 1 = adjacent tiles. A small random jitter is added on top.
+  final int minGapTiles;
+
+  const RegionChild({
+    required this.entityName,
+    this.weight = 1.0,
+    this.minGapTiles = 1,
+  }) : assert(weight >= 0),
+       assert(minGapTiles >= 1);
 }
 
 /// Per-creature animation config (row indices, frame counts, step times).
@@ -135,10 +209,10 @@ class BiomeDefinition {
   final List<String> parallaxLayers;
   final Terrain footstepTerrain;
 
-  /// Independent spawn layers — one per entity type (or group). Each layer
-  /// runs its own noise-modulated Poisson disk pass. The generator merges
-  /// results and resolves collisions afterward.
-  final List<SpawnLayer> entityLayers;
+  /// All placement features for this biome, scatters + regions mixed freely.
+  /// Generation processes regions first (claim footprints), then scatters
+  /// (fill the rest subject to size-aware collision).
+  final List<Feature> features;
 
   final int minCoinGapTiles;
   final int maxCoinGapTiles;
@@ -173,7 +247,7 @@ class BiomeDefinition {
     required this.entityManifest,
     required this.parallaxLayers,
     required this.footstepTerrain,
-    required this.entityLayers,
+    required this.features,
     required this.minCoinGapTiles,
     required this.maxCoinGapTiles,
     required this.diamondChance,

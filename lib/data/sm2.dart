@@ -2,6 +2,7 @@
 ///
 /// Takes the current card state + a quality grade (0–5), returns the
 /// updated state. Stateless and pure — no side effects, no dependencies.
+library;
 
 typedef Sm2State = ({
   double easiness,
