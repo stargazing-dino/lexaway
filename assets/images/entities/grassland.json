@@ -5,17 +5,20 @@
     "round_tree": {
       "col": 1, "row": 1,
       "widthTiles": 3, "heightTiles": 3,
-      "src": [16, 16], "size": [48, 48]
+      "src": [16, 16], "size": [48, 48],
+      "flippable": true
     },
     "pine_tree": {
       "col": 5, "row": 1,
       "widthTiles": 3, "heightTiles": 3,
-      "src": [80, 16], "size": [48, 48]
+      "src": [80, 16], "size": [48, 48],
+      "flippable": true
     },
     "flower_tree": {
       "col": 9, "row": 1,
       "widthTiles": 3, "heightTiles": 3,
-      "src": [144, 16], "size": [48, 48]
+      "src": [144, 16], "size": [48, 48],
+      "flippable": true
     },
     "bridge_rail": {
       "col": 15, "row": 2,
@@ -30,12 +33,14 @@
     "bush": {
       "col": 1, "row": 5,
       "widthTiles": 1, "heightTiles": 1,
-      "src": [16, 80], "size": [16, 16]
+      "src": [16, 80], "size": [16, 16],
+      "flippable": true
     },
     "mushroom": {
       "col": 3, "row": 5,
       "widthTiles": 1, "heightTiles": 1,
-      "src": [48, 80], "size": [16, 16]
+      "src": [48, 80], "size": [16, 16],
+      "flippable": true
     },
     "fence": {
       "col": 5, "row": 5,

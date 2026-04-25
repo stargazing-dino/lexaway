@@ -5,7 +5,8 @@
     "palm_tree": {
       "col": 1, "row": 1,
       "widthTiles": 3, "heightTiles": 3,
-      "src": [16, 16], "size": [48, 48]
+      "src": [16, 16], "size": [48, 48],
+      "flippable": true
     },
     "pier": {
       "col": 11, "row": 2,
@@ -20,7 +21,8 @@
     "rock": {
       "col": 9, "row": 3,
       "widthTiles": 1, "heightTiles": 1,
-      "src": [144, 48], "size": [16, 16]
+      "src": [144, 48], "size": [16, 16],
+      "flippable": true
     },
     "ocean_1": {
       "col": 12, "row": 5,

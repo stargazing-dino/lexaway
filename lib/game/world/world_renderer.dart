@@ -56,6 +56,7 @@ class WorldRenderer extends ScrollingItemLayer<Entity> {
         ),
         widthTiles: e['widthTiles'] as int,
         heightTiles: e['heightTiles'] as int,
+        flippable: e['flippable'] as bool? ?? false,
       );
     }
     _defs[biome] = defs;
@@ -80,11 +81,20 @@ class WorldRenderer extends ScrollingItemLayer<Entity> {
     );
     final groundTop = game.size.y * LexawayGame.groundLevel;
 
+    // Knuth multiplicative hash; fold high bits down because the low bit of
+    // `index * odd` is just `index & 1`, which would alternate flips strictly
+    // by index parity within each sprite name. Flip is purely cosmetic, so
+    // platform-specific drift in this hash (Dart on web, hashCode across SDKs)
+    // is fine — the run stays self-consistent.
+    final h = (item.index * 2654435761) ^ item.name.hashCode;
+    final flipX = def.flippable && ((h ^ (h >> 16)) & 1) == 0;
+
     return Entity(
       sprite: def.sprite,
       spriteSize: spriteSize,
       worldX: item.worldX,
       itemIndex: item.index,
+      flipX: flipX,
     )..position.y = groundTop - spriteSize.y;
   }
 }
@@ -93,10 +103,12 @@ class _EntityDef {
   final Sprite sprite;
   final int widthTiles;
   final int heightTiles;
+  final bool flippable;
 
   _EntityDef({
     required this.sprite,
     required this.widthTiles,
     required this.heightTiles,
+    required this.flippable,
   });
 }
