@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/tts_cache.dart';
 import '../data/tts_manager.dart';
 import '../data/tts_service.dart';
+import '../game/audio_manager.dart';
 import 'bootstrap.dart';
 
 /// Singleton TtsManager backed by the Hive box.
@@ -13,6 +14,7 @@ final ttsManagerProvider = Provider<TtsManager>((ref) {
 /// Singleton TtsService — lazily initialises per language.
 final ttsServiceProvider = Provider<TtsService>((ref) {
   final service = TtsService(tmpDir: ref.watch(tmpDirProvider));
+  service.onSpeakingChange = AudioManager.instance.setTtsDucking;
   ref.onDispose(() => service.dispose());
   return service;
 });

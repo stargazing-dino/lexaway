@@ -53,6 +53,10 @@ class TtsService {
 
   TtsService({required this.tmpDir});
 
+  /// Fired when playback starts (true) and stops (false). Wired by the
+  /// composition root to drive the FX duck so TTS sits on top of the mix.
+  void Function(bool speaking)? onSpeakingChange;
+
   int _playbackId = 0;
   bool _speaking = false;
   bool get isSpeaking => _speaking;
@@ -167,6 +171,7 @@ class TtsService {
     }
 
     _speaking = true;
+    onSpeakingChange?.call(true);
     try {
       final wavPath = '$tmpDir/tts_${myId % 2}.wav';
       await File(wavPath).writeAsBytes(wavBytes, flush: true);
@@ -190,6 +195,7 @@ class TtsService {
     } finally {
       if (myId == _playbackId) {
         _speaking = false;
+        onSpeakingChange?.call(false);
       }
     }
   }
@@ -208,8 +214,10 @@ class TtsService {
   }
 
   Future<void> stop() async {
+    final wasSpeaking = _speaking;
     _playbackId++;
     await _stopPlayback();
+    if (wasSpeaking) onSpeakingChange?.call(false);
   }
 
   Future<void> _stopPlayback() async {
