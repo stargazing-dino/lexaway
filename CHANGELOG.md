@@ -1,4 +1,22 @@
 ### 🇬🇧 English
+**1.5.0** — Music! Gentle tunes drift in as you walk, swap to a new track when you cross into a different biome, and politely step aside whenever your dino speaks. A new Music slider in Settings sets the mood.
+
+### 🇫🇷 Français
+**1.5.0** — De la musique ! Des airs paisibles vous accompagnent en marchant, changent de morceau quand vous franchissez un nouveau biome, et s'écartent poliment dès que votre dino parle. Un nouveau curseur Musique dans les Réglages règle l'ambiance.
+
+### 🇪🇸 Español
+**1.5.0** — ¡Música! Melodías suaves te acompañan al andar, cambian al pasar a un bioma distinto y se apartan educadamente cuando tu dino habla. Un nuevo control de Música en Ajustes pone el ambiente.
+
+### 🇩🇪 Deutsch
+**1.5.0** — Musik! Sanfte Melodien begleiten dich beim Laufen, wechseln, sobald du in ein anderes Biom kommst, und treten höflich zurück, wenn dein Dino spricht. Ein neuer Musik-Regler in den Einstellungen setzt die Stimmung.
+
+### 🇮🇹 Italiano
+**1.5.0** — Musica! Melodie tranquille ti accompagnano mentre cammini, cambiano traccia quando passi in un altro bioma e si fanno gentilmente da parte quando il tuo dino parla. Un nuovo cursore Musica nelle Impostazioni dà il tono.
+
+### 🇵🇹 Português
+**1.5.0** — Música! Melodias suaves acompanham seus passos, mudam ao entrar em outro bioma e se afastam educadamente quando seu dino fala. Um novo controle de Música nos Ajustes define o clima.
+
+### 🇬🇧 English
 **1.4.0** — Set a daily step goal and get a gentle reminder if you forget. Flowers now grow in lush, natural meadows instead of tidy little rows. Piers no longer leak sky at their edges.
 
 ### 🇫🇷 Français
