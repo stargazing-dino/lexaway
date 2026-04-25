@@ -37,6 +37,15 @@ class BgmService {
   int _transitionId = 0;
   Timer? _rampTimer;
 
+  /// Fires the asset path of a non-looping track when it reaches its natural
+  /// end. The scheduler uses this to pick the next gameplay track only at
+  /// song boundaries, instead of cutting in mid-phrase on a timer.
+  final StreamController<String> _completeCtrl =
+      StreamController<String>.broadcast();
+  Stream<String> get onTrackComplete => _completeCtrl.stream;
+
+  StreamSubscription<void>? _completeSub;
+
   BgmService() {
     _current.setReleaseMode(ReleaseMode.loop);
     _previous.setReleaseMode(ReleaseMode.loop);
@@ -48,9 +57,14 @@ class BgmService {
   /// Crossfade to [asset] (relative to `assets/`, e.g. `bgm/bgm_main_theme.m4a`).
   /// No-op if it's already the active asset. If the asset has been played
   /// before, resumes from the saved position.
+  ///
+  /// When [loop] is false, the track plays once through and emits on
+  /// [onTrackComplete] when finished — letting callers chain to a follow-up
+  /// asset only at the natural end. Defaults to true for menu loops.
   Future<void> playLoop(
     String asset, {
     Duration crossfade = const Duration(milliseconds: 1500),
+    bool loop = true,
   }) async {
     final prev = _transitionLock;
     final completer = Completer<void>();
@@ -83,6 +97,8 @@ class BgmService {
       _previousVol = _currentVol;
       _currentVol = 0;
 
+      final releaseMode = loop ? ReleaseMode.loop : ReleaseMode.stop;
+      await _current.setReleaseMode(releaseMode);
       await _current.setVolume(0);
 
       // audioplayers' _completePrepared waits for a platform "prepared" event
@@ -103,7 +119,7 @@ class BgmService {
           } catch (_) {}
         }());
         _current = AudioPlayer();
-        await _current.setReleaseMode(ReleaseMode.loop);
+        await _current.setReleaseMode(releaseMode);
         await _current.setVolume(0);
         // Lifecycle could have flipped to paused during the awaits above;
         // bail without starting audio if so. resume() will redo this leg.
@@ -120,6 +136,20 @@ class BgmService {
         } catch (_) {
           // Seek didn't complete in time; live with starting at 0.
         }
+      }
+
+      // Re-attach the completion listener to whichever player is now
+      // _current (post-swap, possibly post-recovery). Looping tracks
+      // never fire onPlayerComplete, so only subscribe for one-shot loops.
+      _completeSub?.cancel();
+      _completeSub = null;
+      if (!loop) {
+        final completedAsset = asset;
+        _completeSub = _current.onPlayerComplete.listen((_) {
+          if (_currentAsset == completedAsset) {
+            _completeCtrl.add(completedAsset);
+          }
+        });
       }
 
       _runRamp(id: id, duration: crossfade);
@@ -175,6 +205,8 @@ class BgmService {
 
   Future<void> dispose() async {
     _rampTimer?.cancel();
+    await _completeSub?.cancel();
+    await _completeCtrl.close();
     await _current.dispose();
     await _previous.dispose();
   }

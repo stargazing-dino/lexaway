@@ -17,7 +17,10 @@ final bgmServiceProvider = Provider<BgmService>((ref) {
   return service;
 });
 
-/// Picks which track plays right now (main theme on menus, hourly in-game).
+/// Picks which track plays right now (main theme on menus, random one-shot
+/// gameplay tracks in /game with biome-driven rerolls).
 final bgmSchedulerProvider = Provider<BgmScheduler>((ref) {
-  return BgmScheduler(service: ref.watch(bgmServiceProvider));
+  final scheduler = BgmScheduler(service: ref.watch(bgmServiceProvider));
+  ref.onDispose(scheduler.dispose);
+  return scheduler;
 });

@@ -122,10 +122,6 @@ class _LexawayAppState extends ConsumerState<LexawayApp>
       unawaited(bgm.pause());
     } else if (state == AppLifecycleState.resumed) {
       unawaited(bgm.resume());
-      // Dart timers don't fire while the app is suspended, so a multi-hour
-      // background nap would leave us still queued for the old hour's track.
-      // Re-arming on resume snaps us back to the current hour.
-      ref.read(bgmSchedulerProvider).onAppResumed();
     }
   }
 
