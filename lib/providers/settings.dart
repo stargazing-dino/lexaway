@@ -52,8 +52,10 @@ final bgmVolumeProvider = NotifierProvider<BgmVolumeNotifier, double>(
 class BgmVolumeNotifier extends HiveVolumeNotifier {
   @override
   String get key => HiveKeys.volBgm;
+  // Music is opt-in — fresh installs are silent until the user drags the
+  // slider up. Existing installs keep whatever they already saved.
   @override
-  double get defaultValue => 0.3;
+  double get defaultValue => 0.0;
 }
 
 final ttsVolumeProvider = NotifierProvider<TtsVolumeNotifier, double>(

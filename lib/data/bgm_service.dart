@@ -17,6 +17,7 @@ class BgmService {
   AudioPlayer _previous = AudioPlayer(playerId: 'bgm_b');
 
   String? _currentAsset;
+  bool _currentLoop = true;
   double _userVolume = 1.0;
   bool _ducking = false;
   bool _paused = false;
@@ -82,7 +83,10 @@ class BgmService {
       }
 
       _currentAsset = asset;
-      if (_paused) return; // resume() will start it
+      _currentLoop = loop;
+      // _paused: app backgrounded — resume() will start it.
+      // _userVolume == 0: user opted out of music — setVolume() will start it.
+      if (_paused || _userVolume == 0) return;
 
       final id = ++_transitionId;
       _rampTimer?.cancel();
@@ -102,6 +106,11 @@ class BgmService {
       final releaseMode = loop ? ReleaseMode.loop : ReleaseMode.stop;
       await _current.setReleaseMode(releaseMode);
       await _current.setVolume(0);
+
+      // Lifecycle or mute could have flipped during the awaits above (the
+      // swap, stop, setReleaseMode, setVolume all yielded). Bail before
+      // committing to playback; resume()/setVolume() will redo this leg.
+      if (_paused || _userVolume == 0) return;
 
       // audioplayers' _completePrepared waits for a platform "prepared" event
       // that occasionally never fires on iOS — the bare await would hang for
@@ -123,9 +132,10 @@ class BgmService {
         _current = AudioPlayer();
         await _current.setReleaseMode(releaseMode);
         await _current.setVolume(0);
-        // Lifecycle could have flipped to paused during the awaits above;
-        // bail without starting audio if so. resume() will redo this leg.
-        if (_paused) return;
+        // Lifecycle or mute could have flipped during the awaits above;
+        // bail without starting audio if so. resume()/setVolume() will
+        // redo this leg.
+        if (_paused || _userVolume == 0) return;
         await _tryPlay(_current, asset);
       }
 
@@ -161,9 +171,34 @@ class BgmService {
     }
   }
 
-  /// User-facing volume (0..1). Updated live as the slider moves.
+  /// User-facing volume (0..1). Updated live as the slider moves. A drop to
+  /// zero pauses playback so we're not decoding silent audio; rising back
+  /// up off zero kicks the deferred asset back into play.
   void setVolume(double v) {
-    _userVolume = v.clamp(0.0, 1.0);
+    final newVol = v.clamp(0.0, 1.0);
+    final wasZero = _userVolume == 0;
+    final isZero = newVol == 0;
+    _userVolume = newVol;
+    if (isZero && !wasZero) {
+      _rampTimer?.cancel();
+      _duckRampTimer?.cancel();
+      _currentVol = 0;
+      _previousVol = 0;
+      if (_currentAsset != null) {
+        unawaited(_current.pause());
+        unawaited(_previous.pause());
+      }
+      return;
+    }
+    if (!isZero && wasZero) {
+      final asset = _currentAsset;
+      if (asset != null && !_paused) {
+        final wasLoop = _currentLoop;
+        _currentAsset = null; // force playLoop's same-asset guard to relent
+        unawaited(playLoop(asset, loop: wasLoop));
+      }
+      return;
+    }
     _pushVolumeIfIdle();
   }
 
@@ -173,7 +208,7 @@ class BgmService {
   void setDucking(bool ducking) {
     if (_ducking == ducking) return;
     _ducking = ducking;
-    if (_currentAsset == null || _paused) return;
+    if (_currentAsset == null || _paused || _userVolume == 0) return;
     if (_rampTimer != null && _rampTimer!.isActive) return;
     if (ducking) {
       _duckRampTimer?.cancel();
@@ -203,11 +238,13 @@ class BgmService {
     _paused = false;
     final asset = _currentAsset;
     if (asset == null) return;
+    if (_userVolume == 0) return; // setVolume() will start it on unmute
 
     if (_currentVol == 0 && _previousVol == 0) {
       // We never actually started — playLoop deferred during pause.
+      final wasLoop = _currentLoop;
       _currentAsset = null; // force playLoop to do its thing
-      await playLoop(asset);
+      await playLoop(asset, loop: wasLoop);
     } else {
       _currentVol = _effectiveVolume();
       await _current.setVolume(_currentVol);
