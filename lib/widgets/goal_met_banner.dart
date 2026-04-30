@@ -63,11 +63,19 @@ class _GoalMetBannerState extends State<GoalMetBanner>
           child: Material(
             color: Colors.transparent,
             child: Container(
+              clipBehavior: Clip.antiAlias,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
                 vertical: AppSpacing.sm,
               ),
               decoration: BoxDecoration(
+                // Opaque underlay: without this the panel image somehow
+                // renders translucent here (HudPill is fine — quirk of the
+                // FadeTransition/Material/centerSlice combo). Matches the
+                // panel's interior color so the 4 alpha-0 corner pixels of
+                // the image blend invisibly.
+                color: const Color(0xFF647685),
+                borderRadius: BorderRadius.circular(4),
                 image: const DecorationImage(
                   image: AssetImage('assets/images/ui/panel_metal_bg.png'),
                   centerSlice: Rect.fromLTRB(12, 12, 84, 84),
