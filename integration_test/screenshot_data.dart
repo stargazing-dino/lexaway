@@ -143,6 +143,28 @@ final screenshotLocaleData = <String, ScreenshotLocaleData>{
       PackInfo(lang: 'deu', fromLang: 'ita', name: 'Tedesco', flag: '🇩🇪', builtAt: '2026-04-01', schemaVersion: 1),
     ]),
   ),
+  'nl': ScreenshotLocaleData(
+    packId: 'nld-eng',
+    activeLang: 'eng',
+    characterKey: 'eng',
+    questions: const [
+      Question(
+        id: 0,
+        phrase: 'The cat sleeps on the couch',
+        translation: 'De kat slaapt op de bank',
+        blankIndex: 18,
+        answer: 'the couch',
+        options: ['the couch', 'the garden', 'the book', 'the hat'],
+      ),
+    ],
+    localPacks: {'nld-eng': _localPack('nld', 'eng')},
+    manifest: const Manifest(schemaVersion: 1, packs: [
+      PackInfo(lang: 'eng', fromLang: 'nld', name: 'Engels', flag: '🇬🇧', builtAt: '2026-04-01', schemaVersion: 1),
+      PackInfo(lang: 'fra', fromLang: 'nld', name: 'Frans', flag: '🇫🇷', builtAt: '2026-04-01', schemaVersion: 1),
+      PackInfo(lang: 'spa', fromLang: 'nld', name: 'Spaans', flag: '🇪🇸', builtAt: '2026-04-01', schemaVersion: 1),
+      PackInfo(lang: 'deu', fromLang: 'nld', name: 'Duits', flag: '🇩🇪', builtAt: '2026-04-01', schemaVersion: 1),
+    ]),
+  ),
   'pt': ScreenshotLocaleData(
     packId: 'por-eng',
     activeLang: 'eng',

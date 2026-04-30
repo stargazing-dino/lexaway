@@ -144,6 +144,10 @@ void main() {
       'scroll_offset': 150.0,
       'collected_coins': <int>[],
     });
+    // PackManagerScreen reads characterProvider(lang) for every pack tile in
+    // step 1, caching null before we seed the box here. Invalidate so the
+    // /game redirect re-reads the (now non-null) value from box.
+    container.invalidate(characterProvider(localeData.activeLang));
     navigate('/game');
     // Give Flame time to load sprites and render the world.
     await pumpFrames(tester, 180);
