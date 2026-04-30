@@ -1,4 +1,25 @@
 ### 🇬🇧 English
+**1.6.0** — Dutch is now available.
+
+### 🇫🇷 Français
+**1.6.0** — Le néerlandais est désormais disponible.
+
+### 🇪🇸 Español
+**1.6.0** — El neerlandés ya está disponible.
+
+### 🇩🇪 Deutsch
+**1.6.0** — Niederländisch ist jetzt verfügbar.
+
+### 🇮🇹 Italiano
+**1.6.0** — L'olandese è ora disponibile.
+
+### 🇵🇹 Português
+**1.6.0** — O neerlandês já está disponível.
+
+### 🇳🇱 Nederlands
+**1.6.0** — Nederlands is nu beschikbaar.
+
+### 🇬🇧 English
 **1.5.0** — Music! Gentle tunes drift in as you walk, swap to a new track when you cross into a different biome, and politely step aside whenever your dino speaks. A new Music slider in Settings sets the mood.
 
 ### 🇫🇷 Français
