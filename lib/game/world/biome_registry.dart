@@ -123,7 +123,7 @@ class BiomeRegistry {
         scale: LexawayGame.pixelScale,
         animConfig: CreatureAnimConfig(),
         behaviors: [
-          GroundAnchorConfig(),
+          GroundAnchorConfig(footPadding: 1),
           FleeConfig(),
           IdleHopConfig(),
         ],

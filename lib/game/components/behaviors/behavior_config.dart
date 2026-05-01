@@ -13,10 +13,15 @@ abstract class BehaviorConfig {
 
 /// Config for [GroundAnchorBehavior].
 class GroundAnchorConfig extends BehaviorConfig {
-  const GroundAnchorConfig();
+  /// Transparent source-pixel rows beneath the creature's feet in its
+  /// sprite frame. Compensated so the feet land on the ground line.
+  final double footPadding;
+
+  const GroundAnchorConfig({this.footPadding = 0});
 
   @override
-  GroundAnchorBehavior create() => GroundAnchorBehavior();
+  GroundAnchorBehavior create() =>
+      GroundAnchorBehavior(footPadding: footPadding);
 }
 
 /// Config for [IdleHopBehavior].
