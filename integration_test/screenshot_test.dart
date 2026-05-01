@@ -138,7 +138,7 @@ void main() {
     box.put(HiveKeys.coins, 42);
     box.put(HiveKeys.streak, 7);
     box.put(HiveKeys.character(localeData.characterKey), 'female/doux');
-    box.put(HiveKeys.world, {
+    box.put(HiveKeys.world(localeData.activeLang), {
       'seed': 12345,
       'extensions': 0,
       'scroll_offset': 150.0,

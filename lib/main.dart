@@ -10,13 +10,14 @@ import 'package:path_provider/path_provider.dart';
 
 import 'data/day_key.dart';
 import 'data/hive_keys.dart';
+import 'data/pack_manager.dart';
 import 'providers.dart';
 import 'router.dart';
 import 'services/reminder_service.dart';
 
 /// Current Hive box schema version. Bump when the shape of stored data changes
 /// and add a migration case in migrateHive.
-const hiveSchemaVersion = 2;
+const hiveSchemaVersion = 3;
 
 void migrateHive(Box box) {
   final old = box.get(HiveKeys.hiveSchemaVersion, defaultValue: 0) as int;
@@ -29,6 +30,28 @@ void migrateHive(Box box) {
     box.put(HiveKeys.stepsToday, 0);
     box.put(HiveKeys.stepsDayKey, todayKey());
     box.delete('steps');
+  }
+
+  if (old < 3) {
+    // v2 → v3: world state moved from a single 'world' key to per-language
+    // 'world_<lang>' keys. Attribute the legacy world to whichever pack was
+    // last active; if we can't tell, drop it (a fresh world is a small loss
+    // compared to misattributing one to the wrong language). Non-Map values
+    // are corrupt-by-shape — drop them rather than carrying garbage forward.
+    final legacyWorld = box.get('world');
+    if (legacyWorld is Map) {
+      final lastUsed = box.get(HiveKeys.lastUsed) as String?;
+      String? lang;
+      if (lastUsed != null) {
+        try {
+          lang = parsePackId(lastUsed).lang;
+        } catch (_) {
+          lang = null;
+        }
+      }
+      if (lang != null) box.put(HiveKeys.world(lang), legacyWorld);
+    }
+    if (box.containsKey('world')) box.delete('world');
   }
 
   box.put(HiveKeys.hiveSchemaVersion, hiveSchemaVersion);

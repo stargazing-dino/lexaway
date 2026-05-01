@@ -28,6 +28,11 @@ class GameScreen extends ConsumerStatefulWidget {
 class _GameScreenState extends ConsumerState<GameScreen>
     with WidgetsBindingObserver {
   LexawayGame? _game;
+  // Tracked solely so the GameWidget below can be keyed by lang. Pack
+  // switches go through `AsyncLoading` on `activePackProvider`, which the
+  // router redirects to /loading — so GameScreen unmounts and remounts
+  // around every switch. We never see a lang change on a live GameScreen.
+  String? _activeLang;
   StreamSubscription<GameEvent>? _eventSub;
   bool _goalMetBannerVisible = false;
 
@@ -62,39 +67,37 @@ class _GameScreenState extends ConsumerState<GameScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_game != null) return;
     final lang = ref.read(activePackProvider.notifier).activeLang!;
     final dinoLocale = iso3to2[lang] ?? 'en';
-    if (_game == null) {
-      final repo = ref.read(worldStateRepositoryProvider);
-      final charKey = ref.read(characterProvider(lang)) ?? 'female/doux';
-      final character = CharacterInfo.fromKey(charKey);
+    final repo = ref.read(worldStateRepositoryProvider(lang));
+    final charKey = ref.read(characterProvider(lang)) ?? 'female/doux';
+    final character = CharacterInfo.fromKey(charKey);
 
-      _game = LexawayGame(
-        worldStateRepository: repo,
-        locale: dinoLocale,
-        characterPath: character.basePath,
-        fontFamily: ref.read(fontProvider).family,
-      );
-      // Bridge game events into Riverpod notifiers. The game bus is alive as
-      // soon as LexawayGame is constructed, so subscribing here (not in
-      // onLoad) is safe and avoids races on very first-frame pickups.
-      // One subscription, switched on the sealed event family, so there's
-      // exactly one stream listener to remember to cancel.
-      _eventSub = _game!.events.on<GameEvent>().listen((event) {
-        switch (event) {
-          case CoinCollected(:final value):
-            ref.read(coinProvider.notifier).add(value);
-          case StepTaken(:final count):
-            ref.read(stepsProvider.notifier).add(count);
-          case BiomeChanged():
-            ref.read(bgmSchedulerProvider).onBiomeChanged();
-          default:
-            break;
-        }
-      });
-    } else {
-      _game!.locale = dinoLocale;
-    }
+    _game = LexawayGame(
+      worldStateRepository: repo,
+      locale: dinoLocale,
+      characterPath: character.basePath,
+      fontFamily: ref.read(fontProvider).family,
+    );
+    _activeLang = lang;
+    // Bridge game events into Riverpod notifiers. The game bus is alive as
+    // soon as LexawayGame is constructed, so subscribing here (not in
+    // onLoad) is safe and avoids races on very first-frame pickups.
+    // One subscription, switched on the sealed event family, so there's
+    // exactly one stream listener to remember to cancel.
+    _eventSub = _game!.events.on<GameEvent>().listen((event) {
+      switch (event) {
+        case CoinCollected(:final value):
+          ref.read(coinProvider.notifier).add(value);
+        case StepTaken(:final count):
+          ref.read(stepsProvider.notifier).add(count);
+        case BiomeChanged():
+          ref.read(bgmSchedulerProvider).onBiomeChanged();
+        default:
+          break;
+      }
+    });
   }
 
   @override
@@ -183,7 +186,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                     );
                   }
                 : null,
-            child: GameWidget(game: game),
+            child: GameWidget(key: ValueKey(_activeLang), game: game),
           ),
           Positioned(left: 0, right: 0, top: 0, child: const HudBar()),
           if (source != null)

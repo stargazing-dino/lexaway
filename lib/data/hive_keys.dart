@@ -34,8 +34,8 @@ abstract final class HiveKeys {
   static const reminderTime = 'reminder_time';
   static const goalMetShownDayKey = 'goal_met_shown_day_key';
 
-  // World state
-  static const world = 'world';
+  // World state (per-language)
+  static String world(String lang) => 'world_$lang';
 
   // Character selection (per-language)
   static String character(String lang) => 'character_$lang';

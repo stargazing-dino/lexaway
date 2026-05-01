@@ -6,12 +6,17 @@ import 'world_state.dart';
 
 /// The one and only code path that reads or writes persistent world state.
 ///
-/// Game code should never touch [HiveKeys.world] directly — go through this
-/// repository so persistence concerns stay in one place.
+/// One instance per target language — each language pack gets its own dino
+/// world (position, biome, picked-up coins). Game code should never touch
+/// [HiveKeys.world] directly — go through this repository so persistence
+/// concerns stay in one place.
 class WorldStateRepository {
   final Box _box;
+  final String _lang;
 
-  WorldStateRepository(this._box);
+  WorldStateRepository(this._box, this._lang);
+
+  String get _key => HiveKeys.world(_lang);
 
   /// Returns the saved world state, or null if no save exists or the stored
   /// value is corrupt. On corruption this logs and treats it as a fresh
@@ -20,7 +25,7 @@ class WorldStateRepository {
   WorldState? load() {
     final Object? raw;
     try {
-      raw = _box.get(HiveKeys.world);
+      raw = _box.get(_key);
     } catch (e) {
       debugPrint('world_state_repository: load failed ($e)');
       return null;
@@ -40,6 +45,6 @@ class WorldStateRepository {
   }
 
   void save(WorldState state) {
-    _box.put(HiveKeys.world, state.toMap());
+    _box.put(_key, state.toMap());
   }
 }
