@@ -100,10 +100,17 @@ abstract class ScrollingItemLayer<T extends ScrollingWorldItem>
     // Order doesn't matter — Flame draws by component priority, not iteration
     // order, and position updates are independent per item.
     final toRemove = <int>[];
+    final viewportRight = game.size.x;
+    // Right-edge cull uses spawnMarginPx (not cullMarginPx) so freshly-spawned
+    // items in the right spawn window aren't instantly removed. The left edge
+    // can stay tight because static items only enter that zone after passing
+    // through view; the right edge sees fresh spawns directly.
     for (final entry in activeItems.entries) {
       final item = entry.value;
       item.position.x = item.worldX - offset;
-      if (item.position.x + item.layerWidth < -cullMarginPx) {
+      final offLeft = item.position.x + item.layerWidth < -cullMarginPx;
+      final offRight = item.position.x > viewportRight + spawnMarginPx;
+      if (offLeft || offRight) {
         toRemove.add(entry.key);
       }
     }

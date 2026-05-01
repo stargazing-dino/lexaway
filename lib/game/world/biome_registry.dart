@@ -317,6 +317,23 @@ class BiomeRegistry {
     maxCoinGapTiles: 10,
     diamondChance: 0.15,
     clusterChance: 0.25,
+    creatureWeights: [
+      WeightedEntity('minibunny', 1),
+    ],
+    creatureDefs: {
+      'minibunny': CreatureSpriteDef(
+        sheetPath: 'creatures/minibunny.png',
+        frameWidth: 32,
+        frameHeight: 32,
+        scale: LexawayGame.pixelScale,
+        animConfig: CreatureAnimConfig(),
+        behaviors: [
+          GroundAnchorConfig(footPadding: 1),
+          FleeConfig(),
+          IdleHopConfig(),
+        ],
+      ),
+    },
   );
 
   static BiomeDefinition get(BiomeType type) {

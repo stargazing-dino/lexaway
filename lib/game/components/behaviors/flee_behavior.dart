@@ -2,13 +2,16 @@ import '../creature.dart';
 import '../../lexaway_game.dart';
 import 'creature_behavior_component.dart';
 
-/// Flees leftward when the player gets within [triggerTiles] tiles.
+/// Flees when the player gets within [triggerTiles] tiles. Direction is
+/// chosen randomly per-creature (seeded via the parent's RNG) so bunnies
+/// scatter both forward and backward instead of all bolting the same way.
 class FleeBehavior extends CreatureBehaviorComponent {
   final double speed;
   final double triggerTiles;
 
   late final double _triggerPx;
   bool _activated = false;
+  double _direction = -1; // -1 = leftward (default), +1 = rightward
 
   @override
   bool get isExclusive => _activated;
@@ -24,7 +27,7 @@ class FleeBehavior extends CreatureBehaviorComponent {
   @override
   void update(double dt) {
     if (_activated) {
-      parent.moveWorldX(-speed * dt);
+      parent.moveWorldX(_direction * speed * dt);
       return;
     }
 
@@ -41,10 +44,14 @@ class FleeBehavior extends CreatureBehaviorComponent {
 
   void _activate() {
     _activated = true;
-    // flipHorizontally negates scale.x, which shifts rendering by the sprite
-    // width. Compensate so the creature doesn't visually teleport.
-    parent.moveWorldX(parent.size.x);
-    parent.setFlip(true);
+    _direction = parent.rng.nextBool() ? 1.0 : -1.0;
+    // Sprite faces right by default. When fleeing left we flip horizontally,
+    // which negates scale.x and shifts rendering by the sprite width — so
+    // compensate by nudging worldX so the creature doesn't visually teleport.
+    if (_direction < 0) {
+      parent.moveWorldX(parent.size.x);
+      parent.setFlip(true);
+    }
     _loopHop();
   }
 
