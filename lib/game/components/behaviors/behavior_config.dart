@@ -40,7 +40,7 @@ class FleeConfig extends BehaviorConfig {
   final double triggerTiles;
 
   const FleeConfig({
-    this.speed = 260.0,
+    this.speed = 120.0,
     this.triggerTiles = 2.0,
   });
 
