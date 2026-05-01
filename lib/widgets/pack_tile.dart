@@ -3,6 +3,7 @@ import '../l10n/app_localizations.dart';
 
 import '../data/pack_manager.dart';
 import '../data/tts_manager.dart';
+import '../data/walked_distance.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'content_row.dart';
@@ -154,7 +155,10 @@ class PackTile extends StatelessWidget {
                   ),
                   const SizedBox(width: 2),
                   Text(
-                    '$langSteps',
+                    formatWalkedDistance(
+                      langSteps,
+                      locale: Localizations.localeOf(context).toString(),
+                    ),
                     style: const TextStyle(
                       color: AppColors.tileTextSecondary,
                       fontSize: 13,
