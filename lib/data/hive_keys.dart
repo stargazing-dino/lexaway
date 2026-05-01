@@ -37,6 +37,11 @@ abstract final class HiveKeys {
   // World state (per-language)
   static String world(String lang) => 'world_$lang';
 
+  // Per-language lifetime steps — display-only counter for the pack tile.
+  // Independent from the global stepsLifetime/stepsToday used by the daily
+  // goal flow.
+  static String langSteps(String lang) => 'steps_lang_$lang';
+
   // Character selection (per-language)
   static String character(String lang) => 'character_$lang';
 

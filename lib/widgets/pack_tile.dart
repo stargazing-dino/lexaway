@@ -16,6 +16,7 @@ class PackTile extends StatelessWidget {
   final List<TtsModelInfo> voiceModels;
   final String? downloadedModelId;
   final bool hasCharacter;
+  final int langSteps;
   final VoidCallback onDownload;
   final VoidCallback onUpdate;
   final void Function(String modelId) onDownloadVoice;
@@ -33,6 +34,7 @@ class PackTile extends StatelessWidget {
     required this.voiceModels,
     required this.downloadedModelId,
     required this.hasCharacter,
+    required this.langSteps,
     required this.onDownload,
     required this.onUpdate,
     required this.onDownloadVoice,
@@ -143,6 +145,23 @@ class PackTile extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (langSteps > 0) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  Icon(
+                    Icons.directions_walk,
+                    size: 16,
+                    color: AppColors.tileTextSecondary,
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '$langSteps',
+                    style: const TextStyle(
+                      color: AppColors.tileTextSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

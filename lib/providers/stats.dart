@@ -70,6 +70,30 @@ class CoinNotifier extends HiveIntNotifier {
   }
 }
 
+/// Per-language lifetime step counter, surfaced on the pack tile so the user
+/// can see how far the dino has walked in each language. Pure display — the
+/// global [stepsProvider] still drives the daily goal.
+///
+/// NOT autoDispose: GameScreen writes via `ref.read` without watching, so an
+/// autoDispose family would dispose between every step and force a Hive read
+/// + notifier rebuild on the hot path. One int per lang in memory is free.
+final langStepsProvider =
+    NotifierProvider.family<LangStepsNotifier, int, String>(
+  LangStepsNotifier.new,
+);
+
+class LangStepsNotifier extends FamilyNotifier<int, String> {
+  @override
+  int build(String lang) =>
+      ref.read(hiveBoxProvider).get(HiveKeys.langSteps(lang), defaultValue: 0)
+          as int;
+
+  void add(int count) {
+    state += count;
+    ref.read(hiveBoxProvider).put(HiveKeys.langSteps(arg), state);
+  }
+}
+
 /// Snapshot of step counters. [today] resets at local midnight; [lifetime]
 /// keeps climbing forever. [dayKey] is the ISO date (YYYY-MM-DD) that [today]
 /// belongs to — used to detect rollover on reads and writes.

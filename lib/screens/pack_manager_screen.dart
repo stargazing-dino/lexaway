@@ -241,7 +241,25 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                   ),
                   error: (_, __) => const SizedBox.shrink(),
                   data: (m) {
-                    final packs = m.packsFor(nativeLang);
+                    // Sort: active pack first, then other downloaded packs,
+                    // then undownloaded. Tie-break on the manifest index so
+                    // packs within each group stay in remote order even though
+                    // List.sort isn't guaranteed stable. Surfaces what the
+                    // user actually plays at the top so swapping between packs
+                    // avoids scrolling.
+                    final source = m.packsFor(nativeLang);
+                    int rank(PackInfo p) {
+                      if (p.packId == activePackId) return 0;
+                      if (local.containsKey(p.packId)) return 1;
+                      return 2;
+                    }
+                    final packs = [
+                      for (var i = 0; i < source.length; i++) (source[i], i),
+                    ]
+                      ..sort((a, b) {
+                        final c = rank(a.$1).compareTo(rank(b.$1));
+                        return c != 0 ? c : a.$2.compareTo(b.$2);
+                      });
                     return ListView.builder(
                       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xxxl),
                       itemCount: packs.length + 1,
@@ -272,7 +290,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                             ),
                           );
                         }
-                        final pack = packs[i - 1];
+                        final pack = packs[i - 1].$1;
                         final status = packUpdateStatus(pack, local[pack.packId]);
                         final ttsManager = ref.watch(ttsManagerProvider);
                         final voiceCatalog = ref.watch(voiceCatalogProvider);
@@ -290,6 +308,7 @@ class _PackManagerScreenState extends ConsumerState<PackManagerScreen> {
                           downloadedModelId: ttsManager.downloadedModelId(pack.lang),
                           hasCharacter:
                               ref.watch(characterProvider(pack.lang)) != null,
+                          langSteps: ref.watch(langStepsProvider(pack.lang)),
                           onDownload: () => _download(pack),
                           onUpdate: () => _download(pack),
                           onDownloadVoice: (modelId) => _downloadVoice(pack.lang, modelId),
